@@ -93,13 +93,15 @@ async function getIngredientByName(name) {
     return result;
 };
 
-
 async function getAllIngredients() {
     const { rows } = await pool.query(`
-        SELECT id, name, canonical_unit_id 
-        FROM ingredients 
-        ORDER BY name
+        SELECT i.id AS id, i.name AS name, i.canonical_unit_id AS canonical_unit_id, u.name AS canonical_unit, u.abbreviation AS canonical_unit_abbreviation
+        FROM ingredients i
+        LEFT JOIN units u
+        ON i.canonical_unit_id = u.id
+        ORDER BY i.name
     `);
+    if (rows.length === 0) { return [] }
     return rows;
 };
 

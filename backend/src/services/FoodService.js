@@ -16,7 +16,6 @@ async function createFood(name, description = null) {
 };
 
 // put service
-
 async function addImageToFood(foodId, url, alt=null) {
     const { rows } = await pool.query(
         `INSERT INTO food_images (food_id, url, alt)
@@ -36,7 +35,6 @@ async function addIngredientToFood(foodId, ingredientId, quantity, unitId, note=
     );
     return rows[0].id;
 };
-
 
 // get service
 async function getFoodIdByName(name) {
@@ -89,6 +87,7 @@ async function getFoodById(id) {
 
 async function getFoodByName(name) {
     const id = await getFoodIdByName(name)
+    if (!id) return null;
     const food = await getFoodById(id)
     return food
 };

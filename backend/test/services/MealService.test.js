@@ -5,7 +5,9 @@ const {
     addFoodToMeal,
     updateMealFoodCost,
     getRelatedFoods,
-    getTotalMealsCost
+    getTotalMealsCost,
+    getMeals,
+    getMealTypes
 } = require('../../src/services/MealService');
 
 describe('meal post service', () => {
@@ -26,6 +28,14 @@ describe('meal post service', () => {
         expect(mealRows.length).toBe(1);
         expect(mealRows[0].type).toBe(mealType);
         expect(new Date(mealRows[0].date)).toEqual(new Date(mealDate));
+    });
+
+    test('createMeal with an existing meal entry in meals table returns the existing meal id', async () => {
+        const mealType = 'dinner';
+        const mealDate = '2025-12-5';
+        const mealId = await createMeal(mealType, mealDate);
+        const newMealId = await createMeal(mealType, mealDate);
+        expect(mealId).toBe(newMealId);
     });
 });
 
@@ -265,13 +275,28 @@ describe('meal get service', () => {
         expect(relatedFoods[1].cost).toBeCloseTo(price1/purchaseQuant1 * 453.592 * quantity1);
     });
 
-    test ('getMealById returns a meal with id, type, and date', async () => {
+    test('getMealById returns a meal with id, type, and date', async () => {
         const meal = await getMealById(meal1Id)
         expect(meal).not.toBeNull();
         expect(meal.length).toBe(1);
     });
 
-    
-    
+    test('getMeals returns meals with  meal_id, meal_type, meal_date, food_id, meal_food_id, food_name, food_description in selected date range ordered by date, and meal type,food name', async () => {
+        const meals = await getMeals('2025-12-01','2025-12-31');
+        expect(meals).not.toBeNull();
+        expect(meals.length).toBe(3);
+        expect(meals[0].meal_date.toISOString().split("T")[0]).toBe('2025-12-05');
+        expect(meals[0].meal_type).toBe('dinner');
+    });
+
+    test('getMealTypes turns all enum meal types', async () => {
+        const mealTypes = await getMealTypes();
+        expect(mealTypes).not.toBeNull();
+        expect(mealTypes.length).toBe(5);
+    });
 });
+afterAll(async () => {
+  await pool.end();
+});
+
 

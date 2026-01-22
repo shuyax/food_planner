@@ -1,5 +1,4 @@
 // table: meals, meal_food
-
 const pool = require('../../database/pool');
 const { getFoodCurrentCostById } = require('./AnalyticsService')
 
@@ -9,6 +8,8 @@ async function createMeal(type, date) {
     const { rows } = await pool.query(
         `INSERT INTO meals(type, date)
         VALUES ($1, $2)
+        ON CONFLICT (type, date)
+        DO UPDATE SET type = EXCLUDED.type
         RETURNING id`,
         [mealType, date]
     )
@@ -17,7 +18,7 @@ async function createMeal(type, date) {
 
 // put service
 async function addFoodToMeal(mealId, foodId) {
-    const foodCost = await getFoodCurrentCostById(foodId);
+    const foodCost = await getFoodCurrentCostById(foodId) || 0;
     const { rows: mealFoodRows } = await pool.query(
         `INSERT INTO meal_food(meal_id, food_id, cost)
         VALUES ($1, $2, $3)
@@ -74,12 +75,40 @@ async function getMealById(id) {
     return mealFoodRows
 };
 
+async function getMeals(startDate, endDate) {
+    const { rows: mealRows } = await pool.query(
+        `SELECT m.id AS meal_id, m.type AS meal_type, m.date AS meal_date, mf.food_id AS food_id, mf.id AS meal_food_id, f.name AS food_name, f.description AS food_description
+        FROM meals m
+        LEFT JOIN meal_food mf
+        ON m.id = mf.meal_id
+        LEFT JOIN foods f
+        ON mf.food_id = f.id
+        WHERE m.date >= $1
+        AND m.date <= $2
+        ORDER BY m.date, m.type, f.name`,
+        [startDate, endDate]
+    );
+    return mealRows;
+}
 
+async function getMealTypes() {
+    const { rows: mealTypeRows } = await pool.query(
+        `SELECT e.enumlabel AS meal_type
+        FROM pg_enum e
+        JOIN pg_type t ON t.oid = e.enumtypid
+        WHERE t.typname = 'meal_enum'
+        ORDER BY e.enumsortorder;`
+    )
+    const rows = mealTypeRows.map(r => r.meal_type);
+    return rows;
+};
 
 module.exports = {
     createMeal,
     getMealById,
     addFoodToMeal,
     updateMealFoodCost,
-    getRelatedFoods
+    getRelatedFoods,
+    getMeals,
+    getMealTypes
 };

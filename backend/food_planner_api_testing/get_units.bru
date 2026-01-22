@@ -1,0 +1,25 @@
+meta {
+  name: get_units
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://127.0.0.1:4000/unit
+  body: none
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+assert {
+  res.status: eq 200
+  res.body: eq {"count":[{"id":6,"name":"piece","abbreviation":"pcs"},{"id":7,"name":"slice","abbreviation":"slice"}],"volume":[{"id":11,"name":"cup","abbreviation":"cup"},{"id":10,"name":"fluid ounce","abbreviation":"fl oz"},{"id":14,"name":"gallon","abbreviation":"gal"},{"id":5,"name":"liter","abbreviation":"l"},{"id":4,"name":"milliliter","abbreviation":"ml"},{"id":12,"name":"pint","abbreviation":"pt"},{"id":13,"name":"quart","abbreviation":"qt"},{"id":9,"name":"tablespoon","abbreviation":"tbsp"},{"id":8,"name":"teaspoon","abbreviation":"tsp"}],"weight":[{"id":1,"name":"gram","abbreviation":"g"},{"id":2,"name":"kilogram","abbreviation":"kg"},{"id":3,"name":"milligram","abbreviation":"mg"},{"id":15,"name":"ounce","abbreviation":"oz"},{"id":16,"name":"pound","abbreviation":"lb"}]}
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

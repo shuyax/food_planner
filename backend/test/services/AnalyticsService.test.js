@@ -208,8 +208,7 @@ describe('analytics/summary service', () => {
         expect(uniqueNames.size).toBe(names.length);
         expect(uniqueIds.size === uniqueNames.size).toBe(true);
     });
-
-
-
-    
+});
+afterAll(async () => {
+  await pool.end();
 });

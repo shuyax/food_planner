@@ -8,7 +8,14 @@ async function getAllUnits() {
         FROM units
         ORDER BY unit_type::text, name ASC`
     );
-    return unitRows;
+    return unitRows.reduce((acc, unit) => {
+        const { id, name, abbreviation, unit_type } = unit;
+        if(!acc[unit_type]) {
+            acc[unit_type] = [];
+        };
+        acc[unit_type].push({id, name, abbreviation});
+        return acc;
+    },{});
 };
 
 async function convertCanonicalUnitToBaseUnit(canonical_unit_id, canonical_unit_quantity) {

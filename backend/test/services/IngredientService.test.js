@@ -214,13 +214,21 @@ describe('Ingredient get service', () => {
         expect(ingredient.canonical_unit_id).toBe(pcsUnitId);
     });
 
-    test('getAllIngredientNames returns a list of all existing ingredients ordered by name', async () => {
+    test('getAllIngredients returns a list of all existing ingredients ordered by name', async () => {
         const allIngredients = await getAllIngredients();
         expect(allIngredients).not.toBeNull();
         expect(allIngredients.length).toBe(2);
         expect(allIngredients[0].id).toBe(testIngredient2Id);
         expect(allIngredients[0].name).toBe(testIngredient2Name);
         expect(allIngredients[0].canonical_unit_id).toBe(tbspUnitId);
+    });
+});
+
+describe('Ingredient get service', () => {
+    test('getAllIngredients returns an empty list', async () => {
+        const allIngredients = await getAllIngredients();
+        expect(allIngredients).not.toBeNull();
+        expect(allIngredients.length).toBe(0);
     });
 });
 
