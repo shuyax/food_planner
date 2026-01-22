@@ -112,7 +112,7 @@ def test_delete_meal_button(driver):
     meal_row_elements = driver.find_elements(By.CLASS_NAME, "meal-row")
     assert len(meal_row_elements) == current_meal_row - 1, "delete meal button should make the meal row decrease by one"
 
-def test_save_button(driver):
+def test_save_button_back_home_button(driver):
     new_add_meal_url = f'{BASE_URL}/add-meal?date={date.today().isoformat()}'
     driver.get(new_add_meal_url)
     meal_type_select = WebDriverWait(driver, 10).until(
@@ -153,3 +153,22 @@ def test_save_button(driver):
     except TimeoutException:
         # The button is still visible after 10 seconds
         assert False, "add-food button should disappear"
+    back_btn = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, 'meal-back'))
+    )
+    back_btn.click()
+    WebDriverWait(driver, 10).until(
+        EC.url_to_be(f'{BASE_URL}/')
+    )
+    assert driver.current_url == f'{BASE_URL}/', "back home button should redirect to home page"
+
+def test_cancel_button(driver):
+    driver.get(add_meal_url)
+    add_meal_btn = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, 'meal-cancel'))
+    )
+    add_meal_btn.click()
+    WebDriverWait(driver, 10).until(
+        EC.url_to_be(f'{BASE_URL}/')
+    )
+    assert driver.current_url == f'{BASE_URL}/', "Cancel should redirect to home page"

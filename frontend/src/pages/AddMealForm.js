@@ -20,7 +20,8 @@ function AddMealForm() {
         foods: []
     }
     const [meals, setMeals] = useState([defaultMeal]);
-     const [calendarRefresh, setCalendarRefresh] = useState(0); // trigger calendar update
+    const [calendarRefresh, setCalendarRefresh] = useState(0); // trigger calendar update
+    const [submitted, setSubmitted] = useState(false)
 
     const { data: mealTypesData,
         isLoading: mealTypesIsLoading,
@@ -115,9 +116,15 @@ function AddMealForm() {
             // Reset form to initial state
             setMeals([defaultMeal]);
             setCalendarRefresh((prev) => prev + 1);
+            setSubmitted(true)
         } catch (err) {
             alert("Failed to save meals.");
         }
+    };
+
+    function handleMealCancel() {
+        setMeals([defaultMeal]);
+        navigate(`/`)
     };
 
     return (<div className="meal-form">
@@ -130,6 +137,7 @@ function AddMealForm() {
             refreshTrigger={calendarRefresh}
         />
         {meals.map((meal, index) => (<div className="meal-row" key={`meal-row-${index}`}>
+            <p>-------------------------------------------------------------------------------------------------------------------</p>
             <MealTypeList mealTypes={mealTypesData} mealIndex={index} meal={meal} updateMeal={(updatedMeal) => updateMeal(index, updatedMeal)} /> 
             <FoodRow existingFoods={foodData} mealIndex={index} meal={meal} updateMeal={(updatedMeal) => updateMeal(index, updatedMeal)} />
             <button className="remove-meal-btn" type="button" onClick={() => removeMeal(index)}>Delete Meal</button>
@@ -138,8 +146,8 @@ function AddMealForm() {
         
         <button id="add-meal" type="button" onClick={addMeal}>Add Meal</button>
         <br />
-        <button id="meal-save" onClick={handleSave} disabled={createMealMutation.isPending}>Save</button>
-        <button id="meal-cancel">Cancel</button>
+        <button id="meal-save" onClick={handleSave} disabled={createMealMutation.isPending}>SAVE</button>
+        {submitted ? <button id="meal-back" onClick={() => {navigate(`/`)}}>BACK TO HOME</button> : <button id="meal-cancel" onClick={handleMealCancel}>CANCEL</button>}
     </div>);
 };
 
