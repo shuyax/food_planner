@@ -154,7 +154,6 @@ function Calendar({
         const dateStr = info.date.toISOString().split("T")[0];
         return (<>
             <div>{info.dayNumberText}</div>
-
             {mode === 'browse' && (
                 <button
                     className='add-meal-btn'
@@ -172,7 +171,11 @@ function Calendar({
         plugins={[dayGridPlugin, interactionPlugin]}
         initialView={mode === "add" ? "dayGridDay" : "dayGridWeek"}
         initialDate={mode === "add" ? selectedDate : getCurrentWeekRange.startDate} 
-        headerToolbar={{
+        headerToolbar={mode === "add" ? {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridDay'
+        }:{
             left: 'prev,next today',
             center: 'title',
             right: 'dayGridMonth,dayGridWeek,dayGridDay'
