@@ -17,7 +17,8 @@ function Calendar({
     mode, // "browse" | "add"
     selectedDate, // YYYY-MM-DD (required in add mode)
     onAddMeal, // (date) => void (browse mode)
-    onDateChange // (date) => void (add mode)
+    onDateChange, // (date) => void (add mode)
+    refreshTrigger 
 }) {
     // const [dateRange, setDateRange] = useState(getCurrentWeekRange());
     const [events, setEvents] = useState([]);
@@ -114,7 +115,7 @@ function Calendar({
                 setEvents([]);
             }
         })();
-    }, [mode, selectedDate]);
+    }, [mode, selectedDate, refreshTrigger]);
     /* --------------------------------------------------
      Handlers
     -------------------------------------------------- */
@@ -141,7 +142,6 @@ function Calendar({
         }
 
         // Optionally switch the view to show only selected days
-        console.log(start,  end)
         const calendarApi = selectionInfo.view.calendar;
         const dayDiff = (new Date(end) - new Date(start)) / (1000 * 60 * 60 * 24) + 1;
         if (dayDiff === 1) calendarApi.changeView('dayGridDay', start);
@@ -154,7 +154,6 @@ function Calendar({
         const dateStr = info.date.toISOString().split("T")[0];
         return (<>
             <div>{info.dayNumberText}</div>
-
             {mode === 'browse' && (
                 <button
                     className='add-meal-btn'
@@ -172,7 +171,11 @@ function Calendar({
         plugins={[dayGridPlugin, interactionPlugin]}
         initialView={mode === "add" ? "dayGridDay" : "dayGridWeek"}
         initialDate={mode === "add" ? selectedDate : getCurrentWeekRange.startDate} 
-        headerToolbar={{
+        headerToolbar={mode === "add" ? {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridDay'
+        }:{
             left: 'prev,next today',
             center: 'title',
             right: 'dayGridMonth,dayGridWeek,dayGridDay'

@@ -20,6 +20,8 @@ function AddMealForm() {
         foods: []
     }
     const [meals, setMeals] = useState([defaultMeal]);
+    const [calendarRefresh, setCalendarRefresh] = useState(0); // trigger calendar update
+    const [submitted, setSubmitted] = useState(false)
 
     const { data: mealTypesData,
         isLoading: mealTypesIsLoading,
@@ -63,7 +65,7 @@ function AddMealForm() {
         setMeals(prev => prev.filter((_, i) => i !== index));
     };
 
-    async function handleSave() {
+    function mergeMeals(meals) {
         const mealMap = new Map();
         for (const meal of meals) {
             const foods = meal.foods.filter((food) => food.foodId !== -1)
@@ -87,14 +89,18 @@ function AddMealForm() {
                 mealMap.get(meal.mealType).foods.push(...foods);
             }
         }
-        const mergedMeals = Array.from(mealMap.values());
+        return Array.from(mealMap.values());
+    };
+
+    async function handleSave() {
+        const mergedMeals = mergeMeals(meals);
         if (mergedMeals.length === 0) {
             alert("Nothing to save.");
             return;
         }
         // update UI state so it matches what will be saved
         setMeals(mergedMeals);
-        console.log(mergedMeals)
+
         try {
             await Promise.all(
                 mergedMeals.map(meal =>
@@ -106,10 +112,19 @@ function AddMealForm() {
                 )
             );
 
-            alert("Meals saved successfully!");
+            console.log("Meals saved successfully!");
+            // Reset form to initial state
+            setMeals([defaultMeal]);
+            setCalendarRefresh((prev) => prev + 1);
+            setSubmitted(true)
         } catch (err) {
             alert("Failed to save meals.");
         }
+    };
+
+    function handleMealCancel() {
+        setMeals([defaultMeal]);
+        navigate(`/`)
     };
 
     return (<div className="meal-form">
@@ -119,8 +134,10 @@ function AddMealForm() {
             onDateChange={(newDate) =>
                 navigate(`/add-meal?date=${newDate}`)
             }
+            refreshTrigger={calendarRefresh}
         />
         {meals.map((meal, index) => (<div className="meal-row" key={`meal-row-${index}`}>
+            <p>-------------------------------------------------------------------------------------------------------------------</p>
             <MealTypeList mealTypes={mealTypesData} mealIndex={index} meal={meal} updateMeal={(updatedMeal) => updateMeal(index, updatedMeal)} /> 
             <FoodRow existingFoods={foodData} mealIndex={index} meal={meal} updateMeal={(updatedMeal) => updateMeal(index, updatedMeal)} />
             <button className="remove-meal-btn" type="button" onClick={() => removeMeal(index)}>Delete Meal</button>
@@ -129,8 +146,8 @@ function AddMealForm() {
         
         <button id="add-meal" type="button" onClick={addMeal}>Add Meal</button>
         <br />
-        <button id="meal-save" onClick={handleSave} disabled={createMealMutation.isPending}>Save</button>
-        <button id="meal-cancel">Cancel</button>
+        <button id="meal-save" onClick={handleSave} disabled={createMealMutation.isPending}>SAVE</button>
+        {submitted ? <button id="meal-back" onClick={() => {navigate(`/`)}}>BACK TO HOME</button> : <button id="meal-cancel" onClick={handleMealCancel}>CANCEL</button>}
     </div>);
 };
 
