@@ -8,8 +8,15 @@ export async function fetchMeals(startDate, endDate) {
       enddate: endDate
     }
   });
-  console.log(res.data)
-  return res.data
+  const result = res.data.reduce((acc, meal) => {
+    const dateKey = meal.meal_date.split('T')[0];// 'YYYY-MM-DD'
+    if (!acc[dateKey]) acc[dateKey] = {};
+    if (!acc[dateKey][meal.meal_type]) acc[dateKey][meal.meal_type] = [];
+    acc[dateKey][meal.meal_type].push(meal)
+    return acc
+  },{});
+  console.log(result);
+  return result
 };
 
 export async function createMeal(mealType, mealDate, foods) {

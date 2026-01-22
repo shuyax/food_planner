@@ -65,26 +65,24 @@ def test_add_food_section(driver):
     add_food_btn = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.ID, 'add-food'))
     )
-    food_list_element = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.TAG_NAME, 'ol'))
+    meal_food_section = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.CLASS_NAME, 'food-list'))
     )
-    food_elements = food_list_element.find_elements(By.TAG_NAME, "li")
+    food_elements = meal_food_section.find_elements(By.TAG_NAME, "li")
     assert len(food_elements) == 0, "There should be no food select by default"
     add_food_btn.click()
     # test food select
-    li_element = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.TAG_NAME, 'li'))
-    )
-    food_elements = food_list_element.find_elements(By.TAG_NAME, "li")
+    food_elements = meal_food_section.find_elements(By.TAG_NAME, "li")
     assert len(food_elements) == 1, "The number of food select should be increased by one after clicking the add food button"
     food_select_elements = food_elements[0].find_elements(By.TAG_NAME, "select")
     select = Select(food_select_elements[0])
     select.select_by_visible_text("taro milk tea")
     assert food_select_elements[0].get_attribute("value") == "taro milk tea", "The selected option value should be the food select value"
     # test remove food button
-    remove_btn = li_element.find_elements(By.CLASS_NAME, "remove-food-btn")[0]
-    remove_btn.click()
-    food_elements = food_list_element.find_elements(By.TAG_NAME, "li")
+    remove_btn = meal_food_section.find_elements(By.XPATH, ".//button[text()='✕']")
+    assert len(remove_btn) == 1, "There should be only one remove button per meal per food"
+    remove_btn[0].click()
+    food_elements = meal_food_section.find_elements(By.TAG_NAME, "li")
     assert len(food_elements) == 0, "The number of food select should be decreased by one after clicking the remove food button"
 
 def test_add_meal_button(driver):
@@ -135,12 +133,12 @@ def test_save_button_back_home_button(driver):
     save_btn.click()
     food_element = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located(
-            (By.XPATH, "//div[text()='taro milk tea']")
+            (By.XPATH, "//li[text()='taro milk tea']")
         )
     )
     assert food_element.is_displayed(), "The new meal added should be visible on calendar"
     preceding_strong = food_element.find_element(
-        By.XPATH, "preceding-sibling::strong[1]"
+        By.XPATH, "ancestor::div[contains(@class,'fc-event-main')]//strong"
     )
     assert preceding_strong.text.lower() == "drink", "The new meal added should be under drink"
     assert meal_type_select.get_attribute("value") == '', "the value of meal type select should be back to empty after successful submission"
@@ -172,3 +170,36 @@ def test_cancel_button(driver):
         EC.url_to_be(f'{BASE_URL}/')
     )
     assert driver.current_url == f'{BASE_URL}/', "Cancel should redirect to home page"
+
+def test_add_food_to_existing_meal(driver):
+    driver.get(add_meal_url)
+    meal_type_select = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, 'meal-type-0'))
+    )
+    select = Select(meal_type_select)
+    select.select_by_visible_text("dinner")
+    add_food_button = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, 'add-food'))
+    )
+    add_food_button.click()
+    food_select = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, 'food-0-0'))
+    )
+    select_food = Select(food_select)
+    select_food.select_by_visible_text("tomato beef udon with cheese")
+    save_btn = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, 'meal-save'))
+    )
+    save_btn.click()
+    food_element = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located(
+            (By.XPATH, "//li[text()='tomato beef udon with cheese']")
+        )
+    )
+    assert food_element.is_displayed(), "The new meal food added should be visible on calendar"
+    preceding_strong = food_element.find_element(
+        By.XPATH, "ancestor::div[contains(@class,'fc-event-main')]//strong"
+    )
+    assert preceding_strong.text.lower() == 'dinner', "The new meal food added should be under dinner meal type"
+    dinner_meal_type = driver.find_elements(By.XPATH, "//strong[translate(text(),'DINNER','dinner')='dinner']")
+    assert len(dinner_meal_type) == 1, f"Expected 1 'dinner', but found {len(dinner_meal_type)}"

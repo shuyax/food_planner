@@ -57,32 +57,49 @@ function Calendar({
     // if month view, show meal type only; otherwise, also display foods
     function renderMealEvent(arg) {
         const { type } = arg.view
-        const { foodId } = arg.event.extendedProps
-        const { foodName } = arg.event.extendedProps
-
-        if (type === 'dayGridMonth') {
-            return <strong>{arg.event.title}</strong>
-        }
-        return (<>
-            <strong>{arg.event.title}</strong>
-            <div id={`food-${foodId}`}>{foodName}</div>
-        </>)
+        const { title, extendedProps } = arg.event;
+        if (type === 'dayGridMonth') return <strong>{title}</strong>; 
+        return (
+          <>
+            <strong>{title}</strong>
+            <ul className='meal-food'>
+              {extendedProps.foods.map(food => (
+                <li key={food.foodId}>
+                  {food.foodName}
+                </li>
+              ))}
+            </ul>
+          </>
+        );
     };
 
     function mapMealsToEvents(meals) {
-        return meals.map(meal => ({
-            id: meal.meal_food_id,
-            title: meal.meal_type.toUpperCase(),
-            start: meal.meal_date,
-            allDay: true,
-            backgroundColor: MEAL_COLORS[meal.meal_type] || '#94A3B8',
-            borderColor: MEAL_COLORS[meal.meal_type] || '#94A3B8',
-            extendedProps: {
-                foodId: meal.food_id,
-                foodName: meal.food_name,
-                order: MEAL_ORDER[meal.meal_type]
-            }
-        }));
+
+        const events = [];
+        Object.entries(meals).forEach(([date, mealsByType]) => {
+            Object.entries(mealsByType).forEach(([mealType, foods]) => {
+            // Combine all food names into one string
+            events.push({
+                id: `${date}-${mealType}`,
+                title: mealType.toUpperCase(), // show meal type + foods
+                start: date,
+                allDay: true,
+                backgroundColor: MEAL_COLORS[mealType] || "#94A3B8",
+                borderColor: MEAL_COLORS[mealType] || "#94A3B8",
+                extendedProps: {
+                    foods: foods.map(f => ({
+                        foodId: f.food_id,
+                        foodName: f.food_name,
+                        description: f.food_description
+                    }
+                )),
+                order: MEAL_ORDER[mealType]
+                }
+            });
+            });
+        });
+        console.log(events)
+        return events;
     };
 
     // Update events whenever calendar view changes; fetch new meal data
