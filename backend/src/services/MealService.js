@@ -18,7 +18,12 @@ async function createMeal(type, date) {
 
 // put service
 async function addFoodToMeal(mealId, foodId) {
-    const foodCost = await getFoodCurrentCostById(foodId) || 0;
+    let foodCost = 0;
+    try {
+        foodCost = await getFoodCurrentCostById(foodId);
+    } catch (err) {
+        console.log(err)
+    }
     const { rows: mealFoodRows } = await pool.query(
         `INSERT INTO meal_food(meal_id, food_id, cost)
         VALUES ($1, $2, $3)
