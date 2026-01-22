@@ -5,7 +5,6 @@ const {
     addFoodToMeal,
     updateMealFoodCost,
     getRelatedFoods,
-    getTotalMealsCost,
     getMeals,
     getMealTypes
 } = require('../../src/services/MealService');
