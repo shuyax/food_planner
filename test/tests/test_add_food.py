@@ -131,9 +131,13 @@ def test_add_ingredient_btn(driver):
         EC.presence_of_element_located((By.ID, 'add-ingredient'))
     )
     add_ingredient_btn.click()
+    WebDriverWait(driver, 10).until(
+        lambda d: len(d.find_elements(By.CLASS_NAME, "ingredient-row")) > prev_row_len
+    )
     ingredient_row_elements = driver.find_elements(By.CLASS_NAME, "ingredient-row")
-    assert len(ingredient_row_elements) == prev_row_len + 1, "ingredient-row should be increased by one ingredient-row by clicking the add ingredient button"
-
+    assert len(ingredient_row_elements) == prev_row_len + 1, (
+        "ingredient-row should be increased by one ingredient-row by clicking the add ingredient button"
+    )
 
 def test_ingredient_remove_btn(driver):
     driver.get(add_food_url)
