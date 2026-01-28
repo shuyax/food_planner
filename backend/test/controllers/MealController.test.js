@@ -135,3 +135,77 @@ describe("MealController.getMealTypes", () => {
         expect(next).toHaveBeenCalledWith(mockError);
     });
 });
+
+describe("MealController.getRelatedFoods", () => {
+    it("returns all foods in a meal ordered by food name", async () => {
+        const req = {
+            params: { mealId: "3" }
+        };
+        const res = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn()
+        };
+        const next = jest.fn();
+
+        const mockFoods = [
+            {
+                meal_food_id: 3,
+                food_id: 3,
+                name: 'spicy sour noodle',
+                description: 'yuanxian big glass noodle',
+                cost: 0.796
+            },
+            {
+                meal_food_id: 2,
+                food_id: 2,
+                name: 'stir fry bok choy',
+                description: 'spicy stir fry bok choy with garlic',
+                cost: 1.4894
+            }
+        ];
+
+        MealService.getRelatedFoods.mockResolvedValue(mockFoods);
+
+        await MealController.getRelatedFoods(req, res, next);
+
+        expect(MealService.getRelatedFoods).toHaveBeenCalledWith("3");
+        expect(res.json).toHaveBeenCalledWith(mockFoods);
+        expect(next).not.toHaveBeenCalled();
+    });
+
+    it("returns 400 if mealId param is missing", async () => {
+        const req = { params: {} };
+        const res = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn()
+        };
+        const next = jest.fn();
+
+        await MealController.getRelatedFoods(req, res, next);
+
+        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.json).toHaveBeenCalledWith({
+            error: "mealId param is required"
+        });
+        expect(next).not.toHaveBeenCalled();
+    });
+
+    it("calls next on service error", async () => {
+        const req = {
+            params: { mealId: "3" }
+        };
+        const res = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn()
+        };
+        const next = jest.fn();
+
+        const error = new Error("Database failure");
+        MealService.getRelatedFoods.mockRejectedValue(error);
+
+        await MealController.getRelatedFoods(req, res, next);
+
+        expect(next).toHaveBeenCalledWith(error);
+        expect(res.json).not.toHaveBeenCalled();
+    });
+});

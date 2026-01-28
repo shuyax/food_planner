@@ -38,8 +38,22 @@ async function getMealTypes(req, res, next) {
   }
 }
 
+async function getRelatedFoods(req, res, next) {
+  try {
+    const { mealId } = req.params;
+    if (!mealId) {
+      return res.status(400).json({ error: "mealId param is required" });
+    }
+    const relatedFoods = await MealService.getRelatedFoods(mealId)
+    res.json(relatedFoods)
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
     getMeals,
     createMeal,
-    getMealTypes
+    getMealTypes,
+    getRelatedFoods
 };

@@ -5,5 +5,6 @@ const MealController = require("../controllers/MealController");
 router.get("/", MealController.getMeals);
 router.get("/meal-types", MealController.getMealTypes);
 router.post("/", MealController.createMeal)
+router.get("/meals/:mealId/foods", MealController.getRelatedFoods);
 
 module.exports = router;
