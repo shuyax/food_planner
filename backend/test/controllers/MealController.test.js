@@ -57,20 +57,11 @@ describe("MealController.getMeals", () => {
 
 
 describe("MealController.createMeal", () => {
-    it("creates a meal and returns a mealId and mealFoodIds", async () => {
+    it("creates a meal and returns a mealId", async () => {
         const req = {
             body: {
                 type: "dinner",
-                date: "2026-01-15",
-                foods: [{
-                    "foodId": 5,
-                    "foodName": "overnight oats",
-                    "foodDescription": "how to make overnight oats"
-                },{
-                    "foodId": 6,
-                    "foodName": "beef jerky",
-                    "foodDescription": ""
-                }]
+                date: "2026-01-15"
             }
         };
         const res = {
@@ -80,44 +71,15 @@ describe("MealController.createMeal", () => {
         const next = jest.fn();
         // Mock the service to return a mealId
         const mockMealId = 42;
-        const mockMealFoodIds = [101, 102]
         // Mock MealService methods
         jest.spyOn(MealService, "createMeal").mockResolvedValue(mockMealId);
-        jest.spyOn(MealService, "addFoodToMeal")
-            .mockResolvedValueOnce(mockMealFoodIds[0])
-            .mockResolvedValueOnce(mockMealFoodIds[1]);
-
         await MealController.createMeal(req, res, next);
         // Verify createMeal called
         expect(MealService.createMeal).toHaveBeenCalledWith("dinner", "2026-01-15");
-        // Verify addFoodToMeal called for each food
-        expect(MealService.addFoodToMeal).toHaveBeenCalledTimes(req.body.foods.length);
-        expect(MealService.addFoodToMeal).toHaveBeenCalledWith(mockMealId, 5);
-        expect(MealService.addFoodToMeal).toHaveBeenCalledWith(mockMealId, 6);
         // Verify response
-        expect(res.json).toHaveBeenCalledWith({
-            mealId: mockMealId,
-            mealFoodIds: mockMealFoodIds
-        });
+        expect(res.json).toHaveBeenCalledWith(mockMealId);
 
         // next should not be called
-        expect(next).not.toHaveBeenCalled();
-    });
-
-    it("creates a meal when no foods are provided", async () => {
-        const req = {
-            body: { type: "lunch", date: "2026-01-16", foods: [] }
-        };
-        const res = {
-            status: jest.fn().mockReturnThis(),
-            json: jest.fn()
-        };
-        const next = jest.fn();
-        const mockMealId = 43;
-        jest.spyOn(MealService, "createMeal").mockResolvedValue(mockMealId);
-        await MealController.createMeal(req, res, next);
-        expect(MealService.createMeal).toHaveBeenCalledWith("lunch", "2026-01-16");
-        expect(res.json).toHaveBeenCalledWith({ mealId: mockMealId, mealFoodIds: [] });
         expect(next).not.toHaveBeenCalled();
     });
 

@@ -18,19 +18,12 @@ async function getMeals(req, res, next) {
 
 async function createMeal(req, res, next) {
   try {
-    const { type, date, foods } = req.body;
+    const { type, date } = req.body;
     if (!type || !date) {
       return res.status(400).json({ error: "meal type and meal date are required"})
     }
     const mealId = await MealService.createMeal(type, date)
-    let mealFoodIdList = [];
-    if (foods && foods.length !== 0) {
-      for (const food of foods) {
-        const mealFoodId = await MealService.addFoodToMeal(mealId, food.foodId)
-        mealFoodIdList.push(mealFoodId)
-      }
-    }
-    res.json({ mealId, mealFoodIds: mealFoodIdList })
+    res.json(mealId)
   } catch (err) {
     next(err);
   }
