@@ -82,15 +82,11 @@ async function getMealById(id) {
 
 async function getMeals(startDate, endDate) {
     const { rows: mealRows } = await pool.query(
-        `SELECT m.id AS meal_id, m.type AS meal_type, m.date AS meal_date, mf.food_id AS food_id, mf.id AS meal_food_id, f.name AS food_name, f.description AS food_description
-        FROM meals m
-        LEFT JOIN meal_food mf
-        ON m.id = mf.meal_id
-        LEFT JOIN foods f
-        ON mf.food_id = f.id
-        WHERE m.date >= $1
-        AND m.date <= $2
-        ORDER BY m.date, m.type, f.name`,
+        `SELECT id AS meal_id, type AS meal_type, date AS meal_date
+        FROM meals
+        WHERE date >= $1
+        AND date <= $2
+        ORDER BY date, type`,
         [startDate, endDate]
     );
     return mealRows;

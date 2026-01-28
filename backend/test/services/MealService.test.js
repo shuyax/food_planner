@@ -280,10 +280,10 @@ describe('meal get service', () => {
         expect(meal.length).toBe(1);
     });
 
-    test('getMeals returns meals with  meal_id, meal_type, meal_date, food_id, meal_food_id, food_name, food_description in selected date range ordered by date, and meal type,food name', async () => {
+    test('getMeals returns meals with  meal_id, meal_type, meal_date in selected date range ordered by date, and meal type', async () => {
         const meals = await getMeals('2025-12-01','2025-12-31');
         expect(meals).not.toBeNull();
-        expect(meals.length).toBe(3);
+        expect(meals.length).toBe(2);
         expect(meals[0].meal_date.toISOString().split("T")[0]).toBe('2025-12-05');
         expect(meals[0].meal_type).toBe('dinner');
     });
