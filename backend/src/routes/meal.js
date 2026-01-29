@@ -6,6 +6,6 @@ router.get("/", MealController.getMeals);
 router.get("/meal-types", MealController.getMealTypes);
 router.post("/", MealController.createMeal)
 router.get("/:mealId/foods", MealController.getRelatedFoods);
-router.post("/add-foods", MealController.addFoodsToMeal)
+router.post("/update-foods", MealController.updateFoodsToMeal)
 
 module.exports = router;

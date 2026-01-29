@@ -210,19 +210,21 @@ describe("MealController.getRelatedFoods", () => {
     });
 });
 
-describe("MealController.addFoodsToMeal", () => {
-    it("creates a meal food combination in meal_food table and returns a mealFoodId", async () => {
+describe("MealController.updateFoodsToMeal", () => {
+    it("add new foods meal_food table and returns a mealFoodId", async () => {
         const req = {
             body: {
                 mealId: 3,
                 foods: [{
                     "foodId": 4,
                     "foodName": "taro milk tea",
-                    "foodDescription": "how to make taro milk tea"
+                    "foodDescription": "how to make taro milk tea",
+                    "mealFoodId": -1
                 }, {
                     "foodId": 6,
                     "foodName": "beef jerky",
-                    "foodDescription": ""
+                    "foodDescription": "",
+                    "mealFoodId": -1
                 }]
             }
         };
@@ -235,7 +237,7 @@ describe("MealController.addFoodsToMeal", () => {
         jest.spyOn(MealService, "addFoodToMeal")
             .mockResolvedValueOnce(1)
             .mockResolvedValueOnce(2);
-        await MealController.addFoodsToMeal(req, res, next);
+        await MealController.updateFoodsToMeal(req, res, next);
         // Verify createMeal called
         expect(MealService.addFoodToMeal).toHaveBeenCalledTimes(2);
         expect(MealService.addFoodToMeal).toHaveBeenCalledWith(3, 4);
@@ -243,12 +245,57 @@ describe("MealController.addFoodsToMeal", () => {
         // Verify response
         const mockResult = {
             mealId: 3,
-            addedFoods: [{ 
-                foodId: 4,
-                mealFoodId: 1
-            }, { 
-                foodId: 6,
-                mealFoodId: 2
+            foods: [{
+                    "foodId": 4,
+                    "foodName": "taro milk tea",
+                    "foodDescription": "how to make taro milk tea",
+                    "mealFoodId": 1
+                }, {
+                    "foodId": 6,
+                    "foodName": "beef jerky",
+                    "foodDescription": "",
+                    "mealFoodId": 2
+                }]
+        };
+        expect(res.status).toHaveBeenCalledWith(201);
+        expect(res.json).toHaveBeenCalledWith(mockResult);
+
+        // next should not be called
+        expect(next).not.toHaveBeenCalled();
+    });
+
+    it("update an existing food meal_food in table", async () => {
+        const req = {
+            body: {
+                mealId: 3,
+                foods: [{
+                    "foodId": 6,
+                    "foodName": "beef jerky",
+                    "foodDescription": "",
+                    "mealFoodId": 1
+                }]
+            }
+        };
+        const res = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn()
+        };
+        const next = jest.fn();
+        // Mock MealService methods
+        jest.spyOn(MealService, "updateFoodToMeal").mockResolvedValue(1)
+
+        await MealController.updateFoodsToMeal(req, res, next);
+        // Verify createMeal called
+        expect(MealService.updateFoodToMeal).toHaveBeenCalled();
+        expect(MealService.updateFoodToMeal).toHaveBeenCalledWith(1, 6);
+        // Verify response
+        const mockResult = {
+            mealId: 3,
+            foods: [{
+                "foodId": 6,
+                "foodName": "beef jerky",
+                "foodDescription": "",
+                "mealFoodId": 1
             }]
         };
         expect(res.status).toHaveBeenCalledWith(201);
@@ -258,6 +305,44 @@ describe("MealController.addFoodsToMeal", () => {
         expect(next).not.toHaveBeenCalled();
     });
 
+    it("handles mixed add and update foods", async () => {
+        const req = {
+            body: {
+            mealId: 3,
+            foods: [
+                { foodId: 4, mealFoodId: -1 },
+                { foodId: 6, mealFoodId: 10 }
+            ]
+            }
+        };
+
+        const res = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn()
+        };
+
+        const next = jest.fn();
+
+        jest.spyOn(MealService, "addFoodToMeal").mockResolvedValueOnce(99);
+        jest.spyOn(MealService, "updateFoodToMeal").mockResolvedValue();
+
+        await MealController.updateFoodsToMeal(req, res, next);
+
+        expect(MealService.addFoodToMeal).toHaveBeenCalledWith(3, 4);
+        expect(MealService.updateFoodToMeal).toHaveBeenCalledWith(10, 6);
+
+        expect(res.json).toHaveBeenCalledWith({
+            mealId: 3,
+            foods: [
+            { foodId: 4, mealFoodId: 99 },
+            { foodId: 6, mealFoodId: 10 }
+            ]
+        });
+
+        expect(next).not.toHaveBeenCalled();
+    });
+
+
     it("returns 400 if mealId or foods is missing", async () => {
         const req = { body: { mealId: 3 } }; // foods missing
         const res = {
@@ -265,7 +350,7 @@ describe("MealController.addFoodsToMeal", () => {
             json: jest.fn()
         };
         const next = jest.fn();
-        await MealController.addFoodsToMeal(req, res, next);
+        await MealController.updateFoodsToMeal(req, res, next);
         expect(res.status).toHaveBeenCalledWith(400);
         expect(res.json).toHaveBeenCalledWith({ error: "mealId and non-empty foods array are required" });
         expect(next).not.toHaveBeenCalled();
@@ -277,7 +362,8 @@ describe("MealController.addFoodsToMeal", () => {
             foods: [{
                 "foodId": 4,
                 "foodName": "taro milk tea",
-                "foodDescription": "how to make taro milk tea"
+                "foodDescription": "how to make taro milk tea",
+                "mealFoodId": -1
             }]
         }};
         const res = {
@@ -288,7 +374,7 @@ describe("MealController.addFoodsToMeal", () => {
         // Force the service to throw an error
         const mockError = new Error("DB error");
         jest.spyOn(MealService, "addFoodToMeal").mockRejectedValue(mockError);
-        await MealController.addFoodsToMeal(req, res, next);
+        await MealController.updateFoodsToMeal(req, res, next);
         expect(next).toHaveBeenCalledWith(mockError);
         expect(res.json).not.toHaveBeenCalled();
     });

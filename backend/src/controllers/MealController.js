@@ -51,7 +51,7 @@ async function getRelatedFoods(req, res, next) {
   }
 };
 
-async function addFoodsToMeal(req, res, next) {
+async function updateFoodsToMeal(req, res, next) {
   try {
     const { mealId, foods } = req.body;
     if (!mealId || !Array.isArray(foods) || foods.length === 0) {
@@ -59,26 +59,33 @@ async function addFoodsToMeal(req, res, next) {
     }
     const results = await Promise.all(
       foods.map(async (food) => {
-        const mealFoodId = await MealService.addFoodToMeal(mealId, food.foodId);
-        return { 
-          foodId: food.foodId,
-          mealFoodId
-        };
+        // If food.mealFoodId is -1, add a new meal food, otherwise, update existing meal food
+        if (food.mealFoodId === -1) {
+          const mealFoodId = await MealService.addFoodToMeal(mealId, food.foodId);
+          return { 
+            ...food,
+            mealFoodId: mealFoodId
+          };
+
+        } else {
+          await MealService.updateFoodToMeal(food.mealFoodId, food.foodId)
+          return food
+        }
       })
     );
     res.status(201).json({
       mealId,
-      addedFoods: results
+      foods: results
     })
   } catch (err) {
     next(err);
   }
-}
+};
 
 module.exports = {
     getMeals,
     createMeal,
     getMealTypes,
     getRelatedFoods,
-    addFoodsToMeal
+    updateFoodsToMeal
 };
