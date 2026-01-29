@@ -36,7 +36,7 @@ async function getMealTypes(req, res, next) {
   } catch (err) {
     next(err);
   }
-}
+};
 
 async function getRelatedFoods(req, res, next) {
   try {
@@ -49,11 +49,36 @@ async function getRelatedFoods(req, res, next) {
   } catch (err) {
     next(err);
   }
+};
+
+async function addFoodsToMeal(req, res, next) {
+  try {
+    const { mealId, foods } = req.body;
+    if (!mealId || !Array.isArray(foods) || foods.length === 0) {
+      return res.status(400).json({ error: "mealId and non-empty foods array are required"})
+    }
+    const results = await Promise.all(
+      foods.map(async (food) => {
+        const mealFoodId = await MealService.addFoodToMeal(mealId, food.foodId);
+        return { 
+          foodId: food.foodId,
+          mealFoodId
+        };
+      })
+    );
+    res.status(201).json({
+      mealId,
+      addedFoods: results
+    })
+  } catch (err) {
+    next(err);
+  }
 }
 
 module.exports = {
     getMeals,
     createMeal,
     getMealTypes,
-    getRelatedFoods
+    getRelatedFoods,
+    addFoodsToMeal
 };
