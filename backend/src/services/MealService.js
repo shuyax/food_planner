@@ -33,6 +33,23 @@ async function addFoodToMeal(mealId, foodId) {
     return mealFoodRows[0].id;
 };
 
+async function updateFoodToMeal(mealFoodId, foodId) {
+    let foodCost = 0;
+    try {
+        foodCost = await getFoodCurrentCostById(foodId);
+    } catch (err) {
+        console.log(err)
+    }
+    const { rows: mealFoodRows } = await pool.query(
+        `UPDATE meal_food
+        SET food_id = $1, cost = $2
+        WHERE id = $3
+        RETURNING id`,
+        [foodId, foodCost, mealFoodId]
+    );
+    return mealFoodRows[0].id;
+};
+
 async function updateMealFoodCost(id) {
     const { rows: rows } = await pool.query(
         `SELECT food_id FROM meal_food
@@ -111,5 +128,6 @@ module.exports = {
     updateMealFoodCost,
     getRelatedFoods,
     getMeals,
-    getMealTypes
+    getMealTypes,
+    updateFoodToMeal
 };

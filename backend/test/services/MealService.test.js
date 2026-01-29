@@ -6,7 +6,8 @@ const {
     updateMealFoodCost,
     getRelatedFoods,
     getMeals,
-    getMealTypes
+    getMealTypes,
+    updateFoodToMeal
 } = require('../../src/services/MealService');
 
 describe('meal post service', () => {
@@ -140,6 +141,28 @@ describe('meal put service', () => {
         const newCost = await updateMealFoodCost(mealFoodId);
         expect(newCost).toBeCloseTo(newPrice/(newPurchaseQuant / 453.592) * quantity);
     });
+
+    test('updateFoodToMeal update the food id and cost in the meal_food table', async () => {
+        const newFoodName = 'test';
+        const { rows:FoodRows } = await pool.query(
+            `INSERT INTO foods (name)
+            VALUES ($1)
+            RETURNING id`,
+            [newFoodName]
+        );
+        const newFoodId = FoodRows[0].id
+        const newMealFoodId = await updateFoodToMeal(mealFoodId, newFoodId)
+        const { rows: mealFoodRows } = await pool.query(
+            `SELECT *
+            FROM meal_food
+            WHERE id = $1`,
+            [newMealFoodId]
+        );
+        expect(mealFoodRows).not.toBeNull();
+        expect(mealFoodRows.length).toBe(1);
+        expect(mealFoodRows[0].food_id).toBe(newFoodId);
+        expect(Number(mealFoodRows[0].cost)).toBeCloseTo(0);
+    })
 });
 
 describe('meal get service', () => {
