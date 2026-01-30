@@ -415,3 +415,52 @@ describe("MealController.updateFoodsToMeal", () => {
         expect(res.json).not.toHaveBeenCalled();
     });
 });
+
+
+describe("MealController.deleteMeal", () => {
+    it("delete a meal from meals table and returns a mealId", async () => {
+        const req = { params: { mealId: 3 }};
+        const res = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+        };
+        const next = jest.fn();
+        jest.spyOn(MealService, "deleteMeal").mockResolvedValue(true);
+
+        await MealController.deleteMeal(req, res, next);
+
+        expect(MealService.deleteMeal).toHaveBeenCalledWith(3);
+        expect(res.status).toHaveBeenCalledWith(200);
+        expect(res.json).toHaveBeenCalledWith({ success: true, mealId: 3 });
+        expect(next).not.toHaveBeenCalled();
+    });
+
+    it("should return 400 if mealId is missing", async () => {
+        const req = { params: {  }};
+        const res = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+        };
+        const next = jest.fn();
+        await MealController.deleteMeal(req, res, next);
+
+        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.json).toHaveBeenCalledWith({ error: "mealId is required for deleting" });
+        expect(next).not.toHaveBeenCalled();
+    });
+
+    it("should call next if service throws an error", async () => {
+        const req = { params: { mealId: 3 }};
+        const res = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn(),
+        };
+        const next = jest.fn();
+        const mockError = new Error("DB error");
+        jest.spyOn(MealService, "deleteMeal").mockRejectedValue(mockError);
+        await MealController.deleteMeal(req, res, next);
+        expect(MealService.deleteMeal).toHaveBeenCalledWith(3);
+        expect(next).toHaveBeenCalledWith(mockError);
+        expect(res.json).not.toHaveBeenCalled();
+    });
+});

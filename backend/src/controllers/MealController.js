@@ -84,10 +84,24 @@ async function updateFoodsToMeal(req, res, next) {
   }
 };
 
+async function deleteMeal(req, res, next) {
+  try {
+    const { mealId } = req.params; 
+    if (!mealId) {
+      return res.status(400).json({ error: "mealId is required for deleting"})
+    }
+    const result = await MealService.deleteMeal(mealId);
+    res.status(200).json({ success: true, mealId });
+  } catch (err) {
+    next(err); // pass error to Express error handler
+  }
+}
+
 module.exports = {
     getMeals,
     createMeal,
     getMealTypes,
     getRelatedFoods,
-    updateFoodsToMeal
+    updateFoodsToMeal,
+    deleteMeal
 };
