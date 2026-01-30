@@ -21,7 +21,8 @@ function Calendar({
     onDateChange, // (date) => void (add mode)
     refreshTrigger,
     existingFoods,
-    updateMeal
+    updateMeal,
+    removeMeal
 }) {
     const [editingMeal, setEditingMeal] = useState(null);
     const [modalOpen, setModalOpen] = useState(false);
@@ -243,6 +244,7 @@ function Calendar({
             existingFoods={existingFoods} 
             meal={editingMeal} 
             updateMeal={(updatedMeal) => updateMeal(editingMeal.mealId, updatedMeal)} 
+            removeMeal={() => removeMeal(editingMeal.mealId)}
         />
         <FullCalendar
             plugins={[dayGridPlugin, interactionPlugin]}
