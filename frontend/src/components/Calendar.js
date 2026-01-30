@@ -2,7 +2,8 @@ import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import { useEffect, useState } from "react";
-import { fetchMeals } from "../services/MealService"
+import { fetchMeals, fetchRelatedFoods } from "../services/MealService"
+import { MealModal } from './MealModal';
 
 /**
  * Calendar component
@@ -18,9 +19,13 @@ function Calendar({
     selectedDate, // YYYY-MM-DD (required in add mode)
     onAddMeal, // (date) => void (browse mode)
     onDateChange, // (date) => void (add mode)
-    refreshTrigger 
+    refreshTrigger,
+    existingFoods,
+    updateMeal,
+    removeMeal
 }) {
-    // const [dateRange, setDateRange] = useState(getCurrentWeekRange());
+    const [editingMeal, setEditingMeal] = useState(null);
+    const [modalOpen, setModalOpen] = useState(false);
     const [events, setEvents] = useState([]);
 
     function getCurrentWeekRange() {
@@ -57,28 +62,60 @@ function Calendar({
     // if month view, show meal type only; otherwise, also display foods
     function renderMealEvent(arg) {
         const { type } = arg.view
-        const { title, extendedProps } = arg.event;
+        const { title, extendedProps, id } = arg.event;
         if (type === 'dayGridMonth') return <strong>{title}</strong>; 
-        return (
+
+        if (mode === 'browse') return (
           <>
             <strong>{title}</strong>
-            <ul className='meal-food'>
+            <ol className='meal-food'>
               {extendedProps.foods.map(food => (
                 <li key={food.foodId}>
                   {food.foodName}
                 </li>
               ))}
-            </ul>
+            </ol>
           </>
         );
+        if (mode === 'add') {
+            return (
+                <div
+                className="fc-event-main-btn"
+                onClick={() => {
+                    const mealEvent = events.find(e => e.id === id);
+                    if (!mealEvent) return; // safety check
+
+                    setEditingMeal({
+                        date: mealEvent.extendedProps.date,
+                        mealType: mealEvent.extendedProps.mealType,
+                        mealId: mealEvent.extendedProps.mealId,
+                        foods: mealEvent.extendedProps.foods ?? []
+                    });
+
+                    setModalOpen(true);
+                }}
+                >
+                <strong>{title}</strong>
+                <ol className='meal-food'>
+                {extendedProps.foods.map(food => (
+                    <li key={`${extendedProps.date}-${extendedProps.mealType}-${food.foodId}`} id={`${extendedProps.date}-${extendedProps.mealType}-${food.foodId}`}>
+                    {food.foodName}
+                    </li>
+                ))}
+                </ol>
+                </div>
+            );
+        }
     };
-
     function mapMealsToEvents(meals) {
-
+        console.log(meals)
         const events = [];
-        Object.entries(meals).forEach(([date, mealsByType]) => {
-            Object.entries(mealsByType).forEach(([mealType, foods]) => {
-            // Combine all food names into one string
+        meals.forEach(meal => {
+            const mealId = meal.meal_id
+            const mealType = meal.meal_type;
+            const date = meal.meal_date
+            const foods = meal.foods ?? [];
+
             events.push({
                 id: `${date}-${mealType}`,
                 title: mealType.toUpperCase(), // show meal type + foods
@@ -87,18 +124,20 @@ function Calendar({
                 backgroundColor: MEAL_COLORS[mealType] || "#94A3B8",
                 borderColor: MEAL_COLORS[mealType] || "#94A3B8",
                 extendedProps: {
+                    date,
+                    mealType,
+                    mealId,
                     foods: foods.map(f => ({
-                        foodId: f.food_id,
-                        foodName: f.food_name,
-                        description: f.food_description
-                    }
-                )),
-                order: MEAL_ORDER[mealType]
+                            foodId: f.food_id,
+                            foodName: f.name,
+                            description: f.description,
+                            mealFoodId: f.meal_food_id
+                        }
+                    )),
+                    order: MEAL_ORDER[mealType]
                 }
-            });
-            });
-        });
-        console.log(events)
+            })
+        })
         return events;
     };
 
@@ -110,7 +149,14 @@ function Calendar({
         const endStr = end.toISOString().slice(0, 10);
         try {
             const meals = await fetchMeals(start, endStr);
-            setEvents(mapMealsToEvents(meals));
+            const mealFoods = await Promise.all(meals.map(async meal => {
+                const relatedFoods = await fetchRelatedFoods(meal.meal_id)
+                return{
+                    ...meal,
+                    foods: relatedFoods
+                }
+            }))
+            setEvents(mapMealsToEvents(mealFoods));
         } catch (err) {
             console.error("Failed to fetch meals:", err);
             setEvents([]);
@@ -126,7 +172,14 @@ function Calendar({
         (async () => {
             try {
                 const meals = await fetchMeals(selectedDate, selectedDate);
-                setEvents(mapMealsToEvents(meals));
+                const mealFoods = await Promise.all(meals.map(async meal => {
+                    const relatedFoods = await fetchRelatedFoods(meal.meal_id)
+                    return{
+                        ...meal,
+                        foods: relatedFoods
+                    }
+                }))
+                setEvents(mapMealsToEvents(mealFoods));
             } catch (err) {
                 console.error("Failed to fetch meals:", err);
                 setEvents([]);
@@ -184,30 +237,40 @@ function Calendar({
     };
 
     
-    return (<FullCalendar
-        plugins={[dayGridPlugin, interactionPlugin]}
-        initialView={mode === "add" ? "dayGridDay" : "dayGridWeek"}
-        initialDate={mode === "add" ? selectedDate : getCurrentWeekRange.startDate} 
-        headerToolbar={mode === "add" ? {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridDay'
-        }:{
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,dayGridWeek,dayGridDay'
-        }}
-        selectable={mode === "browse"}              // ✅ enable selection
-        selectMirror={mode === "browse"}             // shows the selection visually
-        select={handleSelect}          // handler when user selects
-        datesSet={handleDatesSet}
-        dateClick={handleDateClick}
-        events={events}
-        height="auto"
-        eventContent={renderMealEvent}
-        eventOrder="extendedProps.order"
-        dayCellContent={renderDayCell} // <-- add button in each day cell
-    />);
+    return (<>
+        <MealModal
+            open={modalOpen && editingMeal != null}
+            onClose={() => setModalOpen(false)}
+            existingFoods={existingFoods} 
+            meal={editingMeal} 
+            updateMeal={(updatedMeal) => updateMeal(editingMeal.mealId, updatedMeal)} 
+            removeMeal={() => removeMeal(editingMeal.mealId)}
+        />
+        <FullCalendar
+            plugins={[dayGridPlugin, interactionPlugin]}
+            initialView={mode === "add" ? "dayGridDay" : "dayGridWeek"}
+            initialDate={mode === "add" ? selectedDate : getCurrentWeekRange.startDate} 
+            headerToolbar={mode === "add" ? {
+                left: '',
+                center: 'title',
+                right: ''
+            }:{
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,dayGridWeek,dayGridDay'
+            }}
+            selectable={mode === "browse"}              // ✅ enable selection
+            selectMirror={mode === "browse"}             // shows the selection visually
+            select={handleSelect}          // handler when user selects
+            datesSet={handleDatesSet}
+            dateClick={handleDateClick}
+            events={events}
+            height="auto"
+            eventContent={renderMealEvent}
+            eventOrder="extendedProps.order"
+            dayCellContent={renderDayCell} // <-- add button in each day cell
+        />
+    </>);
 };
 
 export default Calendar;

@@ -1,45 +1,50 @@
-import { createMeal, fetchMealTypes } from "../services/MealService";
+import { createMeal } from "../services/MealService";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { MealTypeList } from "../components/MealTypeList";
-import { FoodRow } from "../components/FoodRow";
 import { fetchFoods } from "../services/FoodService";
+import { deleteMeal } from "../services/MealService";
 import { useSearchParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import Calendar from "../components/Calendar";
 import { useState } from "react";
-import "./AddMealForm.css"
 
 function AddMealForm() {
 
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const mealDate = searchParams.get("date");
+
     const defaultMeal = {
+        mealId: -1,
         mealDate: mealDate,
         mealType: '',
         foods: []
     }
     const [meals, setMeals] = useState([defaultMeal]);
     const [calendarRefresh, setCalendarRefresh] = useState(0); // trigger calendar update
-    const [submitted, setSubmitted] = useState(false)
 
-    const { data: mealTypesData,
-        isLoading: mealTypesIsLoading,
-        error: mealTypesError } = useQuery({
-        queryKey: ["mealTypes"],
-        queryFn: fetchMealTypes
-    });
+    // fetch all existing foods
     const { data: foodData,
         isLoading: foodIsLoading,
         error: foodError } = useQuery({
         queryKey: ["foods"],
         queryFn: fetchFoods
     });
+
     const createMealMutation = useMutation({
-        mutationFn: ({ mealType, mealDate, foods }) =>
-            createMeal(mealType, mealDate, foods),
-        onSuccess: (data) => {
-            console.log("Meal created:" , data);
+        mutationFn: ({ mealType, mealDate}) =>
+            createMeal(mealType, mealDate),
+        onSuccess: (data, variables) => {
+            const { mealType, mealDate } = variables;
+            console.log("Meal created:" , data, "for", mealType, "on", mealDate);
+            const newMeal = {
+                mealId: data,
+                mealType,
+                mealDate,
+                foods: []
+            };
+            setMeals(prev => [...prev, newMeal]);
+            setCalendarRefresh((prev) => prev + 1);
         },
         onError: (error) => {
             console.error("Failed to create meal:", error);
@@ -47,84 +52,58 @@ function AddMealForm() {
         }
     })
 
+    const deleteMealMutation = useMutation({
+        mutationFn: (mealId) => deleteMeal(mealId), // your backend API call
+        onSuccess: (_, mealId) => {
+            // queryClient.invalidateQueries(["meals"]); // refresh meals list
+            console.log("Meal deleted:", mealId);
+        },
+        onError: (err) => {
+            console.error("Failed to delete meal:", err);
+            alert("Failed to delete meal.");
+        }
+    });
+
+
     if (!mealDate) return <p>WARNING: You cannot add a meal without a date.</p>;
-    if ( mealTypesIsLoading) return <p>Meal Types Loading ...</p>;
-    if ( mealTypesError) return <p>Meal Types Error: {mealTypesError.message}</p>;
+
     if ( foodIsLoading) return <p>Foods Loading ...</p>;
     if ( foodError) return <p>Foods Error: {foodError.message}</p>;
 
-    function addMeal() {
-        setMeals(prev => [...prev, { ...defaultMeal}]);
-    };
-
-    function updateMeal(index, updatedMeal) {
-        setMeals(prev => prev.map((row, i) => i === index ? updatedMeal : row))
-    };
-
-    function removeMeal(index) {
-        setMeals(prev => prev.filter((_, i) => i !== index));
-    };
-
-    function mergeMeals(meals) {
-        const mealMap = new Map();
-        for (const meal of meals) {
-            const foods = meal.foods.filter((food) => food.foodId !== -1)
-            const hasMealType = meal.mealType.trim() !== "";
-
-            if (!hasMealType && foods.length > 0) {
-                // Rule 1: meal type empty + foods exist → alert & stop
-                alert("Please select a meal type before submitting.");
-                return;
-            } else if (!hasMealType && foods.length === 0) {
-                // Rule 2: meal type empty + no foods → skip (delete)
-                continue
-            }
-            // Rule 3: merge by mealType
-            if (!mealMap.has(meal.mealType)) {
-                mealMap.set(meal.mealType, {
-                    ...meal,
-                    foods: [...foods]
-                });
-            } else {
-                mealMap.get(meal.mealType).foods.push(...foods);
-            }
-        }
-        return Array.from(mealMap.values());
-    };
-
-    async function handleSave() {
-        const mergedMeals = mergeMeals(meals);
-        if (mergedMeals.length === 0) {
-            alert("Nothing to save.");
+    async function AddMeal(mealType) {
+        if (!mealType || !mealDate) {
+            alert('Must select a valid meal type')
             return;
         }
-        // update UI state so it matches what will be saved
-        setMeals(mergedMeals);
-
         try {
-            await Promise.all(
-                mergedMeals.map(meal =>
-                    createMealMutation.mutateAsync({
-                        mealType: meal.mealType,
-                        mealDate: meal.mealDate,
-                        foods: meal.foods
-                    })
-                )
-            );
-
-            console.log("Meals saved successfully!");
-            // Reset form to initial state
-            setMeals([defaultMeal]);
-            setCalendarRefresh((prev) => prev + 1);
-            setSubmitted(true)
+            await createMealMutation.mutateAsync({
+                mealType: mealType,
+                mealDate: mealDate,
+            });
+            console.log("Meal creation triggered!");
         } catch (err) {
-            alert("Failed to save meals.");
+            console.error("Failed to create meal:", err);
         }
+    }
+
+
+    function updateMeal(mealId, updatedMeal) {
+        setMeals(prev => prev.map(row => row.mealId === mealId ? updatedMeal : row))
+        setCalendarRefresh((prev) => prev + 1);
     };
 
-    function handleMealCancel() {
-        setMeals([defaultMeal]);
-        navigate(`/`)
+    async function removeMeal(mealId) {
+        try {
+            // Wait for backend to delete the meal first
+            await deleteMealMutation.mutateAsync(mealId);
+            // Update local state after deletion succeeds
+            setMeals(prev => prev.filter(meal => meal.mealId !== mealId));
+            // Trigger calendar refresh
+            setCalendarRefresh(prev => prev + 1);
+        } catch (err) {
+            console.error("Failed to delete meal:", err);
+            alert("Failed to delete meal.");
+        }
     };
 
     return (<div className="meal-form">
@@ -135,20 +114,12 @@ function AddMealForm() {
                 navigate(`/add-meal?date=${newDate}`)
             }
             refreshTrigger={calendarRefresh}
+            existingFoods={foodData}
+            updateMeal={(mealId, updatedFood) => updateMeal(mealId, updatedFood)}
+            removeMeal={(mealId) => removeMeal(mealId)}
         />
-        {meals.map((meal, index) => (<div className="meal-row" key={`meal-row-${index}`}>
-            <p>-------------------------------------------------------------------------------------------------------------------</p>
-            <MealTypeList mealTypes={mealTypesData} mealIndex={index} meal={meal} updateMeal={(updatedMeal) => updateMeal(index, updatedMeal)} /> 
-            <FoodRow existingFoods={foodData} mealIndex={index} meal={meal} updateMeal={(updatedMeal) => updateMeal(index, updatedMeal)} />
-            <button className="remove-meal-btn" type="button" onClick={() => removeMeal(index)}>Delete Meal</button>
-            <p>-------------------------------------------------------------------------------------------------------------------</p>
-        </div>))}
-        
-        <button id="add-meal" type="button" onClick={addMeal}>Add Meal</button>
-        <br />
-        <button id="meal-save" onClick={handleSave} disabled={createMealMutation.isPending}>SAVE</button>
-        {submitted ? <button id="meal-back" onClick={() => {navigate(`/`)}}>BACK TO HOME</button> : <button id="meal-cancel" onClick={handleMealCancel}>CANCEL</button>}
-    </div>);
+        <MealTypeList AddMeal={(mealType) => AddMeal(mealType)} /> 
+      </div>);
 };
 
 export default AddMealForm;

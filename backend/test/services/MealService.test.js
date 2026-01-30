@@ -6,7 +6,10 @@ const {
     updateMealFoodCost,
     getRelatedFoods,
     getMeals,
-    getMealTypes
+    getMealTypes,
+    updateFoodToMeal,
+    deleteFoodFromMeal,
+    deleteMeal
 } = require('../../src/services/MealService');
 
 describe('meal post service', () => {
@@ -140,6 +143,28 @@ describe('meal put service', () => {
         const newCost = await updateMealFoodCost(mealFoodId);
         expect(newCost).toBeCloseTo(newPrice/(newPurchaseQuant / 453.592) * quantity);
     });
+
+    test('updateFoodToMeal update the food id and cost in the meal_food table', async () => {
+        const newFoodName = 'test';
+        const { rows:FoodRows } = await pool.query(
+            `INSERT INTO foods (name)
+            VALUES ($1)
+            RETURNING id`,
+            [newFoodName]
+        );
+        const newFoodId = FoodRows[0].id
+        const newMealFoodId = await updateFoodToMeal(mealFoodId, newFoodId)
+        const { rows: mealFoodRows } = await pool.query(
+            `SELECT *
+            FROM meal_food
+            WHERE id = $1`,
+            [newMealFoodId]
+        );
+        expect(mealFoodRows).not.toBeNull();
+        expect(mealFoodRows.length).toBe(1);
+        expect(mealFoodRows[0].food_id).toBe(newFoodId);
+        expect(Number(mealFoodRows[0].cost)).toBeCloseTo(0);
+    })
 });
 
 describe('meal get service', () => {
@@ -280,10 +305,10 @@ describe('meal get service', () => {
         expect(meal.length).toBe(1);
     });
 
-    test('getMeals returns meals with  meal_id, meal_type, meal_date, food_id, meal_food_id, food_name, food_description in selected date range ordered by date, and meal type,food name', async () => {
+    test('getMeals returns meals with  meal_id, meal_type, meal_date in selected date range ordered by date, and meal type', async () => {
         const meals = await getMeals('2025-12-01','2025-12-31');
         expect(meals).not.toBeNull();
-        expect(meals.length).toBe(3);
+        expect(meals.length).toBe(2);
         expect(meals[0].meal_date.toISOString().split("T")[0]).toBe('2025-12-05');
         expect(meals[0].meal_type).toBe('dinner');
     });
@@ -294,6 +319,58 @@ describe('meal get service', () => {
         expect(mealTypes.length).toBe(5);
     });
 });
+
+
+describe('meal delete service', () => {
+    let foodId, mealId, mealFoodId;
+    const foodName = 'stir fry bok choy';
+    const foodDescription = 'spicy stir fry bok choy with garlic';
+    const mealType = 'dinner';
+    const mealDate = '2025-12-5';
+    beforeAll(async () => {
+        // create meal
+        mealId = await createMeal(mealType, mealDate);
+        // create foods
+        const { rows } = await pool.query(
+            `INSERT INTO foods (name, description)
+            VALUES ($1, $2)
+            RETURNING id`,
+            [foodName, foodDescription]
+        );
+        foodId = rows[0].id;
+        // create meal food
+        mealFoodId = await addFoodToMeal(mealId, foodId)
+    });
+    afterAll(async () => {
+        await pool.query(`DELETE FROM foods`);
+        await pool.query(`DELETE FROM meals`);
+    });
+
+    test('deleteFoodFromMeal detach a food from a meal by deleting a mealFoodRow returns meal_food id', async () => {
+        const deletedMealFoodId = await deleteFoodFromMeal(mealFoodId);
+        const { rows: mealFoodRows } = await pool.query(
+            `SELECT *
+            FROM meal_food
+            WHERE id=$1`,
+            [deletedMealFoodId]
+        );
+        expect(mealFoodRows).not.toBeNull();
+        expect(mealFoodRows.length).toBe(0);
+    })
+
+    test('deleteMeal deletes a meal from meals table and returns mealId', async () => {
+        const deletedMealId = await deleteMeal(mealId)
+        const { rows: mealRows } = await pool.query(
+            `SELECT *
+            FROM meals
+            WHERE id=$1`,
+            [deletedMealId]
+        );
+        expect(mealRows).not.toBeNull();
+        expect(mealRows.length).toBe(0);
+    })
+});
+
 afterAll(async () => {
   await pool.end();
 });

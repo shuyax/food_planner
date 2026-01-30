@@ -1,56 +1,34 @@
-import { useState } from "react";
+export function FoodRow( { existingFoods, food, updateFood, mealDate, mealType, removeFood } ) {
 
-export function FoodRow( { existingFoods, mealIndex, meal, updateMeal } ) {
-
-    function handleMealChange(e, index) {
-        const food = existingFoods.find(
+    function handleFoodChange(e) {
+        const selected = existingFoods.find(
             i => i.name === e.target.value
         );
-        if (!food) return;
+        if (!selected) return;
         const updatedFood = {
-            foodId: food.id,
-            foodName: food.name,
-            foodDescription: food.description
+            ...food,
+            foodId: selected.id,
+            foodName: selected.name,
+            description: selected.description
         }
-        updateMeal ({
-            ...meal,
-            foods: meal.foods.map((f, i) => i === index ? updatedFood : f)
-        })
+        updateFood(updatedFood)
     };
 
-    function handleAddFood() {
-        updateMeal ({
-            ...meal,
-            foods: [...meal.foods, { foodId: -1, foodName: "", foodDescription: "" }]
-        })
-    };
-
-    function removeFood(index) {
-        updateMeal ({
-            ...meal,
-            foods: meal.foods.filter((_, i) => i !== index)
-        })
-    };
-
-
-
-    return (<ol className="food-list">
-        {meal.foods.map((food, index) => (<li key={index}>
-            <label htmlFor={`food-${mealIndex}-${index}`}>Food: </label>
-            <select name={`food-${mealIndex}-${index}`} 
-                id={`food-${mealIndex}-${index}`} 
+    return (<>
+        <li key={`${mealDate}-${mealType}-${food.foodId}`}>
+            <label htmlFor={`${mealDate}-${mealType}-${food.foodId}`}></label>
+            <select name={`${mealDate}-${mealType}-${food.foodId}`} 
+                id={`${mealDate}-${mealType}-${food.foodId}`} 
                 value={food.foodName ?? ""} 
-                onChange={(e) => handleMealChange(e, index)}
+                onChange={(e) => handleFoodChange(e)}
             >
                 <option value="">-- Select a food --</option>
                 {existingFoods.map((food, i) => (
-                    <option key={`food-${mealIndex}-${index}-${i}`} value={food.name}>{food.name}</option>   
+                    <option key={`${mealDate}-${mealType}-${food.foodId}-${i}`} value={food.name}>{food.name}</option>   
                 ))}
             </select>
-            <button id={`food-remove-${mealIndex}-${index}`} className="remove-food-btn" type="button" onClick={() => removeFood(index)}>✕</button>
-        </li>))}
-        
-        {meal.mealType !== '' && <button id="add-food" type="button" onClick={handleAddFood} >Add Food</button>}
-    </ol>)
+            <button id={`remove-${mealDate}-${mealType}-${food.foodId}`} className="remove-food-btn" type="button" onClick={removeFood}>✕</button>
+        </li>
+    </>)
 };
 

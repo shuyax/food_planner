@@ -18,19 +18,12 @@ async function getMeals(req, res, next) {
 
 async function createMeal(req, res, next) {
   try {
-    const { type, date, foods } = req.body;
+    const { type, date } = req.body;
     if (!type || !date) {
       return res.status(400).json({ error: "meal type and meal date are required"})
     }
     const mealId = await MealService.createMeal(type, date)
-    let mealFoodIdList = [];
-    if (foods && foods.length !== 0) {
-      for (const food of foods) {
-        const mealFoodId = await MealService.addFoodToMeal(mealId, food.foodId)
-        mealFoodIdList.push(mealFoodId)
-      }
-    }
-    res.json({ mealId, mealFoodIds: mealFoodIdList })
+    res.json(mealId)
   } catch (err) {
     next(err);
   }
@@ -43,10 +36,72 @@ async function getMealTypes(req, res, next) {
   } catch (err) {
     next(err);
   }
+};
+
+async function getRelatedFoods(req, res, next) {
+  try {
+    const { mealId } = req.params;
+    if (!mealId) {
+      return res.status(400).json({ error: "mealId param is required" });
+    }
+    const relatedFoods = await MealService.getRelatedFoods(mealId)
+    res.json(relatedFoods)
+  } catch (err) {
+    next(err);
+  }
+};
+
+async function updateFoodsToMeal(req, res, next) {
+  try {
+    const { mealId, foods } = req.body;
+    if (!mealId || !Array.isArray(foods) || foods.length === 0) {
+      return res.status(400).json({ error: "mealId and non-empty foods array are required"})
+    }
+    const results = await Promise.all(
+      foods.map(async (food) => {
+        // If food.mealFoodId is -1, add a new meal food, otherwise, update existing meal food
+        if (food.mealFoodId === -1) {
+          const mealFoodId = await MealService.addFoodToMeal(mealId, food.foodId);
+          return { 
+            ...food,
+            mealFoodId: mealFoodId
+          };
+        } else if (food.foodId === -1 && food.mealFoodId !== -1) {
+          await MealService.deleteFoodFromMeal(food.mealFoodId)
+          return
+        } else {
+          await MealService.updateFoodToMeal(food.mealFoodId, food.foodId)
+          return food
+        }
+      })
+    );
+    res.status(201).json({
+      mealId,
+      foods: results
+    })
+  } catch (err) {
+    next(err);
+  }
+};
+
+async function deleteMeal(req, res, next) {
+  try {
+    const { mealId } = req.params; 
+    if (!mealId) {
+      return res.status(400).json({ error: "mealId is required for deleting"})
+    }
+    const result = await MealService.deleteMeal(mealId);
+    res.status(200).json({ success: true, mealId });
+  } catch (err) {
+    next(err); // pass error to Express error handler
+  }
 }
 
 module.exports = {
     getMeals,
     createMeal,
-    getMealTypes
+    getMealTypes,
+    getRelatedFoods,
+    updateFoodsToMeal,
+    deleteMeal
 };

@@ -35,7 +35,7 @@ const mealRoutes = require("./routes/meal");
 app.use("/meals", mealRoutes);
 
 app.use((err, req, res, next) => {
-    console.error(err);
+    console.error("🔥 ERROR STACK:", err.stack);
     res.status(err.status || 500).json({
         error: err.message || "Internal Server Error"
     });

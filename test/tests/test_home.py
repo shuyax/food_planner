@@ -227,7 +227,7 @@ def test_meal_type_and_foodname_loaded_in_week_view(driver):
         try:
             title = meal_cell.find_element(By.TAG_NAME, "strong").text.strip().upper()
             meal_titles.append(title)
-            food_name = meal_cell.find_element(By.XPATH, ".//div").text.strip()
+            food_name = meal_cell.find_element(By.XPATH, ".//li").text.strip()
             meal_foods.append((title, food_name))
         except:
             meal_foods.append((title, None))

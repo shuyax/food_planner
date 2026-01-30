@@ -33,6 +33,23 @@ async function addFoodToMeal(mealId, foodId) {
     return mealFoodRows[0].id;
 };
 
+async function updateFoodToMeal(mealFoodId, foodId) {
+    let foodCost = 0;
+    try {
+        foodCost = await getFoodCurrentCostById(foodId);
+    } catch (err) {
+        console.log(err)
+    }
+    const { rows: mealFoodRows } = await pool.query(
+        `UPDATE meal_food
+        SET food_id = $1, cost = $2
+        WHERE id = $3
+        RETURNING id`,
+        [foodId, foodCost, mealFoodId]
+    );
+    return mealFoodRows[0].id;
+};
+
 async function updateMealFoodCost(id) {
     const { rows: rows } = await pool.query(
         `SELECT food_id FROM meal_food
@@ -50,6 +67,28 @@ async function updateMealFoodCost(id) {
         )
     return foodCost;
 }
+
+// delete service
+async function deleteFoodFromMeal(mealFoodId) {
+    const { rows: mealFoodRows } = await pool.query(
+        `DELETE FROM meal_food
+        WHERE id = $1
+        RETURNING id`,
+        [mealFoodId]
+    );
+    return mealFoodRows[0].id;
+};
+
+async function deleteMeal(mealId) {
+    const { rows: mealRows } = await pool.query(
+        `DELETE FROM meals
+        WHERE id = $1
+        RETURNING id`,
+        [mealId]
+    );
+    return mealRows[0].id;
+}
+
 
 // get service
 async function getRelatedFoods(mealId) {
@@ -82,15 +121,11 @@ async function getMealById(id) {
 
 async function getMeals(startDate, endDate) {
     const { rows: mealRows } = await pool.query(
-        `SELECT m.id AS meal_id, m.type AS meal_type, m.date AS meal_date, mf.food_id AS food_id, mf.id AS meal_food_id, f.name AS food_name, f.description AS food_description
-        FROM meals m
-        LEFT JOIN meal_food mf
-        ON m.id = mf.meal_id
-        LEFT JOIN foods f
-        ON mf.food_id = f.id
-        WHERE m.date >= $1
-        AND m.date <= $2
-        ORDER BY m.date, m.type, f.name`,
+        `SELECT id AS meal_id, type AS meal_type, date AS meal_date
+        FROM meals
+        WHERE date >= $1
+        AND date <= $2
+        ORDER BY date, type`,
         [startDate, endDate]
     );
     return mealRows;
@@ -115,5 +150,8 @@ module.exports = {
     updateMealFoodCost,
     getRelatedFoods,
     getMeals,
-    getMealTypes
+    getMealTypes,
+    updateFoodToMeal,
+    deleteFoodFromMeal,
+    deleteMeal
 };
