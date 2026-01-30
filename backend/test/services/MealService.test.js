@@ -7,7 +7,8 @@ const {
     getRelatedFoods,
     getMeals,
     getMealTypes,
-    updateFoodToMeal
+    updateFoodToMeal,
+    deleteFoodFromMeal
 } = require('../../src/services/MealService');
 
 describe('meal post service', () => {
@@ -317,6 +318,46 @@ describe('meal get service', () => {
         expect(mealTypes.length).toBe(5);
     });
 });
+
+
+describe('meal delete service', () => {
+    let foodId, mealId, mealFoodId;
+    const foodName = 'stir fry bok choy';
+    const foodDescription = 'spicy stir fry bok choy with garlic';
+    const mealType = 'dinner';
+    const mealDate = '2025-12-5';
+    beforeAll(async () => {
+        // create meal
+        mealId = await createMeal(mealType, mealDate);
+        // create foods
+        const { rows } = await pool.query(
+            `INSERT INTO foods (name, description)
+            VALUES ($1, $2)
+            RETURNING id`,
+            [foodName, foodDescription]
+        );
+        foodId = rows[0].id;
+        // create meal food
+        mealFoodId = await addFoodToMeal(mealId, foodId)
+    });
+    afterAll(async () => {
+        await pool.query(`DELETE FROM foods`);
+        await pool.query(`DELETE FROM meals`);
+    });
+
+    test('deleteFoodFromMeal detach a food from a meal by deleting a mealFoodRow returns meal_food id', async () => {
+        const deletedMealFoodId = await deleteFoodFromMeal(mealFoodId);
+        const { rows: mealFoodRows } = await pool.query(
+            `SELECT *
+            FROM meal_food
+            WHERE id=$1`,
+            [deletedMealFoodId]
+        );
+        expect(mealFoodRows).not.toBeNull();
+        expect(mealFoodRows.length).toBe(0);
+    })
+});
+
 afterAll(async () => {
   await pool.end();
 });

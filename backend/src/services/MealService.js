@@ -68,6 +68,18 @@ async function updateMealFoodCost(id) {
     return foodCost;
 }
 
+// delete service
+async function deleteFoodFromMeal(mealFoodId) {
+    const { rows: mealFoodRows } = await pool.query(
+        `DELETE FROM meal_food
+        WHERE id = $1
+        RETURNING id`,
+        [mealFoodId]
+    );
+    return mealFoodRows[0].id;
+}
+
+
 // get service
 async function getRelatedFoods(mealId) {
     const { rows: mealFoodRows } =  await pool.query(
@@ -129,5 +141,6 @@ module.exports = {
     getRelatedFoods,
     getMeals,
     getMealTypes,
-    updateFoodToMeal
+    updateFoodToMeal,
+    deleteFoodFromMeal
 };
