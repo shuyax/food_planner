@@ -66,7 +66,9 @@ async function updateFoodsToMeal(req, res, next) {
             ...food,
             mealFoodId: mealFoodId
           };
-
+        } else if (food.foodId === -1 && food.mealFoodId !== -1) {
+          await MealService.deleteFoodFromMeal(food.mealFoodId)
+          return
         } else {
           await MealService.updateFoodToMeal(food.mealFoodId, food.foodId)
           return food

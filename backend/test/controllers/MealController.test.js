@@ -264,6 +264,42 @@ describe("MealController.updateFoodsToMeal", () => {
         expect(next).not.toHaveBeenCalled();
     });
 
+    it("delete an existing food meal_food in table", async () => {
+        const req = {
+            body: {
+                mealId: 3,
+                foods: [{
+                    "foodId": -1,
+                    "foodName": "",
+                    "foodDescription": "",
+                    "mealFoodId": 1
+                }]
+            }
+        };
+        const res = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn()
+        };
+        const next = jest.fn();
+        // Mock MealService methods
+        jest.spyOn(MealService, "deleteFoodFromMeal").mockResolvedValue(1)
+
+        await MealController.updateFoodsToMeal(req, res, next);
+        // Verify createMeal called
+        expect(MealService.deleteFoodFromMeal).toHaveBeenCalled();
+        expect(MealService.deleteFoodFromMeal).toHaveBeenCalledWith(1);
+        // Verify response
+        const mockResult = {
+            mealId: 3,
+            foods: []
+        };
+        expect(res.status).toHaveBeenCalledWith(201);
+        expect(res.json).toHaveBeenCalledWith(mockResult);
+
+        // next should not be called
+        expect(next).not.toHaveBeenCalled();
+    });
+
     it("update an existing food meal_food in table", async () => {
         const req = {
             body: {
