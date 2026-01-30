@@ -8,7 +8,8 @@ const {
     getMeals,
     getMealTypes,
     updateFoodToMeal,
-    deleteFoodFromMeal
+    deleteFoodFromMeal,
+    deleteMeal
 } = require('../../src/services/MealService');
 
 describe('meal post service', () => {
@@ -355,6 +356,18 @@ describe('meal delete service', () => {
         );
         expect(mealFoodRows).not.toBeNull();
         expect(mealFoodRows.length).toBe(0);
+    })
+
+    test('deleteMeal deletes a meal from meals table and returns mealId', async () => {
+        const deletedMealId = await deleteMeal(mealId)
+        const { rows: mealRows } = await pool.query(
+            `SELECT *
+            FROM meals
+            WHERE id=$1`,
+            [deletedMealId]
+        );
+        expect(mealRows).not.toBeNull();
+        expect(mealRows.length).toBe(0);
     })
 });
 
