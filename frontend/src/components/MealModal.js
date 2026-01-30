@@ -1,8 +1,6 @@
 import "./MealModal.css"
 import { useEffect, useState } from "react";
 import { FoodRow } from './FoodRow';
-import { useMutation} from "@tanstack/react-query";
-import { updateFoodsToMeal } from "../services/MealService";
 
 // components/MealModal.jsx
 export function MealModal({ open, onClose, meal, existingFoods, updateMeal, removeMeal }) {
@@ -19,18 +17,6 @@ export function MealModal({ open, onClose, meal, existingFoods, updateMeal, remo
             setLocalMeal(meal);
         }
     }, [meal]);
-
-    const updateFoodsToMealMutation = useMutation({
-        mutationFn: ({ mealId, foods}) =>
-            updateFoodsToMeal(mealId, foods),
-        onSuccess: (data) => {
-            console.log("Foods updated to a meal" , data);
-        },
-        onError: (error) => {
-            console.error("Failed to update foods to a meal:", error);
-            alert("Failed to update foods to a meal.");
-        }
-    })
 
     if (!open || !meal || !localMeal) return null;
 
@@ -51,15 +37,6 @@ export function MealModal({ open, onClose, meal, existingFoods, updateMeal, remo
         }
         if (!localMeal.mealId || !localMeal.foods) {
             alert('MealId and non-empty foods are required.')
-        }
-        try {
-            await updateFoodsToMealMutation.mutateAsync({
-                mealId: localMeal.mealId,
-                foods: localMeal.foods,
-            });
-            console.log("Meal-food update triggered!");
-        } catch (err) {
-            console.error("Failed to update foods to a meal:", err);
         }
         updateMeal(localMeal)
         onClose();
@@ -108,10 +85,10 @@ export function MealModal({ open, onClose, meal, existingFoods, updateMeal, remo
                         removeFood={() => removeFood(food.mealFoodId)} 
                         /> 
                     }
-                }) : <>No food exists in this meal.<ul>You can: 
-                        <li>Click the <strong>Add Food</strong> button to add food</li> 
-                        <li>Click the <strong>Delete Meal</strong> button to delete this meal.</li>
-                    </ul></>}
+                }) : <>No food exists in this meal.<br />You can: 
+                        <br />Click the <strong>Add Food</strong> button to add food
+                        <br />Click the <strong>Delete Meal</strong> button to delete this meal.
+                    </>}
             </ol> 
             {localMeal.foods?.length !== 0 && <button type="submit" id="foods-save" onClick={handleDoneBtn}>Done</button>}
         </div>
