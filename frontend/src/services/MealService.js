@@ -8,22 +8,14 @@ export async function fetchMeals(startDate, endDate) {
       enddate: endDate
     }
   });
-  const result = res.data.reduce((acc, meal) => {
-    const dateKey = meal.meal_date.split('T')[0];// 'YYYY-MM-DD'
-    if (!acc[dateKey]) acc[dateKey] = {};
-    if (!acc[dateKey][meal.meal_type]) acc[dateKey][meal.meal_type] = [];
-    acc[dateKey][meal.meal_type].push(meal)
-    return acc
-  },{});
-  console.log(result);
-  return result
+  console.log(res.data)
+  return res.data
 };
 
-export async function createMeal(mealType, mealDate, foods) {
+export async function createMeal(mealType, mealDate) {
   const res = await axios.post(`${BASEURL}/meals`, {
     type: mealType,
-    date: mealDate,
-    foods: foods
+    date: mealDate
   });
   console.log(res.data)
   return res.data
@@ -34,3 +26,19 @@ export async function fetchMealTypes() {
   console.log(res.data)
   return res.data
 };
+
+export async function fetchRelatedFoods(mealId) {
+  const res = await axios.get(`${BASEURL}/meals/${mealId}/foods`);
+  console.log(res.data)
+  return res.data
+}
+
+
+export async function updateFoodsToMeal(mealId, foods) {
+  const res = await axios.post(`${BASEURL}/meals/update-foods`, {
+    mealId: mealId,
+    foods: foods
+  });
+  console.log(res.data)
+  return res.data
+}
