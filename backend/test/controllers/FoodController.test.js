@@ -93,3 +93,116 @@ describe("FoodController.addImageToFood", () => {
     expect(next).not.toHaveBeenCalled();
   });
 });
+
+describe("FoodController.addIngredientsToFood", () => {
+  let req, res, next;
+
+  beforeEach(() => {
+    res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    };
+    next = jest.fn();
+    jest.clearAllMocks();
+  });
+
+  it("adds ingredients to food and returns 201", async () => {
+    req = {
+      body: {
+        foodId: 10,
+        ingredients: [
+          {
+            ingredientId: 1,
+            quantity: 2,
+            unitId: 5,
+            note: "chopped"
+          },
+          {
+            ingredientId: 2,
+            quantity: 0,
+            unitId: -1,
+            note: ""
+          }
+        ]
+      }
+    };
+
+    jest
+      .spyOn(FoodService, "addIngredientToFood")
+      .mockResolvedValueOnce(101)
+      .mockResolvedValueOnce(102);
+
+    await FoodController.addIngredientsToFood(req, res, next);
+    // Service calls
+    expect(FoodService.addIngredientToFood).toHaveBeenCalledTimes(2);
+    expect(FoodService.addIngredientToFood).toHaveBeenNthCalledWith(1,10,1,2,5,"chopped");
+
+    expect(FoodService.addIngredientToFood).toHaveBeenNthCalledWith(2,10,2,null,null, null);
+
+    // Response
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.json).toHaveBeenCalledWith({
+      foodId: 10,
+      ingredients: [
+        {
+          ingredientId: 1,
+          quantity: 2,
+          unitId: 5,
+          note: "chopped",
+          foodIngredientId: 101
+        },
+        {
+          ingredientId: 2,
+          quantity: 0,
+          unitId: -1,
+          note: "",
+          foodIngredientId: 102
+        }
+      ]
+    });
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it("returns 400 if foodId or ingredients are missing", async () => {
+    req = {
+      body: {
+        foodId: null,
+        ingredients: []
+      }
+    };
+
+    await FoodController.addIngredientsToFood(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      error: "foodId and ingredients are required"
+    });
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it("calls next if FoodService throws an error", async () => {
+    req = {
+      body: {
+        foodId: 10,
+        ingredients: [
+          {
+            ingredientId: 1,
+            quantity: 1,
+            unitId: 2,
+            note: null
+          }
+        ]
+      }
+    };
+
+    const mockError = new Error("DB failure");
+    jest
+      .spyOn(FoodService, "addIngredientToFood")
+      .mockRejectedValue(mockError);
+
+    await FoodController.addIngredientsToFood(req, res, next);
+
+    expect(next).toHaveBeenCalledWith(mockError);
+    expect(res.status).not.toHaveBeenCalled();
+  });
+});

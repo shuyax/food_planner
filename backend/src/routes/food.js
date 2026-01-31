@@ -5,5 +5,6 @@ const FoodController = require("../controllers/FoodController");
 router.get("/", FoodController.getFoods);
 router.post("/", FoodController.createFood);
 router.put('/add-image', FoodController.addImageToFood)
+router.post("/add-ingredients", FoodController.addIngredientsToFood);
 
 module.exports = router;
