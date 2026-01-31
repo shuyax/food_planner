@@ -31,10 +31,10 @@ def test_add_ingredient_with_related_fields(driver):
         EC.presence_of_element_located((By.ID, 'ingredient-save'))
     )
     assert save_btn.is_displayed(), "Save button is not visible"
-    cancel_btn = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.ID, 'ingredient-cancel'))
+    back_btn = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, 'ingredient-back'))
     )
-    assert cancel_btn.is_displayed(), "Cancel button is not visible"
+    assert back_btn.is_displayed(), "Cancel button is not visible"
 
 
 def test_add_ingredient_with_uppercase_name(driver):
@@ -108,11 +108,23 @@ def test_add_ingredient_save_btn(driver):
     assert save_btn.get_attribute("disabled") == 'true', "Save button should be disabled when ingredient name is empty"
 
     # Interact with the inputs
-    ingredient_name_input.send_keys("Tomato")
+    ingredient_name_input.send_keys("ground beef")
     ingredient_name_output = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.ID, 'ingredient-name-input'))
     )
     assert save_btn.get_attribute("disabled") == None, "Save button should be enabled when ingredient name is not empty"
+    canonical_unit_select = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, 'canonical-unit'))
+    )
+    select = Select(canonical_unit_select)
+    select.select_by_visible_text("pound (lb)") 
+    save_btn.click()
+    # test ingredient created successfully
+    note = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, 'ingredient-form-note'))
+    )
+    assert "ground beef" in note.text
+
 
 
 def  test_add_ingredient_unit_select(driver):
@@ -132,3 +144,14 @@ def  test_add_ingredient_unit_select(driver):
     select = Select(canonical_unit_select)
     select.select_by_visible_text("piece (pcs)") 
     assert canonical_unit_select.get_attribute("value") == "piece"
+
+def test_back_button(driver):
+    driver.get(add_ingredient_url)
+    cancel_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, 'ingredient-back'))
+    )
+    cancel_btn.click()
+    WebDriverWait(driver, 10).until(
+        lambda d: "/add-ingredient" not in d.current_url
+    )
+    assert driver.current_url == BASE_URL + "/", "Back button should navigate back to the home page"
