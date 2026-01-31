@@ -24,6 +24,33 @@ describe("FoodController.createFood", () => {
     });
     expect(next).not.toHaveBeenCalled();
   });
+
+  it("returns 400 if fodd name is missing", async () => {
+          const req = { body: {} }; // date missing
+          const res = {
+              status: jest.fn().mockReturnThis(),
+              json: jest.fn()
+          };
+          const next = jest.fn();
+          await FoodController.createFood(req, res, next);
+          expect(res.status).toHaveBeenCalledWith(400);
+          expect(res.json).toHaveBeenCalledWith({ error: "Name is required" });
+          expect(next).not.toHaveBeenCalled();
+      });
+  
+      it("calls next if there is an error", async () => {
+          const req = { body: { name: "Rice" } };
+          const res = {
+              status: jest.fn().mockReturnThis(),
+              json: jest.fn()
+          };
+          const next = jest.fn();
+          // Force the service to throw an error
+          const mockError = new Error("DB error");
+          FoodService.createFood = jest.fn().mockRejectedValue(mockError);
+          await FoodController.createFood(req, res, next);
+          expect(next).toHaveBeenCalledWith(mockError);
+      });
 });
 
 describe("FoodController.addImageToFood", () => {
