@@ -6,3 +6,13 @@ export async function fetchIngredients() {
     console.log(res.data)
     return res.data
 }
+
+export async function createIngredient(ingredientName, canonicalUnitId = null) {
+  const res = await axios.post(`${BASEURL}/ingredients`, {
+    name: ingredientName,
+    canonicalUnitId: canonicalUnitId
+  });
+  console.log(res.data)
+  return res.data
+};
+
