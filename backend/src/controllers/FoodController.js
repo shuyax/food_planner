@@ -16,12 +16,8 @@ async function createFood(req, res, next) {
         if (!name) {
             return res.status(400).json({ error: "Name is required" });
         }
-        const id = await FoodService.createFood(name, description);
-        res.status(201).json({
-            id,
-            name,
-            description
-        });
+        const foodId = await FoodService.createFood(name, description);
+        res.status(201).json(foodId);
     } catch (err) {
         next(err);
     }
