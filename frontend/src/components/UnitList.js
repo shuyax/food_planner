@@ -8,12 +8,22 @@ function UnitList({ selectedUnit, setSelectedUnit }) {
     })
     if (isLoading) return <p>Loading units...</p>;
     if (error) return <p>Error loading units: {error.message}</p>;
+
+    function handleOnChange(e) {
+        const flattened = Object.values(data).flat();
+        const selected = flattened.find(
+            i => i.name === e.target.value
+        );
+        if (!selected) return;
+        setSelectedUnit(selected)
+    }
+
     return (<>
         <label htmlFor="canonical-unit">Ingredient Unit: </label>
         <select name="canonical-unit" 
             id="canonical-unit" 
-            value={selectedUnit} 
-            onChange={(e) => setSelectedUnit(e.target.value)}
+            value={selectedUnit.name} 
+            onChange={(e) => handleOnChange(e)}
         >
             <option value="">-- Select a unit --</option>
             {Object.keys(data).map(unitType => (
