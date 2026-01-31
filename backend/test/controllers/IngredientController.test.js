@@ -34,3 +34,61 @@ describe("IngredientController.getIngredients", () => {
     expect(res.json).not.toHaveBeenCalled();
   });
 });
+
+describe("IngredientController.createIngredient", () => {
+    it("creates an ingredient and returns an ingredientId", async () => {
+        const req = {
+            body: {
+                name: "tomato", 
+                canonicalUnitId: 6
+            }
+        };
+        const res = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn()
+        };
+        const next = jest.fn();
+        // Mock the service to return an IngredientId
+        const mockIngredientId = 42;
+        // Mock IngredientService methods
+        jest.spyOn(IngredientService, "createIngredient").mockResolvedValue(mockIngredientId);
+        await IngredientController.createIngredient(req, res, next);
+        // Verify createIngredient called
+        expect(IngredientService.createIngredient).toHaveBeenCalledWith("tomato", 6);
+        // Verify response
+        expect(res.json).toHaveBeenCalledWith(mockIngredientId);
+
+        // next should not be called
+        expect(next).not.toHaveBeenCalled();
+    });
+
+    it("returns 400 if name is missing", async () => {
+        const req = { body: {} }; 
+        const res = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn()
+        };
+        const next = jest.fn();
+        await IngredientController.createIngredient(req, res, next);
+        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.json).toHaveBeenCalledWith({ error: "Ingredient name is required" });
+        expect(next).not.toHaveBeenCalled();
+    });
+
+    it("calls next if there is an error", async () => {
+        const req = { body: {
+                name: "tomato", 
+                canonicalUnitId: 6
+            } };
+        const res = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn()
+        };
+        const next = jest.fn();
+        // Force the service to throw an error
+        const mockError = new Error("DB error");
+        IngredientService.createIngredient = jest.fn().mockRejectedValue(mockError);
+        await IngredientController.createIngredient(req, res, next);
+        expect(next).toHaveBeenCalledWith(mockError);
+    });
+});
