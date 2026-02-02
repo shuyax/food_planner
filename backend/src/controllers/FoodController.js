@@ -16,12 +16,8 @@ async function createFood(req, res, next) {
         if (!name) {
             return res.status(400).json({ error: "Name is required" });
         }
-        const id = await FoodService.createFood(name, description);
-        res.status(201).json({
-            id,
-            name,
-            description
-        });
+        const foodId = await FoodService.createFood(name, description);
+        res.status(201).json(foodId);
     } catch (err) {
         next(err);
     }
@@ -49,8 +45,46 @@ async function addImageToFood(req, res, next) {
     }
 };
 
+// post service
+async function addIngredientsToFood(req, res, next) {
+    try {
+        const {foodId, ingredients} = req.body;
+        if (!foodId || !Array.isArray(ingredients) || ingredients.length === 0) {
+            return res.status(400).json({ error: "foodId and ingredients are required" });
+        };
+        const results = await Promise.all(
+            ingredients.map(async ingredient => {
+                let quantity = ingredient.quantity
+                let unitId = ingredient.unitId
+                let note = ingredient.note
+                if (unitId === -1) {
+                    unitId = null
+                }
+                if (quantity === 0) {
+                    quantity = null
+                }
+                if (note === "") {
+                    note = null
+                }
+                const foodIngredientId = await FoodService.addIngredientToFood(foodId, ingredient.ingredientId, quantity, unitId, note)
+                return { 
+                    ...ingredient,
+                    foodIngredientId: foodIngredientId
+                };
+            })
+        )
+        res.status(201).json({
+            foodId,
+            ingredients: results
+        });
+    }catch (err) {
+        next(err);
+    }
+}
+
 module.exports = {
     getFoods,
     createFood,
-    addImageToFood
+    addImageToFood,
+    addIngredientsToFood
 };

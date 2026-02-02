@@ -23,9 +23,16 @@ function IngredientRow({ ingredientIndex, row, existingIngredients, updateRow, r
         })
     };
 
+    const handleNoteChange = (e) => {
+        updateRow({
+            ...row,
+            note: e.target.value
+        })
+    };
 
-    return (<div className="ingredient-row">
-        <label htmlFor={`ingredient-${ingredientIndex}`}>Ingredient: </label>
+
+    return (<li className="ingredient-row">
+        <label htmlFor={`ingredient-${ingredientIndex}`} />
         <select name={`ingredient-${ingredientIndex}`} 
             id={`ingredient-${ingredientIndex}`}
             value={row?.ingredientName ?? ""} 
@@ -44,12 +51,20 @@ function IngredientRow({ ingredientIndex, row, existingIngredients, updateRow, r
             min="0"
             value={row.quantity}
             onChange={handleQuantityChange}/>
-            {row.ingredientUnitName} ({row.ingredientUnitAbbreviation})</label>
+            {row.ingredientUnitName} {row.ingredientUnitAbbreviation !== row.ingredientUnitName && <>({row.ingredientUnitAbbreviation})</>}</label>
+            <label htmlFor={`ingredient-note-${ingredientIndex}`}>Note:</label>
+            <textarea 
+            id={`ingredient-note-${ingredientIndex}`}
+            name={`ingredient-note-${ingredientIndex}`}
+            autoCorrect="on"
+            value={row.note}
+            onChange={(e) => handleNoteChange(e)}
+            ></textarea>
             {removeRow && (
-                <button className="remove-btn" type="button" onClick={removeRow}>✕</button>
+                <button id={`remove-btn-${ingredientIndex}`} className="remove-btn" type="button" onClick={removeRow}>✕</button>
             )}
         </>}
-    </div>)
+    </li>)
 }
 
 export default IngredientRow

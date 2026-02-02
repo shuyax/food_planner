@@ -1,0 +1,10 @@
+#ingredients-edit, #ingredients-browse {
+    text-align: left;
+}
+.ingredient-row {
+    gap: 5%
+}
+
+#food-description {
+    white-space: pre-wrap;
+}
