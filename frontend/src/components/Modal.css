@@ -1,0 +1,33 @@
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 10000;
+}
+
+.modal {
+  background: white;
+  max-width: 500px;
+  margin: 10vh auto;
+  padding: 16px;
+  border-radius: 8px;
+}
+
+.modal > .ingredient-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.modal > .ingredient-form > * {
+  margin: 2%;
+}
+.modal > .ingredient-form > label {
+  text-align: start;
+  display: flex;
+  gap: 5%;
+}
+
+.modal > .ingredient-form > label > input, select {
+  flex: 1;
+  min-width: 0;  
+}

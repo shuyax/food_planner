@@ -18,8 +18,8 @@ function UnitList({ selectedUnit, setSelectedUnit }) {
         setSelectedUnit(selected)
     }
 
-    return (<>
-        <label htmlFor="canonical-unit">Ingredient Unit: </label>
+    return (
+        <label htmlFor="canonical-unit"><span>Ingredient Unit: {" "}</span>
         <select name="canonical-unit" 
             id="canonical-unit" 
             value={selectedUnit.name} 
@@ -33,8 +33,7 @@ function UnitList({ selectedUnit, setSelectedUnit }) {
                     ))}
                 </optgroup>
             ))}
-        </select>
-    </>)
+        </select></label>)
 }
 
 export default UnitList

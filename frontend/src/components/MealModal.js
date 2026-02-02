@@ -1,4 +1,4 @@
-import "./MealModal.css"
+import "./Modal.css"
 import { useEffect, useState } from "react";
 import { FoodRow } from './FoodRow';
 
