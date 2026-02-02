@@ -6,6 +6,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import Select, WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from conftest import BASE_URL
+import time
 
 add_food_url = f'{BASE_URL}/add-food'
 def test_add_food_with_related_fields(driver):
@@ -210,3 +211,76 @@ def test_back_button(driver):
     assert driver.current_url == BASE_URL + "/", "Back button should navigate back to the home page"
 
 
+def test_create_ingredient_btn(driver):
+    driver.get(add_food_url)
+    food_name_input = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, 'food-name-input'))
+    )
+    food_name_input.send_keys("strawberry yogurt")
+    save_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, 'food-save'))
+    )
+    save_btn.click()
+    enable_ingredients_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, 'enable-ingredients'))
+    )
+    enable_ingredients_btn.click()
+    add_ingredient_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, 'add-ingredient'))
+    )
+    ingredient_0_select = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, 'ingredient-0'))
+    )
+    select_0 = Select(ingredient_0_select)
+    select_0.select_by_visible_text("yogurt") 
+    unit_quantity_input_0 = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, "quantity-0"))
+    )
+    unit_quantity_input_0.clear()
+    unit_quantity_input_0.send_keys(3)
+    add_ingredient_btn.click()
+    ingredient_1_select = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, 'ingredient-1'))
+    )
+    ingredient_1_options = ingredient_1_select.find_elements(By.TAG_NAME, "option")
+    options = []
+    for option in ingredient_1_options:
+        options.append(option.get_attribute("value"))
+    assert "strawberry" not in options, "Strawberry should not be an existing ingredient"
+    create_ingredient_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, 'create-ingredient'))
+    )
+    create_ingredient_btn.click()
+    ingredient_modal = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.CLASS_NAME, 'modal'))
+    )
+    ingredient_name_input = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, 'ingredient-name-input'))
+    )
+    ingredient_name_input.send_keys("strawberry")
+    ingredient_unit_select = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, 'canonical-unit'))
+    )
+    Select(ingredient_unit_select).select_by_visible_text("piece (pcs)") 
+    modal_save_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, 'ingredient-save'))
+    )
+    modal_save_btn.click()
+    ingredient_creation_status = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, 'ingredient-form-note'))
+    )
+    assert ingredient_creation_status.text == 'Ingredient strawberry created successfully!', "The ingredient should be created successfully"
+    backdrop = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.CLASS_NAME, "modal-backdrop"))
+    )
+    backdrop.click()
+    ingredient_1_select = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, 'ingredient-1'))
+    )
+    ingredient_1_options = ingredient_1_select.find_elements(By.TAG_NAME, "option")
+    updated_options = []
+    for option in ingredient_1_options:
+        updated_options.append(option.get_attribute("value"))
+    assert 'strawberry' in updated_options, "Strawberry should be an existing ingredient"
+    assert len(updated_options) == len(options) + 1, "Should have one more ingredient option"
+    

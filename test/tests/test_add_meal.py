@@ -67,7 +67,9 @@ def test_update_food_to_existing_meal(driver):
     WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.XPATH, "//li"))
     )
-    meal_food_li_element = dinner_event_div.find_element(By.XPATH, "//li")
+    meal_food_li_element = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.XPATH, "//li[text()='spicy sour noodle']"))
+    )
     assert meal_food_li_element.text == "spicy sour noodle", "The updated food should be displayed on the calendar"
 
 
