@@ -5,6 +5,7 @@ import { useQuery, useMutation  } from "@tanstack/react-query";
 import { createFood, addIngredientsToFood } from "../services/FoodService";
 import { useNavigate } from "react-router-dom";
 import "./AddFoodForm.css"
+import { IngredientModal } from "../components/IngredientModal";
 
 function AddFoodForm( {} ) {
    const defaultFood = {
@@ -28,6 +29,7 @@ function AddFoodForm( {} ) {
     const [enableIngredient, setEnableIngredient] = useState(false)
     const [errorNote, setErrorNote] = useState("")
     const [ingredientsAdded, setIngredientsAdded] = useState(false)
+    const [modalOpen, setModalOpen] = useState(false);
     const navigate = useNavigate();
 
     // load all existing ingredients
@@ -146,12 +148,17 @@ function AddFoodForm( {} ) {
         
     }
 
-    return(<div className="food-form">
-        <h1>Food</h1>
+    return(<>
+    <IngredientModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)} 
+    />
+    <div className="food-form">
         {foodCreated ? <>
         <h2 id="food-name">{food.foodName.toUpperCase()}</h2>
         <p id="food-description">{food.foodDescription}</p>
         </> : <>
+        <h1>Food</h1>
         <label htmlFor="food-name-input">Food Name: </label>
         <input type="text" 
             id="food-name-input" 
@@ -174,7 +181,8 @@ function AddFoodForm( {} ) {
         {foodCreated && !ingredientsAdded && <div id="ingredients-section-edit">
             {!enableIngredient ? <button id="enable-ingredients" onClick={() => setEnableIngredient(true)}>Add Ingredients To Food</button> : <>
             <h3 id="ingredient-title">Ingredients</h3>
-            <button id="add-ingredient" type="button" onClick={addIngredient}>Add Ingredient</button>
+            <button id="add-ingredient" type="button" onClick={addIngredient}>Add An Ingredient</button>
+            <button id="create-ingredient" type="button" onClick={() => setModalOpen(true)}>Create An Ingredient</button>
             <ol id="ingredients-edit">
                 {ingredients.map((row, index) => (<IngredientRow key={index} ingredientIndex={index} row={row} existingIngredients={data} updateRow={((updatedIngredientRow) => updateIngredientRow(index, updatedIngredientRow))} removeRow={() => removeIngredientRow(index)} />))}
             </ol>
@@ -188,7 +196,7 @@ function AddFoodForm( {} ) {
         </ol></div>}
         <br />
         <button id="food-back" onClick={() => navigate(`/`)}>Back</button>
-    </div>)
+    </div></>)
 }
 
 
