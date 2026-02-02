@@ -214,6 +214,11 @@ def test_meal_type_and_foodname_loaded_in_week_view(driver):
         )
     )
     assert day_cell.is_displayed(), "day_cell should be visible"
+    WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located(
+            (By.CLASS_NAME, "meal-food")
+        )
+    )
     # Get all events inside this frame
     events = day_cell.find_elements(By.XPATH, ".//div[contains(@class,'fc-daygrid-day-events')]//a[contains(@class,'fc-event')]")
     assert len(events) == 5, "There should be 5 meal types on the target day"

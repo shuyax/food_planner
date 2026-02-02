@@ -13,21 +13,21 @@
   border-radius: 8px;
 }
 
-.modal > .ingredient-form {
+.ingredient-form {
   display: flex;
   flex-direction: column;
 }
 
-.modal > .ingredient-form > * {
+.ingredient-form > * {
   margin: 2%;
 }
-.modal > .ingredient-form > label {
+.ingredient-form > label {
   text-align: start;
   display: flex;
   gap: 5%;
 }
 
-.modal > .ingredient-form > label > input, select {
+.ingredient-form > label > input, select {
   flex: 1;
   min-width: 0;  
 }
