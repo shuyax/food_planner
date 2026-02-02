@@ -88,7 +88,7 @@ async function getFood(req, res, next) {
         if (!foodId) {
             return res.status(400).json({ error: "FoodId is required" });
         }
-        const foodData = await FoodService.getFoodById(foodId);
+        const foodData = await FoodService.getFoodById(parseInt(foodId));
         if (!foodData) {
             return res.status(404).json({ error: "Food not found" });
         }
