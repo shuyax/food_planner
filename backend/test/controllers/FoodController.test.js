@@ -206,3 +206,105 @@ describe("FoodController.addIngredientsToFood", () => {
     expect(res.status).not.toHaveBeenCalled();
   });
 });
+
+describe("FoodController.getAllFoods", () => {
+  it("should return an array of foods", async () => {
+    const req = {};
+    const res = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn()
+    };
+    const next = jest.fn();
+    const mockFoods = [
+      { foodId: 1, foodName: "Pizza", foodDescription: "Cheesy" },
+      { foodId: 2, foodName: "Salad", foodDescription: "Healthy" }
+    ];
+    jest.spyOn(FoodService, "getAllFoods").mockResolvedValue(mockFoods);
+    await FoodController.getFoods(req, res, next);
+    expect(res.json).toHaveBeenCalledWith(mockFoods);
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(Array.isArray(res.json.mock.calls[0][0])).toBe(true);
+  });
+
+  it("should return empty array if no foods", async () => {
+    const req = {};
+    const res = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn()
+    };
+    const next = jest.fn();
+    jest.spyOn(FoodService, "getAllFoods").mockResolvedValue([]);
+    await FoodController.getFoods(req, res, next);
+    expect(res.json).toHaveBeenCalledWith([]);
+    expect(res.status).toHaveBeenCalledWith(200);
+  });
+
+  it("should call next(err) if service throws an error", async () => {
+    const req = {};
+    const res = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn()
+    };
+    const next = jest.fn();
+    const error = new Error("Database failure");
+    jest.spyOn(FoodService, "getAllFoods").mockRejectedValue(error);
+    await FoodController.getFoods(req, res, next);
+    expect(next).toHaveBeenCalledWith(error);
+    expect(res.json).not.toHaveBeenCalled();
+    expect(res.status).not.toHaveBeenCalled();
+  });
+});
+
+describe("FoodController.getFood with foodId", () => {
+  it("should return 400 if no foodId is provided", async () => {
+    const req = { params: {} };
+    const res = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn()
+    };
+    const next = jest.fn();
+    await FoodController.getFood(req, res, next);
+    expect(res.status).toHaveBeenCalledWith(400); // Express will 404 route not found
+  });
+
+  it("should return 404 if food not found", async () => {
+    const req = { params: { foodId: "3" } }
+    const res = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn()
+    };
+    const next = jest.fn();
+    jest.spyOn(FoodService, "getFoodById").mockResolvedValue(null);
+    await FoodController.getFood(req, res, next);
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.json).toHaveBeenCalledWith({ error: "Food not found" });
+  });
+
+  it("should return 200 and food data if found", async () => {
+    const req = { params: { foodId: "1" } }
+    const res = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn()
+    };
+    const next = jest.fn();
+    const mockFood = { foodId: 1, foodName: "Pizza", foodDescription: "Cheesy" };
+    jest.spyOn(FoodService, "getFoodById").mockResolvedValue(mockFood);
+    await FoodController.getFood(req, res, next);
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(mockFood);
+  });
+
+  it("should call next() if an error occurs", async () => {
+      const req = { params: { foodId: "3" } };
+      const res = {
+          status: jest.fn().mockReturnThis(),
+          json: jest.fn()
+      };
+      const next = jest.fn();
+      const error = new Error("Database failure");
+      jest.spyOn(FoodService, "getFoodById").mockRejectedValue(error);
+      await FoodController.getFood(req, res, next);
+      expect(next).toHaveBeenCalledWith(error);
+      expect(res.json).not.toHaveBeenCalled();
+  });
+});

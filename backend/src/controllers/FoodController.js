@@ -3,7 +3,7 @@ const FoodService = require("../services/FoodService");
 async function getFoods(req, res, next) {
   try {
     const foods = await FoodService.getAllFoods();
-    res.json(foods);
+    res.status(200).json(foods);
   } catch (err) {
     next(err);
   }
@@ -82,8 +82,25 @@ async function addIngredientsToFood(req, res, next) {
     }
 }
 
+async function getFood(req, res, next) {
+    try {
+        const { foodId } = req.params;
+        if (!foodId) {
+            return res.status(400).json({ error: "FoodId is required" });
+        }
+        const foodData = await FoodService.getFoodById(foodId);
+        if (!foodData) {
+            return res.status(404).json({ error: "Food not found" });
+        }
+        res.status(200).json(foodData); // 200 for GET success
+    } catch (err) {
+        next(err);
+    }
+}
+
 module.exports = {
     getFoods,
+    getFood,
     createFood,
     addImageToFood,
     addIngredientsToFood
