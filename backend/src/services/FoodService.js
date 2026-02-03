@@ -96,7 +96,7 @@ async function getFoodByName(name) {
 
 async function getRelatedIngredientsByFoodId(foodId) {
     const { rows } = await pool.query(
-        `SELECT ingredient_id, quantity, unit_id
+        `SELECT id, ingredient_id, quantity, unit_id, note
         FROM food_ingredient 
         WHERE food_id=$1 
         ORDER BY ingredient_id`,
@@ -106,7 +106,9 @@ async function getRelatedIngredientsByFoodId(foodId) {
         rows.map(async row => {
             const ingredient = await getIngredientById(row.ingredient_id);
             return {
+                id: row.id,
                 ingredient: ingredient,
+                note: row.note,
                 quantity: Number(row.quantity)
             };
         })

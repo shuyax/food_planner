@@ -178,6 +178,7 @@ describe('food get service', () => {
     let price1 = 21.99, purchaseQuant1 = 1.4 * 453.592, unit1Id = 1;
     let price2 = 1.85, purchaseQuant2 = 16, unit2Id = 6;
     let price3 = 8.51, purchaseQuant3 = 1.705 * 453.592, unit3Id = 1;
+    let foodIngredient1Id, foodIngredient2Id, foodIngredient3Id;
 
 
     beforeAll(async () => {
@@ -207,9 +208,9 @@ describe('food get service', () => {
         );
         const [ingredient1Id, ingredient2Id, ingredient3Id] = ingredientRows.map(r => r.id);
 
-        const foodIngredient1Id = await addIngredientToFood(food1Id, ingredient1Id, quantity1, canonicalUnit1Id);
-        const foodIngredient2Id = await addIngredientToFood(food1Id, ingredient2Id, quantity2, canonicalUnit2Id);
-        const foodIngredient3Id = await addIngredientToFood(food2Id, ingredient3Id, quantity3, canonicalUnit3Id);
+        foodIngredient1Id = await addIngredientToFood(food1Id, ingredient1Id, quantity1, canonicalUnit1Id);
+        foodIngredient2Id = await addIngredientToFood(food1Id, ingredient2Id, quantity2, canonicalUnit2Id);
+        foodIngredient3Id = await addIngredientToFood(food2Id, ingredient3Id, quantity3, canonicalUnit3Id);
 
         // create location
         const { rows: locationRows } = await pool.query(
@@ -286,6 +287,10 @@ describe('food get service', () => {
         expect(relatedIngredients[0].ingredient.name).toBe(ingredient1);
         expect(relatedIngredients[1].ingredient.name).toBe(ingredient2);
         expect(typeof relatedIngredients[0].quantity).toBe('number');
+        expect(relatedIngredients[0].note).toBeNull();
+        expect(relatedIngredients[1].note).toBeNull();
+        expect(relatedIngredients[0].id).toBe(foodIngredient1Id);
+        expect(relatedIngredients[1].id).toBe(foodIngredient2Id);
         expect(typeof relatedIngredients[1].quantity).toBe('number');
         expect(relatedIngredients[0].ingredient.canonical_unit_id).toBe(canonicalUnit1Id);
         expect(relatedIngredients[1].ingredient.canonical_unit_id).toBe(canonicalUnit2Id);
