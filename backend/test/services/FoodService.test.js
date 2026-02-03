@@ -8,7 +8,8 @@ const {
     getRelatedIngredientsByFoodId,
     addImageToFood,
     getAllFoods,
-    getAllImagesByFoodId
+    getAllImagesByFoodId,
+    updateFood
 } = require('../../src/services/FoodService');
 
 describe('food post service', () => {
@@ -161,6 +162,25 @@ describe('food put service', () => {
         expect(foodIngredientRows[1].created_at).toBeDefined();
         expect(foodIngredientRows[1].updated_at).toBeDefined();
         await pool.query(`DELETE FROM ingredients`);
+    });
+
+    test('updateFood updates an existing food', async () => {
+        const newFood = {
+            id: foodId,
+            name: 'beef cheese udon#',
+            description: "how to cook beef cheese udon"
+        }
+        await updateFood(newFood);
+        const { rows: foodRows } = await pool.query(
+            `SELECT *
+            FROM foods 
+            WHERE id=$1`,
+            [foodId]
+        );
+        expect(foodRows).not.toBeNull();
+        expect(foodRows.length).toBe(1);
+        expect(foodRows[0].name).toBe('beef cheese udon#');
+        expect(foodRows[0].description).toBe('how to cook beef cheese udon');
     });
 });
 

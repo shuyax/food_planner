@@ -14,8 +14,15 @@ async function createFood(name, description = null) {
 
     return rows[0].id;
 };
-
-// put service
+async function addIngredientToFood(foodId, ingredientId, quantity, unitId, note=null) {
+    const { rows } = await pool.query(
+        `INSERT INTO food_ingredient (food_id, ingredient_id, quantity, unit_id, note)
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING id`,
+        [foodId, ingredientId, quantity, unitId, note]
+    );
+    return rows[0].id;
+};
 async function addImageToFood(foodId, url, alt=null) {
     const { rows } = await pool.query(
         `INSERT INTO food_images (food_id, url, alt)
@@ -26,15 +33,21 @@ async function addImageToFood(foodId, url, alt=null) {
     return rows[0].id;
 };
 
-async function addIngredientToFood(foodId, ingredientId, quantity, unitId, note=null) {
+
+// put service
+async function updateFood(updatedFood) {
     const { rows } = await pool.query(
-        `INSERT INTO food_ingredient (food_id, ingredient_id, quantity, unit_id, note)
-        VALUES ($1, $2, $3, $4, $5)
+        `UPDATE foods 
+        SET name = $1, description =$2
+        WHERE id = $3
         RETURNING id`,
-        [foodId, ingredientId, quantity, unitId, note]
+        [updatedFood.name, updatedFood.description, updatedFood.id]
     );
+
     return rows[0].id;
-};
+}
+
+
 
 // get service
 async function getFoodIdByName(name) {
@@ -127,6 +140,7 @@ module.exports = {
     getFoodByName,
     getFoodById,
     createFood,
+    updateFood,
     addIngredientToFood,
     getRelatedIngredientsByFoodId,
     addImageToFood,
