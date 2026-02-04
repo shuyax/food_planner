@@ -11,7 +11,6 @@ function IngredientRow({ ingredientIndex, row, existingIngredients, updateRow, r
             ingredientUnitId: ingredient.canonical_unit_id,
             ingredientUnitName: ingredient.canonical_unit,
             ingredientUnitAbbreviation: ingredient.canonical_unit_abbreviation,
-            foodIngredientId: ingredient.foodIngredientId || -1,
             note: ingredient.note || "",
             quantity: ingredient.quantity || 0
         });
