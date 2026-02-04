@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import "./AddFoodForm.css"
 import { IngredientModal } from "../components/IngredientModal";
 
-function AddFoodForm( {} ) {
+function AddFoodForm( {visibleBackButton = true} ) {
    const defaultFood = {
         foodId: -1,
         foodName: "",
@@ -20,6 +20,7 @@ function AddFoodForm( {} ) {
         ingredientUnitId: -1,
         ingredientUnitName: "",
         ingredientUnitAbbreviation: "",
+        foodIngredientId: -1,
         quantity: 0,
         note: ""
     };
@@ -195,7 +196,7 @@ function AddFoodForm( {} ) {
             ))}
         </ol></div>}
         <br />
-        <button id="food-back" onClick={() => navigate(`/`)}>Back</button>
+        {visibleBackButton && <button id="food-back" onClick={() => navigate(`/`)}>Back</button>}
     </div></>)
 }
 
