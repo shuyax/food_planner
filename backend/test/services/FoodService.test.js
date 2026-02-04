@@ -8,7 +8,9 @@ const {
     getRelatedIngredientsByFoodId,
     addImageToFood,
     getAllFoods,
-    getAllImagesByFoodId
+    getAllImagesByFoodId,
+    updateFood,
+    updateFoodIngredient
 } = require('../../src/services/FoodService');
 
 describe('food post service', () => {
@@ -162,6 +164,62 @@ describe('food put service', () => {
         expect(foodIngredientRows[1].updated_at).toBeDefined();
         await pool.query(`DELETE FROM ingredients`);
     });
+
+    test('updateFood updates an existing food', async () => {
+        const newFood = {
+            id: foodId,
+            name: 'beef cheese udon#',
+            description: "how to cook beef cheese udon"
+        }
+        await updateFood(newFood);
+        const { rows: foodRows } = await pool.query(
+            `SELECT *
+            FROM foods 
+            WHERE id=$1`,
+            [foodId]
+        );
+        expect(foodRows).not.toBeNull();
+        expect(foodRows.length).toBe(1);
+        expect(foodRows[0].name).toBe('beef cheese udon#');
+        expect(foodRows[0].description).toBe('how to cook beef cheese udon');
+    });
+
+    test('updateFoodIngredient update food_ingredient table', async () => {
+        const ingredient1 = 'pork', canonicalUnit1Id = 16, quantity1 = 0.4;
+        const ingredient2 = 'spam', canonicalUnit2Id = 7, quantity2 = 6;
+        // create ingredients and add to food
+        const { rows: ingredientRows } = await pool.query(
+            `INSERT INTO ingredients(name, canonical_unit_id)
+            VALUES ($1, $2), ($3, $4)
+            RETURNING id`,
+            [ingredient1, canonicalUnit1Id, ingredient2, canonicalUnit2Id]
+        );
+        const [ingredient1Id, ingredient2Id] = ingredientRows.map(r => r.id);
+        const foodIngredientId = await addIngredientToFood(foodId, ingredient1Id, quantity1, canonicalUnit1Id, note="ground pork")
+        const newFoodIngredient = {
+            "ingredientId": ingredient2Id,
+            "ingredientName": ingredient2,
+            "ingredientUnitId": canonicalUnit2Id,
+            "ingredientUnitName": "slice",
+            "ingredientUnitAbbreviation": "slice",
+            "foodIngredientId": foodIngredientId,
+            "note": "less sault spam",
+            "quantity": quantity2
+        }
+        await updateFoodIngredient(newFoodIngredient)
+        const { rows: foodIngredientRows } = await pool.query(
+            `SELECT *
+            FROM food_ingredient 
+            WHERE id=$1`,
+            [foodIngredientId]
+        );
+        expect(foodIngredientRows).not.toBeNull();
+        expect(foodIngredientRows.length).toBe(1);
+        expect(foodIngredientRows[0].ingredient_id).toBe(ingredient2Id);
+        expect(Number(foodIngredientRows[0].quantity)).toBe(quantity2);
+        expect(foodIngredientRows[0].unit_id).toBe(canonicalUnit2Id);
+        expect(foodIngredientRows[0].note).toBe("less sault spam");
+    });
 });
 
 
@@ -178,6 +236,7 @@ describe('food get service', () => {
     let price1 = 21.99, purchaseQuant1 = 1.4 * 453.592, unit1Id = 1;
     let price2 = 1.85, purchaseQuant2 = 16, unit2Id = 6;
     let price3 = 8.51, purchaseQuant3 = 1.705 * 453.592, unit3Id = 1;
+    let foodIngredient1Id, foodIngredient2Id, foodIngredient3Id;
 
 
     beforeAll(async () => {
@@ -207,9 +266,9 @@ describe('food get service', () => {
         );
         const [ingredient1Id, ingredient2Id, ingredient3Id] = ingredientRows.map(r => r.id);
 
-        const foodIngredient1Id = await addIngredientToFood(food1Id, ingredient1Id, quantity1, canonicalUnit1Id);
-        const foodIngredient2Id = await addIngredientToFood(food1Id, ingredient2Id, quantity2, canonicalUnit2Id);
-        const foodIngredient3Id = await addIngredientToFood(food2Id, ingredient3Id, quantity3, canonicalUnit3Id);
+        foodIngredient1Id = await addIngredientToFood(food1Id, ingredient1Id, quantity1, canonicalUnit1Id);
+        foodIngredient2Id = await addIngredientToFood(food1Id, ingredient2Id, quantity2, canonicalUnit2Id);
+        foodIngredient3Id = await addIngredientToFood(food2Id, ingredient3Id, quantity3, canonicalUnit3Id);
 
         // create location
         const { rows: locationRows } = await pool.query(
@@ -286,6 +345,10 @@ describe('food get service', () => {
         expect(relatedIngredients[0].ingredient.name).toBe(ingredient1);
         expect(relatedIngredients[1].ingredient.name).toBe(ingredient2);
         expect(typeof relatedIngredients[0].quantity).toBe('number');
+        expect(relatedIngredients[0].note).toBeNull();
+        expect(relatedIngredients[1].note).toBeNull();
+        expect(relatedIngredients[0].id).toBe(foodIngredient1Id);
+        expect(relatedIngredients[1].id).toBe(foodIngredient2Id);
         expect(typeof relatedIngredients[1].quantity).toBe('number');
         expect(relatedIngredients[0].ingredient.canonical_unit_id).toBe(canonicalUnit1Id);
         expect(relatedIngredients[1].ingredient.canonical_unit_id).toBe(canonicalUnit2Id);

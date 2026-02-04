@@ -14,8 +14,15 @@ async function createFood(name, description = null) {
 
     return rows[0].id;
 };
-
-// put service
+async function addIngredientToFood(foodId, ingredientId, quantity, unitId, note=null) {
+    const { rows } = await pool.query(
+        `INSERT INTO food_ingredient (food_id, ingredient_id, quantity, unit_id, note)
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING id`,
+        [foodId, ingredientId, quantity, unitId, note]
+    );
+    return rows[0].id;
+};
 async function addImageToFood(foodId, url, alt=null) {
     const { rows } = await pool.query(
         `INSERT INTO food_images (food_id, url, alt)
@@ -26,15 +33,32 @@ async function addImageToFood(foodId, url, alt=null) {
     return rows[0].id;
 };
 
-async function addIngredientToFood(foodId, ingredientId, quantity, unitId, note=null) {
+
+// put service
+async function updateFood(updatedFood) {
     const { rows } = await pool.query(
-        `INSERT INTO food_ingredient (food_id, ingredient_id, quantity, unit_id, note)
-        VALUES ($1, $2, $3, $4, $5)
+        `UPDATE foods 
+        SET name = $1, description =$2
+        WHERE id = $3
         RETURNING id`,
-        [foodId, ingredientId, quantity, unitId, note]
+        [updatedFood.name, updatedFood.description, updatedFood.id]
     );
+
     return rows[0].id;
 };
+
+async function updateFoodIngredient(ingredient) {
+    const { rows } = await pool.query(
+        `UPDATE food_ingredient 
+        SET ingredient_id = $1, quantity = $2, note = $3, unit_id =$4
+        WHERE id = $5
+        RETURNING id`,
+        [ingredient.ingredientId, ingredient.quantity, ingredient.note, ingredient.ingredientUnitId, ingredient.foodIngredientId]
+    );
+    return rows[0].id;
+}
+
+
 
 // get service
 async function getFoodIdByName(name) {
@@ -96,7 +120,7 @@ async function getFoodByName(name) {
 
 async function getRelatedIngredientsByFoodId(foodId) {
     const { rows } = await pool.query(
-        `SELECT ingredient_id, quantity, unit_id
+        `SELECT id, ingredient_id, quantity, unit_id, note
         FROM food_ingredient 
         WHERE food_id=$1 
         ORDER BY ingredient_id`,
@@ -106,7 +130,9 @@ async function getRelatedIngredientsByFoodId(foodId) {
         rows.map(async row => {
             const ingredient = await getIngredientById(row.ingredient_id);
             return {
+                id: row.id,
                 ingredient: ingredient,
+                note: row.note,
                 quantity: Number(row.quantity)
             };
         })
@@ -125,9 +151,11 @@ module.exports = {
     getFoodByName,
     getFoodById,
     createFood,
+    updateFood,
     addIngredientToFood,
     getRelatedIngredientsByFoodId,
     addImageToFood,
     getAllFoods,
-    getAllImagesByFoodId
+    getAllImagesByFoodId,
+    updateFoodIngredient
 }

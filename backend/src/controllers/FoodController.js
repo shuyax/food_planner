@@ -3,7 +3,7 @@ const FoodService = require("../services/FoodService");
 async function getFoods(req, res, next) {
   try {
     const foods = await FoodService.getAllFoods();
-    res.json(foods);
+    res.status(200).json(foods);
   } catch (err) {
     next(err);
   }
@@ -82,9 +82,74 @@ async function addIngredientsToFood(req, res, next) {
     }
 }
 
+async function getFood(req, res, next) {
+    try {
+        const { foodId } = req.params;
+        if (!foodId) {
+            return res.status(400).json({ error: "FoodId is required" });
+        }
+        const foodData = await FoodService.getFoodById(parseInt(foodId));
+        if (!foodData) {
+            return res.status(404).json({ error: "Food not found" });
+        }
+        res.status(200).json(foodData); // 200 for GET success
+    } catch (err) {
+        next(err);
+    }
+}
+
+async function getRelatedIngredients(req, res, next) {
+    try {
+        const { foodId } = req.params;
+        if (!foodId) {
+            return res.status(400).json({ error: "FoodId is required" });
+        }
+        const relatedIngredients = await FoodService.getRelatedIngredientsByFoodId(parseInt(foodId));
+        if (!relatedIngredients) {
+            return res.status(404).json({ error: "Related ingredients not found" });
+        }
+        res.status(200).json(relatedIngredients); // 200 for GET success
+    } catch (err) {
+        next(err);
+    }
+};
+
+async function updateFood(req, res, next) {
+    try {
+        const { id, name, description } = req.body;
+        if (!id || !name) {
+            return res.status(400).json({ error: "FoodId and FoodName are required" });
+        }
+        const foodId = await FoodService.updateFood({ id, name, description });
+        res.status(200).json(foodId);
+    } catch (err) {
+        next(err);
+    }
+};
+
+async function updateFoodIngredients(req, res, next) {
+    try {
+        const { ingredients } = req.body;
+        if (!Array.isArray(ingredients) || ingredients.length === 0) {
+            return res.status(400).json({ error: "Ingredients are required" });
+        }
+        const results = await Promise.all(
+            ingredients.map(async ingredient => {
+                return await FoodService.updateFoodIngredient(ingredient);
+            }))
+        res.status(200).json(results);
+    } catch (err) {
+        next(err);
+    }
+};
+
 module.exports = {
     getFoods,
+    getFood,
     createFood,
+    updateFood,
     addImageToFood,
-    addIngredientsToFood
+    addIngredientsToFood,
+    getRelatedIngredients,
+    updateFoodIngredients
 };
