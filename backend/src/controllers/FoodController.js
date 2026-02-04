@@ -98,10 +98,41 @@ async function getFood(req, res, next) {
     }
 }
 
+async function getRelatedIngredients(req, res, next) {
+    try {
+        const { foodId } = req.params;
+        if (!foodId) {
+            return res.status(400).json({ error: "FoodId is required" });
+        }
+        const relatedIngredients = await FoodService.getRelatedIngredientsByFoodId(parseInt(foodId));
+        if (!relatedIngredients) {
+            return res.status(404).json({ error: "Related ingredients not found" });
+        }
+        res.status(200).json(relatedIngredients); // 200 for GET success
+    } catch (err) {
+        next(err);
+    }
+}
+
+async function updateFood(req, res, next) {
+    try {
+        const { id, name, description } = req.body;
+        if (!id || !name) {
+            return res.status(400).json({ error: "FoodId and FoodName are required" });
+        }
+        const foodId = await FoodService.updateFood({ id, name, description });
+        res.status(200).json(foodId);
+    } catch (err) {
+        next(err);
+    }
+}
+
 module.exports = {
     getFoods,
     getFood,
     createFood,
+    updateFood,
     addImageToFood,
-    addIngredientsToFood
+    addIngredientsToFood,
+    getRelatedIngredients
 };
