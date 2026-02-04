@@ -4,6 +4,7 @@ import interactionPlugin from '@fullcalendar/interaction'
 import { useEffect, useState } from "react";
 import { fetchMeals, fetchRelatedFoods } from "../services/MealService"
 import { MealModal } from './MealModal';
+import { useNavigate } from 'react-router-dom';
 
 /**
  * Calendar component
@@ -27,6 +28,7 @@ function Calendar({
     const [editingMeal, setEditingMeal] = useState(null);
     const [modalOpen, setModalOpen] = useState(false);
     const [events, setEvents] = useState([]);
+    const navigate = useNavigate();
 
     function getCurrentWeekRange() {
         const today = new Date()
@@ -58,7 +60,6 @@ function Calendar({
         snack: 4,
         drink: 5
     };
-    
     // if month view, show meal type only; otherwise, also display foods
     function renderMealEvent(arg) {
         const { type } = arg.view
@@ -66,16 +67,20 @@ function Calendar({
         if (type === 'dayGridMonth') return <strong>{title}</strong>; 
 
         if (mode === 'browse') return (
-          <>
+          <div className='fc-event-main-btn-browse'
+          >
             <strong>{title}</strong>
             <ol className='meal-food'>
               {extendedProps.foods.map(food => (
-                <li key={food.foodId}>
+                <li key={food.foodId}
+                    onClick={() => navigate(`/edit-food/${food.foodId}`)}
+                    style={{ cursor: "pointer" }}
+                >
                   {food.foodName}
                 </li>
               ))}
             </ol>
-          </>
+          </div>
         );
         if (mode === 'add') {
             return (
@@ -108,7 +113,6 @@ function Calendar({
         }
     };
     function mapMealsToEvents(meals) {
-        console.log(meals)
         const events = [];
         meals.forEach(meal => {
             const mealId = meal.meal_id
