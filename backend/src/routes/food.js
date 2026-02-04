@@ -8,6 +8,7 @@ router.get("/:foodId/ingredients", FoodController.getRelatedIngredients);
 router.post("/", FoodController.createFood);
 router.put('/add-image', FoodController.addImageToFood)
 router.put('/update-food', FoodController.updateFood)
+router.put('/update-ingredients', FoodController.updateFoodIngredients)
 router.post("/add-ingredients", FoodController.addIngredientsToFood);
 
 module.exports = router;

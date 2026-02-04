@@ -112,7 +112,7 @@ async function getRelatedIngredients(req, res, next) {
     } catch (err) {
         next(err);
     }
-}
+};
 
 async function updateFood(req, res, next) {
     try {
@@ -125,7 +125,23 @@ async function updateFood(req, res, next) {
     } catch (err) {
         next(err);
     }
-}
+};
+
+async function updateFoodIngredients(req, res, next) {
+    try {
+        const { ingredients } = req.body;
+        if (!Array.isArray(ingredients) || ingredients.length === 0) {
+            return res.status(400).json({ error: "Ingredients are required" });
+        }
+        const results = await Promise.all(
+            ingredients.map(async ingredient => {
+                return await FoodService.updateFoodIngredient(ingredient);
+            }))
+        res.status(200).json(results);
+    } catch (err) {
+        next(err);
+    }
+};
 
 module.exports = {
     getFoods,
@@ -134,5 +150,6 @@ module.exports = {
     updateFood,
     addImageToFood,
     addIngredientsToFood,
-    getRelatedIngredients
+    getRelatedIngredients,
+    updateFoodIngredients
 };

@@ -366,3 +366,80 @@ describe("FoodController.updateFood", () => {
     expect(res.status).not.toHaveBeenCalled();
   });
 });
+
+describe("FoodController.updateFoodIngredients", () => {
+  let req, res, next;
+
+  beforeEach(() => {
+    res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    };
+    next = jest.fn();
+    jest.clearAllMocks();
+  });
+
+  it("update food ingredients and returns 200", async () => {
+    mockIngredients = {ingredients: [{
+        "ingredientId": 15,
+        "ingredientName": "egg",
+        "ingredientUnitId": 6,
+        "ingredientUnitName": "pcs",
+        "ingredientUnitAbbreviation": "pcs",
+        "foodIngredientId": 15,
+        "note": "beaten eggs",
+        "quantity": 2
+      }, {
+        "ingredientId": 14,
+        "ingredientName": "spam",
+        "ingredientUnitId": 6,
+        "ingredientUnitName": "pcs",
+        "ingredientUnitAbbreviation": "pcs",
+        "foodIngredientId": 14,
+        "note": "Cut the can of spam into small cubes",
+        "quantity": 1
+      }]}
+    req = { body: mockIngredients }
+    jest.spyOn(FoodService, "updateFoodIngredient")
+      .mockResolvedValueOnce(15)
+      .mockResolvedValueOnce(14);
+
+    await FoodController.updateFoodIngredients(req, res, next);
+    // Service calls
+    expect(FoodService.updateFoodIngredient).toHaveBeenCalledTimes(2);
+    expect(FoodService.updateFoodIngredient).toHaveBeenCalledWith(mockIngredients.ingredients[0]);
+    expect(FoodService.updateFoodIngredient).toHaveBeenCalledWith(mockIngredients.ingredients[1]);
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith([15,14]);
+    expect(next).not.toHaveBeenCalled();
+  });
+  it("returns 400 if ingredients array is missing", async () => {
+    req = {
+      body: {}
+    };
+    await FoodController.updateFoodIngredients(req, res, next);
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      error: "Ingredients are required"
+    });
+    expect(next).not.toHaveBeenCalled();
+  });
+  it("calls next if FoodService throws an error", async () => {
+    req = { body: {ingredients: [{
+        "ingredientId": 15,
+        "ingredientName": "egg",
+        "ingredientUnitId": 6,
+        "ingredientUnitName": "pcs",
+        "ingredientUnitAbbreviation": "pcs",
+        "foodIngredientId": 15,
+        "note": "beaten eggs",
+        "quantity": 2
+      }]
+    }}
+    const mockError = new Error("DB failure");
+    jest.spyOn(FoodService, "updateFoodIngredient").mockRejectedValue(mockError);
+    await FoodController.updateFoodIngredients(req, res, next);
+    expect(next).toHaveBeenCalledWith(mockError);
+    expect(res.status).not.toHaveBeenCalled();
+  });
+});
