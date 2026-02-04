@@ -130,7 +130,7 @@ def test_ingredients_section(driver):
     select.select_by_visible_text("milk") 
 
     unit_quantity_label = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.XPATH, "//label[contains(text(), 'Unit Quantity')]"))
+        EC.presence_of_element_located((By.XPATH, "//label[.//span[contains(normalize-space(), 'Unit Quantity')]]"))
     )
     assert unit_quantity_label.is_displayed(), "unit_quantity_label should be visible"
     assert 'cup' in unit_quantity_label.text, "unit_quantity_label text does not contain 'cup'"
