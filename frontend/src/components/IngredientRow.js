@@ -1,5 +1,3 @@
-
-
 function IngredientRow({ ingredientIndex, row, existingIngredients, updateRow, removeRow }) {
    
     const handleIngredientChange = (e) => {
@@ -13,6 +11,9 @@ function IngredientRow({ ingredientIndex, row, existingIngredients, updateRow, r
             ingredientUnitId: ingredient.canonical_unit_id,
             ingredientUnitName: ingredient.canonical_unit,
             ingredientUnitAbbreviation: ingredient.canonical_unit_abbreviation,
+            foodIngredientId: ingredient.foodIngredientId || -1,
+            note: ingredient.note || "",
+            quantity: ingredient.quantity || 0
         });
     };
 
@@ -30,7 +31,6 @@ function IngredientRow({ ingredientIndex, row, existingIngredients, updateRow, r
         })
     };
 
-
     return (<li className="ingredient-row">
         <label htmlFor={`ingredient-${ingredientIndex}`} />
         <select name={`ingredient-${ingredientIndex}`} 
@@ -44,15 +44,15 @@ function IngredientRow({ ingredientIndex, row, existingIngredients, updateRow, r
             ))}
         </select>
         {row.ingredientId !== -1 && <>
-            <label htmlFor={`quantity-${ingredientIndex}`}>Unit Quantity:
+            <label htmlFor={`quantity-${ingredientIndex}`}><span>Unit Quantity: {"  "}</span>
             <input type="number" 
             id={`quantity-${ingredientIndex}`} 
             name={`quantity-${ingredientIndex}`} 
             min="0"
             value={row.quantity}
             onChange={handleQuantityChange}/>
-            {row.ingredientUnitName} {row.ingredientUnitAbbreviation !== row.ingredientUnitName && <>({row.ingredientUnitAbbreviation})</>}</label>
-            <label htmlFor={`ingredient-note-${ingredientIndex}`}>Note:</label>
+            <span id={`quantity-unit-${ingredientIndex}`}>{row.ingredientUnitName} {row.ingredientUnitAbbreviation !== row.ingredientUnitName && <>({row.ingredientUnitAbbreviation})</>}</span></label>
+            <label htmlFor={`ingredient-note-${ingredientIndex}`}>Note: </label>
             <textarea 
             id={`ingredient-note-${ingredientIndex}`}
             name={`ingredient-note-${ingredientIndex}`}
