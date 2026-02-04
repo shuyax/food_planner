@@ -69,11 +69,18 @@ export async function fetchRelatedIngredients(foodId) {
 }
 
 export async function updateFood(updatedFood) {
-  console.log(updatedFood)
   const res = await axios.put(`${BASEURL}/foods/update-food`, {
     id: updatedFood.foodId,
     name: updatedFood.foodName,
-    description: updatedFood.description
+    description: updatedFood.foodDescription
+  })
+  return res.data
+}
+
+export async function updateFoodIngredients(updatedIngredients) {
+  console.log(updatedIngredients)
+  const res = await axios.put(`${BASEURL}/foods/update-ingredients`, {
+    ingredients: updatedIngredients
   })
   return res.data
 }
