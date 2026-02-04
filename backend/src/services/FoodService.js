@@ -45,6 +45,17 @@ async function updateFood(updatedFood) {
     );
 
     return rows[0].id;
+};
+
+async function updateFoodIngredient(ingredient) {
+    const { rows } = await pool.query(
+        `UPDATE food_ingredient 
+        SET ingredient_id = $1, quantity = $2, note = $3, unit_id =$4
+        WHERE id = $5
+        RETURNING id`,
+        [ingredient.ingredientId, ingredient.quantity, ingredient.note, ingredient.ingredientUnitId, ingredient.foodIngredientId]
+    );
+    return rows[0].id;
 }
 
 
@@ -145,5 +156,6 @@ module.exports = {
     getRelatedIngredientsByFoodId,
     addImageToFood,
     getAllFoods,
-    getAllImagesByFoodId
+    getAllImagesByFoodId,
+    updateFoodIngredient
 }

@@ -9,7 +9,8 @@ const {
     addImageToFood,
     getAllFoods,
     getAllImagesByFoodId,
-    updateFood
+    updateFood,
+    updateFoodIngredient
 } = require('../../src/services/FoodService');
 
 describe('food post service', () => {
@@ -181,6 +182,43 @@ describe('food put service', () => {
         expect(foodRows.length).toBe(1);
         expect(foodRows[0].name).toBe('beef cheese udon#');
         expect(foodRows[0].description).toBe('how to cook beef cheese udon');
+    });
+
+    test('updateFoodIngredient update food_ingredient table', async () => {
+        const ingredient1 = 'pork', canonicalUnit1Id = 16, quantity1 = 0.4;
+        const ingredient2 = 'spam', canonicalUnit2Id = 7, quantity2 = 6;
+        // create ingredients and add to food
+        const { rows: ingredientRows } = await pool.query(
+            `INSERT INTO ingredients(name, canonical_unit_id)
+            VALUES ($1, $2), ($3, $4)
+            RETURNING id`,
+            [ingredient1, canonicalUnit1Id, ingredient2, canonicalUnit2Id]
+        );
+        const [ingredient1Id, ingredient2Id] = ingredientRows.map(r => r.id);
+        const foodIngredientId = await addIngredientToFood(foodId, ingredient1Id, quantity1, canonicalUnit1Id, note="ground pork")
+        const newFoodIngredient = {
+            "ingredientId": ingredient2Id,
+            "ingredientName": ingredient2,
+            "ingredientUnitId": canonicalUnit2Id,
+            "ingredientUnitName": "slice",
+            "ingredientUnitAbbreviation": "slice",
+            "foodIngredientId": foodIngredientId,
+            "note": "less sault spam",
+            "quantity": quantity2
+        }
+        await updateFoodIngredient(newFoodIngredient)
+        const { rows: foodIngredientRows } = await pool.query(
+            `SELECT *
+            FROM food_ingredient 
+            WHERE id=$1`,
+            [foodIngredientId]
+        );
+        expect(foodIngredientRows).not.toBeNull();
+        expect(foodIngredientRows.length).toBe(1);
+        expect(foodIngredientRows[0].ingredient_id).toBe(ingredient2Id);
+        expect(Number(foodIngredientRows[0].quantity)).toBe(quantity2);
+        expect(foodIngredientRows[0].unit_id).toBe(canonicalUnit2Id);
+        expect(foodIngredientRows[0].note).toBe("less sault spam");
     });
 });
 
