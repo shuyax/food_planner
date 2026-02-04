@@ -189,7 +189,7 @@ function EditFoodForm({ visibleBackButton = true, preMode = 'browse' }) {
         <h3 id="ingredient-title">Ingredients</h3>
         <ol id="ingredients-browse">
             {food.ingredients.map(row => (
-                <li key={row.foodIngredientId}><strong>{row.ingredientName.toUpperCase()}: </strong>{row.quantity} {row.ingredientUnitName}{row.ingredientUnitAbbreviation !== row.ingredientUnitName && <> ({row.ingredientUnitAbbreviation})</>}; <i>{row.note !== "" && <>Note: {row.note}</>}</i></li>
+                <li key={row.foodIngredientId}><strong>{row.ingredientName.toUpperCase()}: </strong>{row.quantity} {row.ingredientUnitName}{row.ingredientUnitAbbreviation !== row.ingredientUnitName && <> ({row.ingredientUnitAbbreviation})</>}; {row.note && <i>Note: {row.note}</i>}</li>
             ))}
         </ol>
         <button id="edit-food" onClick={handleEdit}>Edit</button>
