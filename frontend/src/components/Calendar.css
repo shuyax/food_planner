@@ -1,16 +1,14 @@
 @media (hover: hover) and (pointer: fine) {
-  .meal-food-add:hover,
-  .fc-event:hover {
-    background-color: rgba(248, 249, 249, 0.314);
+  .fc-daygrid-event-harness:hover {
+    /* background-color: rgba(248, 249, 249, 0.314); */
     cursor: pointer;
   }
 }
 
 /* Touch feedback (mobile + desktop) */
-.meal-food-add:active,
-.fc-event:active {
+/* .meal-food-add:active {
   background-color: rgba(248, 249, 249, 0.4);
-}
+} */
 
 /* .fc-daygrid-event {
   display: flex;
