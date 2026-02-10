@@ -3,17 +3,19 @@ import { MealTypeList } from "../components/MealTypeList";
 import { fetchFoods } from "../services/FoodService";
 import { createMeal, deleteMeal, updateFoodsToMeal } from "../services/MealService";
 import { useSearchParams } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
-import Calendar from "../components/Calendar";
+import MealModal from "../components/MealModal";
 import { useState } from "react";
+import Calendar from "../components/Calendar";
 
 function AddMealForm() {
 
-    const navigate = useNavigate();
+    // const navigate = useNavigate();
+    const [modalOpen, setModalOpen] = useState(false);
+    const [editingMeal, setEditingMeal] = useState(null);
+    const [calendarRefresh, setCalendarRefresh] = useState(0); // trigger calendar update
+    
     const [searchParams] = useSearchParams();
     const mealDate = searchParams.get("date");
-
-    const [calendarRefresh, setCalendarRefresh] = useState(0); // trigger calendar update
 
     // fetch all existing foods
     const { data: foodData,
@@ -79,6 +81,7 @@ function AddMealForm() {
                 mealDate: mealDate,
             });
             console.log("Meal creation triggered!");
+            setCalendarRefresh((prev) => prev + 1);
         } catch (err) {
             console.error("Failed to create meal:", err);
         }
@@ -101,25 +104,26 @@ function AddMealForm() {
         try {
             // Wait for backend to delete the meal first
             await deleteMealMutation.mutateAsync(mealId);
-            // Trigger calendar refresh
-            setCalendarRefresh(prev => prev + 1);
         } catch (err) {
             console.error("Failed to delete meal:", err);
             alert("Failed to delete meal.");
         }
     };
 
-    return (<div className="meal-form">
-        <Calendar
-            mode="add"
-            selectedDate={mealDate}
-            onDateChange={(newDate) =>
-                navigate(`/add-meal?date=${newDate}`)
-            }
-            refreshTrigger={calendarRefresh}
-            existingFoods={foodData}
-            updateMeal={(mealId, updatedFood) => updateMeal(mealId, updatedFood)}
-            removeMeal={(mealId) => removeMeal(mealId)}
+    return (<div className={modalOpen ? "meal-form-edit" : "meal-form"}>
+        <MealModal
+            open={modalOpen && editingMeal != null}
+            onClose={() => setModalOpen(false)}
+            existingFoods={foodData} 
+            meal={editingMeal} 
+            updateMeal={(updatedMeal) => updateMeal(editingMeal.mealId, updatedMeal)} 
+            removeMeal={() => removeMeal(editingMeal.mealId)}
+        />
+        <Calendar 
+            setEditingMeal={setEditingMeal} 
+            setModalOpen={setModalOpen} 
+            editDate={mealDate}
+            refreshTrigger={calendarRefresh} 
         />
         <MealTypeList AddMeal={(mealType) => AddMeal(mealType)} /> 
       </div>);

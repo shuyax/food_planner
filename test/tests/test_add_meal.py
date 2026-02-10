@@ -16,20 +16,28 @@ delete_add_meal_url = f'{BASE_URL}/add-meal?date={delete_target_date}'
 add_add_meal_url = f'{BASE_URL}/add-meal?date={add_target_date}'
 
 def test_add_meal_with_related_fields(driver):
-    driver.get(add_meal_url)
+    date='2026-01-16'
+    url = f'{BASE_URL}/add-meal?date={date}'
+    driver.get(url)
     # test the calendar section displayed correctly with related data
     meal_form_element = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.CLASS_NAME, 'meal-form'))
     )
     first_child = meal_form_element.find_element(By.XPATH, "./*[1]")
     assert first_child.get_attribute("class") == "fc fc-media-screen fc-direction-ltr fc-theme-standard", "The first element in a meal-form should be the calendar"
-    event_main_btn_element = first_child.find_elements(By.CLASS_NAME, "fc-event-main-btn")
-    assert len(event_main_btn_element) == 1, "There should be only one meal displayed on the target day"
-    children = event_main_btn_element[0].find_elements(By.XPATH, "./*")
-    assert len(children) == 2, "There should be two children under the event"
-    assert children[0].tag_name == "strong", "The first child should be <strong>"
-    assert children[0].text == "DINNER", "The first child should be DINNER"
-    assert children[1].text == "stir fry bok choy", "The second child should be food name"
+    event_main_element = first_child.find_elements(By.CLASS_NAME, "fc-event-main")
+    assert len(event_main_element) == 1, "There should be only one meal displayed on the target day"
+    meal_type = event_main_element[0].find_elements(By.TAG_NAME, "strong")
+    assert len(meal_type) == 1, "There should be only one meal type displayed on the target day"
+    assert meal_type[0].text.lower() == 'dinner', "The meal type should be visible"
+    food_section = event_main_element[0].find_element(By.ID, "meal-food-dinner-add")
+    assert food_section.tag_name == 'ol', "The food section should be a ol"
+    WebDriverWait(food_section, 10).until(
+        lambda el: el.find_elements(By.XPATH, "./li")
+    )
+    foods = food_section.find_elements(By.TAG_NAME, "li")
+    assert len(foods) == 1, "There should be only one food in dinner on target day"
+    assert foods[0].text == "stir fry bok choy", "The food name should be displayed correctly"
     # test meal type select element exists and populated correctly
     meal_type_element = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.ID, 'meal-type'))
@@ -45,7 +53,7 @@ def test_update_food_to_existing_meal(driver):
     driver.get(add_meal_url)
     dinner_event_div = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located(
-            (By.XPATH, "//div[contains(@class,'fc-event-main-btn')][.//strong[text()='DINNER']]")
+            (By.XPATH, "//div[contains(@class,'fc-event-main')][.//strong[text()='DINNER']]")
         )
     )
     assert dinner_event_div.is_displayed(), "Dinner section should be visible on the target day"
@@ -88,7 +96,7 @@ def test_add_food_section(driver):
     # Open Modal
     dinner_event_div = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located(
-            (By.XPATH, "//div[contains(@class,'fc-event-main-btn')][.//strong[text()='DINNER']]")
+            (By.XPATH, "//div[contains(@class,'fc-event-main')][.//strong[text()='DINNER']]")
         )
     )
     dinner_event_div.click()
@@ -109,12 +117,16 @@ def test_add_food_section(driver):
     select.select_by_visible_text("tomato beef udon with cheese")
     done_btn = modal_element.find_element(By.ID, "foods-save")
     done_btn.click()
-    WebDriverWait(driver, 10).until(EC.invisibility_of_element_located((By.CLASS_NAME, 'modal')))
-    meal_food_section = dinner_event_div.find_element(By.CLASS_NAME, "meal-food")
     WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.XPATH, "//li"))
+        EC.presence_of_element_located((By.CLASS_NAME, 'meal-form'))
     )
-    meal_food_li_elements = meal_food_section.find_elements(By.XPATH, "//li")
+    WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located(
+            (By.XPATH, '//*[@id="meal-food-dinner-add"]//li')
+        )
+    )
+    meal_food_section = driver.find_element(By.ID, "meal-food-dinner-add")
+    meal_food_li_elements = meal_food_section.find_elements(By.XPATH, ".//li")
     assert len(meal_food_li_elements) == children_len_after, "The number of foods on calendar should be the number of foods on modal"
     assert meal_food_li_elements[children_len_after-1].text == "tomato beef udon with cheese", "The updated food should be displayed on the calendar"
 
@@ -124,7 +136,7 @@ def test_delete_food_section(driver):
     # Open Modal
     dinner_event_div = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located(
-            (By.XPATH, "//div[contains(@class,'fc-event-main-btn')][.//strong[text()='DINNER']]")
+            (By.XPATH, "//div[contains(@class,'fc-event-main')][.//strong[text()='DINNER']]")
         )
     )
     dinner_event_div.click()
@@ -166,25 +178,29 @@ def test_add_meal_button(driver):
     assert add_meal_btn.get_attribute("disabled") == None, "The add meal button should be enabled if the select value is not empty"
     add_meal_btn.click()
     # Wait for the DOM to update (length should stay the same for duplicate)
-    WebDriverWait(driver, 10).until(
-        lambda d: len(d.find_elements(By.CLASS_NAME, 'fc-daygrid-event-harness')) == len_before_add
+    WebDriverWait(driver, 30).until(
+        EC.presence_of_element_located((By.CLASS_NAME, 'meal-type-list-'))
     )
     meal_section_elements_v_1 = driver.find_elements(By.CLASS_NAME, 'fc-daygrid-event-harness')
     assert len(meal_section_elements_v_1) == len_before_add, "The meal type section should not increase for a duplicate"
     # Add a new meal (breakfast)
+    meal_type_list = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, 'meal-type'))
+    )
+    select = Select(meal_type_list)
     select.select_by_visible_text("breakfast")
     add_meal_btn.click()
     # Wait until the new meal section appears (length increases)
     WebDriverWait(driver, 10).until(
-        lambda d: len(d.find_elements(By.CLASS_NAME, 'fc-daygrid-event-harness')) == len_before_add + 1
+        lambda d: len(
+            d.find_elements(By.CLASS_NAME, "fc-daygrid-event-harness")
+        ) == len_before_add + 1
     )
     meal_section_elements_v_2 = driver.find_elements(By.CLASS_NAME, 'fc-daygrid-event-harness')
     assert len(meal_section_elements_v_2) == len_before_add + 1, "The meal type section should increase by one for a new meal type"
     # Verify the new meal type text
-    new_meal_type_text = meal_section_elements_v_2[1].find_element(
-        By.XPATH, "descendant::div[contains(@class,'fc-event-main-btn')]//strong"
-    )
-    assert new_meal_type_text.text.lower() == 'breakfast'
+    new_meal_type = driver.find_element(By.ID, 'meal-food-breakfast-add')
+    assert new_meal_type is not None, "The new meal type should be visible"
 
 
 def test_empty_meal(driver):
@@ -199,7 +215,7 @@ def test_empty_meal(driver):
     select.select_by_visible_text("drink")
     add_meal_btn.click()
     drink_section_btn = WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.XPATH, "//div[contains(@class,'fc-event-main-btn')][.//strong[text()='DRINK']]"))
+        EC.element_to_be_clickable((By.XPATH, "//div[contains(@class,'fc-event-main')][.//strong[text()='DRINK']]"))
     )
     drink_section_btn.click()
     modal_element = WebDriverWait(driver, 10).until(
@@ -225,11 +241,11 @@ def test_delete_meal_button(driver):
     select.select_by_visible_text("dinner")
     add_meal_btn.click()
     WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.XPATH, "//div[contains(@class,'fc-event-main-btn')]"))
+        EC.element_to_be_clickable((By.XPATH, "//div[contains(@class,'fc-event-main')]"))
     )
     meal_section_btns = WebDriverWait(driver, 10).until(
         EC.presence_of_all_elements_located(
-            (By.XPATH, "//div[contains(@class,'fc-event-main-btn')]")
+            (By.XPATH, "//div[contains(@class,'fc-event-main')]")
         )
     )
     test_meal_btn = meal_section_btns[0]
@@ -245,7 +261,7 @@ def test_delete_meal_button(driver):
     )
     time.sleep(6)
     remaining_meals = driver.find_elements(
-        By.XPATH, f"//div[contains(@class,'fc-event-main-btn')][.//strong[text()='{test_meal}']]"
+        By.XPATH, f"//div[contains(@class,'fc-event-main')][.//strong[text()='{test_meal}']]"
     )
     assert len(remaining_meals) == 0, "The meal should not be visible on the calendar"
     

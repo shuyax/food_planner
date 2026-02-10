@@ -118,12 +118,20 @@ def test_week_btn(driver):
 
 def test_add_meal_btn(driver):
     driver.get(BASE_URL)
-    add_meal_btn = driver.find_elements(By.CLASS_NAME, "add-meal-btn")[0]
+    today = date.today().isoformat()
+    add_meal_btn = driver.find_element(
+        By.XPATH, f"//td[contains(@class,'fc-daygrid-day') and @data-date='{today}']"
+    )
     add_meal_btn.click()
     WebDriverWait(driver, 10).until(
         EC.url_contains("/add-meal")
     )
     assert "/add-meal?date=" in driver.current_url
+    new_page_date = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.CLASS_NAME, "fc-toolbar-title"))
+    )
+    formatted = date.today().strftime("%B %-d, %Y")
+    assert new_page_date.text == formatted, "The new page navigated to should be the date clicked"
 
 
 def test_meal_type_loaded_in_month_view(driver):
@@ -153,13 +161,14 @@ def test_meal_type_loaded_in_month_view(driver):
     # Get all events under this cell
     events = target_date_cell.find_elements(By.XPATH, "..//following-sibling::div[contains(@class,'fc-daygrid-day-events')]//a[contains(@class,'fc-event')]")
     expected_meals = ["BREAKFAST", "LUNCH", "DINNER", "SNACK", "DRINK"]
+    assert len(events) == len(expected_meals), "All expected meals should have an event"
     # Collect meal titles and colors
     meal_titles = []
     colors = set()
     for e in events:
         event_main_element = e.find_element(By.CLASS_NAME, "fc-event-main")
         children = event_main_element.find_elements(By.XPATH, "./*")
-        assert len(children) == 1, "fc-event-main should contain exactly one child element"
+        assert len(children) == 1, "fc-event-main should contain only meal type"
         strong = children[0]
         assert strong.tag_name == "strong", "Only child should be <strong>"
         title = strong.text.strip().upper()
@@ -216,7 +225,7 @@ def test_meal_type_and_foodname_loaded_in_week_view(driver):
     assert day_cell.is_displayed(), "day_cell should be visible"
     WebDriverWait(driver, 10).until(
         EC.presence_of_element_located(
-            (By.CLASS_NAME, "meal-food")
+            (By.XPATH, "//*[contains(@id, 'meal-food')]")
         )
     )
     # Get all events inside this frame
