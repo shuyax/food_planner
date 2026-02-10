@@ -125,7 +125,7 @@ function Calendar({ setEditingMeal, setModalOpen, editDate, refreshTrigger }) {
                 //     e.stopPropagation();
                 //     navigate(`/edit-food/${food.foodId}`);
                 //   }}
-                  style={{ cursor: 'pointer' }}
+                //   style={{ cursor: 'pointer' }}
                 >
                   {food.foodName}
                 </li>
