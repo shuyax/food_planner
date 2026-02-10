@@ -2,8 +2,7 @@ import "./Modal.css"
 import { useEffect, useState } from "react";
 import { FoodRow } from './FoodRow';
 
-// components/MealModal.jsx
-export function MealModal({ open, onClose, meal, existingFoods, updateMeal, removeMeal }) {
+function MealModal({ open, onClose, meal, existingFoods, updateMeal, removeMeal }) {
     const [localMeal, setLocalMeal] = useState(meal)
     const defaultFood = {
         "foodId": -1,
@@ -88,10 +87,13 @@ export function MealModal({ open, onClose, meal, existingFoods, updateMeal, remo
                 }) : <>No food exists in this meal.<br />You can: 
                         <br />Click the <strong>Add Food</strong> button to add food
                         <br />Click the <strong>Delete Meal</strong> button to delete this meal.
-                    </>}
+                    </>
+                }
             </ol> 
             {localMeal.foods?.length !== 0 && <button type="submit" id="foods-save" onClick={handleDoneBtn}>Done</button>}
         </div>
         </div>
     );
 }
+
+export default MealModal;

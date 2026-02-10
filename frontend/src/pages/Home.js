@@ -1,11 +1,12 @@
-import { useNavigate } from "react-router-dom";
 import Calendar from "../components/Calendar";
 
 function Home() {
-    const navigate = useNavigate();
 
-    return (<>
-        <Calendar mode="browse" onAddMeal={(date) => navigate(`/add-meal?date=${date}`)} />
-    </>)
-};
+    return (
+        <>
+            <Calendar />
+        </>
+    );
+}
+
 export default Home;
