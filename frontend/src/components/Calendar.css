@@ -1,5 +1,5 @@
 @media (hover: hover) and (pointer: fine) {
-  .fc-daygrid-event-harness:hover {
+  .meal-form .fc-daygrid-event-harness:hover {
     /* background-color: rgba(248, 249, 249, 0.314); */
     cursor: pointer;
   }
