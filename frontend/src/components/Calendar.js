@@ -121,10 +121,10 @@ function Calendar({ setEditingMeal, setModalOpen, editDate, refreshTrigger }) {
               {extendedProps.foods.map((food) => (
                 <li
                   key={food.foodId}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigate(`/edit-food/${food.foodId}`);
-                  }}
+                //   onClick={(e) => {
+                //     e.stopPropagation();
+                //     navigate(`/edit-food/${food.foodId}`);
+                //   }}
                   style={{ cursor: 'pointer' }}
                 >
                   {food.foodName}
