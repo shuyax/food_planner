@@ -2,17 +2,17 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { MealTypeList } from "../components/MealTypeList";
 import { fetchFoods } from "../services/FoodService";
 import { createMeal, deleteMeal, updateFoodsToMeal } from "../services/MealService";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import MealModal from "../components/MealModal";
 import { useState } from "react";
 import Calendar from "../components/Calendar";
+import { useQueryClient } from '@tanstack/react-query';
 
-function AddMealForm() {
+function AddMealForm({ visibleBackButton = true }) {
 
-    // const navigate = useNavigate();
+    const navigate = useNavigate();
     const [modalOpen, setModalOpen] = useState(false);
     const [editingMeal, setEditingMeal] = useState(null);
-    const [calendarRefresh, setCalendarRefresh] = useState(0); // trigger calendar update
     
     const [searchParams] = useSearchParams();
     const mealDate = searchParams.get("date");
@@ -25,13 +25,16 @@ function AddMealForm() {
         queryFn: fetchFoods
     });
 
+    const queryClient = useQueryClient();
     const createMealMutation = useMutation({
         mutationFn: ({ mealType, mealDate}) =>
             createMeal(mealType, mealDate),
         onSuccess: (data, variables) => {
             const { mealType, mealDate } = variables;
             console.log("Meal created:" , data, "for", mealType, "on", mealDate);
-            setCalendarRefresh((prev) => prev + 1);
+            queryClient.invalidateQueries({
+                queryKey: ['meals'],
+            });
         },
         onError: (error) => {
             console.error("Failed to create meal:", error);
@@ -44,7 +47,7 @@ function AddMealForm() {
             updateFoodsToMeal(mealId, foods),
         onSuccess: (data) => {
             console.log("Foods updated to a meal" , data);
-            setCalendarRefresh((prev) => prev + 1);
+            queryClient.invalidateQueries({ queryKey: ['meals'] });
         },
         onError: (error) => {
             console.error("Failed to update foods to a meal:", error);
@@ -56,7 +59,7 @@ function AddMealForm() {
         mutationFn: (mealId) => deleteMeal(mealId), // your backend API call
         onSuccess: (_, mealId) => {
             console.log("Meal deleted:", mealId);
-            setCalendarRefresh((prev) => prev + 1);
+            queryClient.invalidateQueries({ queryKey: ['meals'] });
         },
         onError: (err) => {
             console.error("Failed to delete meal:", err);
@@ -81,7 +84,6 @@ function AddMealForm() {
                 mealDate: mealDate,
             });
             console.log("Meal creation triggered!");
-            setCalendarRefresh((prev) => prev + 1);
         } catch (err) {
             console.error("Failed to create meal:", err);
         }
@@ -123,9 +125,9 @@ function AddMealForm() {
             setEditingMeal={setEditingMeal} 
             setModalOpen={setModalOpen} 
             editDate={mealDate}
-            refreshTrigger={calendarRefresh} 
         />
         <MealTypeList AddMeal={(mealType) => AddMeal(mealType)} /> 
+        {visibleBackButton && <button id="food-back" onClick={() => navigate(`/`)}>Back</button>}
       </div>);
 };
 
