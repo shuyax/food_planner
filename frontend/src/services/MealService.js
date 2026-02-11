@@ -8,7 +8,7 @@ export async function fetchMeals(startDate, endDate) {
       enddate: endDate
     }
   });
-  console.log(res.data)
+  // console.log(res.data)
   return res.data
 };
 
@@ -17,19 +17,19 @@ export async function createMeal(mealType, mealDate) {
     type: mealType,
     date: mealDate
   });
-  console.log(res.data)
+  // console.log(res.data)
   return res.data
 };
 
 export async function fetchMealTypes() {
   const res = await axios.get(`${BASEURL}/meals/meal-types`);
-  console.log(res.data)
+  // console.log(res.data)
   return res.data
 };
 
 export async function fetchRelatedFoods(mealId) {
   const res = await axios.get(`${BASEURL}/meals/${mealId}/foods`);
-  console.log(res.data)
+  // console.log(res.data)
   return res.data
 }
 
@@ -39,12 +39,12 @@ export async function updateFoodsToMeal(mealId, foods) {
     mealId: mealId,
     foods: foods
   });
-  console.log(res.data)
+  // console.log(res.data)
   return res.data
 }
 
 export async function deleteMeal(mealId) {
   const res = await axios.delete(`${BASEURL}/meals/delete/${mealId}`);
-  console.log(res.data)
+  // console.log(res.data)
   return res.data; 
 }
