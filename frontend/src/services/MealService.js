@@ -8,8 +8,12 @@ export async function fetchMeals(startDate, endDate) {
       enddate: endDate
     }
   });
-  // console.log(res.data)
-  return res.data
+  const result = res.data.map(meal => ({
+    mealId: meal.meal_id,
+    mealType: meal.meal_type,
+    mealDate: meal.meal_date
+  }))
+  return result
 };
 
 export async function createMeal(mealType, mealDate) {
@@ -29,8 +33,15 @@ export async function fetchMealTypes() {
 
 export async function fetchRelatedFoods(mealId) {
   const res = await axios.get(`${BASEURL}/meals/${mealId}/foods`);
-  // console.log(res.data)
-  return res.data
+  const result = res.data.map(food => ({
+    foodId: food.food_id,
+    mealFoodId: food.meal_food_id,
+    foodName: food.name,
+    foodDescription: food.description,
+    foodCost: food.cost
+  }))
+  console.log(result)
+  return result
 }
 
 
