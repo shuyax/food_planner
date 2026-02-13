@@ -7,6 +7,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useQueryClient } from '@tanstack/react-query';
 import "./AddMealForm.css"
 import { FoodRow } from "../components/FoodRow";
+import EditMeal from "../components/EditMeal";
+import DisplayMeal from "../components/DisplayMeal";
 
 function AddMealForm({ visibleBackButton = true }) {
 
@@ -90,24 +92,6 @@ function AddMealForm({ visibleBackButton = true }) {
             alert("Failed to delete meal.");
         }
     });
-
-    const availableFoods = useMemo(() => {
-        console.log(foodData)
-        if (!foodData) return [];
-        if (!editingMeal) return foodData;
-
-        const existingFoodIds = new Set(
-            editingMeal.foods
-                .filter(f => f.foodId !== -1) // ignore placeholders
-                .map(f => f.foodId)
-        );
-        console.log(foodData.filter(food => 
-            !existingFoodIds.has(food.foodId)
-        ))
-        return foodData.filter(food => 
-            !existingFoodIds.has(food.foodId)
-        );
-    }, [foodData, editingMeal]);
     
     useEffect(() => {
         if (!editingMeal) return;
@@ -160,7 +144,6 @@ function AddMealForm({ visibleBackButton = true }) {
 
 
     async function updateMeal(mealId, updatedMeal) {
-        console.log(mealId, updatedMeal)
         if (!mealId || updatedMeal.foods.length === 0) return;
         try {
             await updateFoodsToMealMutation.mutateAsync({
@@ -182,32 +165,6 @@ function AddMealForm({ visibleBackButton = true }) {
         }));
     };
 
-    function handleAddFood() {
-        const defaultFood = {
-            "foodId": -1,
-            "foodName": "",
-            "foodDescription": "",
-            "mealFoodId": -1,
-            "foodCost": null
-        };
-        setEditingMeal(prevMeal => ({
-            ...prevMeal,
-            foods: [...prevMeal.foods, defaultFood]
-        })); 
-    }
-
-    function handleDeleteFood(mealFoodId) {
-        const deletedFood = {
-            "foodId": -1,
-            "foodName": "",
-            "description": "",
-            "mealFoodId": mealFoodId
-        };
-        setEditingMeal(prevMeal => ({
-            ...prevMeal,
-            foods: [...prevMeal.foods.map(food => food.mealFoodId === mealFoodId ? {...deletedFood} : food)]
-        })); 
-    }
 
     async function removeMeal(mealId) {
         try {
@@ -222,18 +179,38 @@ function AddMealForm({ visibleBackButton = true }) {
     return (<div className="meal-form">
         <h1 id="meal-date">{mealDate}</h1>
         <div id="day-cell">
-            {meals.map(meal => {
+            {meals.map(meal => (
+                meal.mealId === editingMeal?.mealId ? 
+                <EditMeal 
+                key={editingMeal.mealId}
+                color={MEAL_COLORS[meal.mealType]} 
+                editingMeal={editingMeal} 
+                setEditingMeal={setEditingMeal} 
+                handleMealChange={(mealFoodId, updatedFood) => handleMealChange(mealFoodId, updatedFood)} 
+                removeMeal={() => removeMeal(meal.mealId)}
+                foodData={foodData}
+                /> : <DisplayMeal 
+                key={meal.mealId}
+                meal={meal} 
+                color={MEAL_COLORS[meal.mealType]} 
+                setEditingMeal={setEditingMeal}
+                />
+            ))}
+            {/* {meals.map(meal => {
                 return(
                 <div id={`meal-section-${meal.mealType}`} 
                     key={`meal-section-${meal.mealType}`} className="meal-section" 
-                    style={{backgroundColor: MEAL_COLORS[meal.mealType], borderColor: MEAL_COLORS[meal.mealType]}}
-                    onClick={() => setEditingMeal(meal)}>
-                    {meal === editingMeal && 
+                    style={{backgroundColor: MEAL_COLORS[meal.mealType], borderColor: MEAL_COLORS[meal.mealType]}}>
+                    {meal.mealId === editingMeal?.mealId ? 
                         <button id={`meal-delete-btn-${meal.mealType}`} className="meal-delete-btn" title="Delete Meal" onClick={(e) => {
                             e.stopPropagation(); 
                             removeMeal(meal.mealId)}}>
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+                            </svg>
+                        </button> : <button onClick={() => setEditingMeal(meal)} id={`meal-edit-btn-${meal.mealType}`} className="meal-edit-btn" title="Edit Meal">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M3 17.25V21h3.75l11.06-11.06-3.75-3.75L3 17.25zM21.41 6.34a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0L15.13 4.34l3.75 3.75 2.53-2.53z"/>
                             </svg>
                         </button>
                     }
@@ -272,8 +249,8 @@ function AddMealForm({ visibleBackButton = true }) {
                         </li>))}
                     </ol>}
                 </div>)
-            })}
-        </div>
+            })}*/}
+        </div> 
         
         <MealTypeList AddMeal={(mealType) => AddMeal(mealType)} /> 
         {visibleBackButton && <button id="food-back" onClick={() => navigate(`/`)}>Back</button>}
