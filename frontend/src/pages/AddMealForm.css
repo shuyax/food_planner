@@ -103,4 +103,37 @@
   background-color: #dc2626;
   transform: scale(1.1);
 }
+.day-meals-edit-btn {
+    align-self: end;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: grey;
+    transition: transform 0.15s ease, color 0.2s ease
+}
+.day-meals-edit-btn:hover {
+  color: #2196F3; 
+  transform: scale(1.1);
+}
 
+.meal-form {
+    border: 1px solid grey;
+    display: flex;
+    flex-direction: column
+}
+
+#day-meals-checkmark {
+    align-self: center;
+    background: #0596688a;
+    border: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    transition: transform 0.2s ease, background 0.2s ease;
+}
+#day-meals-checkmark:hover {
+  background: #059669;
+  transform: scale(1.08);
+}

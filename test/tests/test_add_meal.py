@@ -4,6 +4,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import Select, WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
 from conftest import BASE_URL
 from datetime import date
 import time
@@ -19,6 +20,18 @@ put_add_meal_url = f'{BASE_URL}/add-meal?date={put_target_date}'
 
 def test_add_meal_with_related_fields(driver):
     driver.get(get_add_meal_url)
+    edit_day_meals_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, "day-meals-edit"))
+    )
+    day_meals_checkmark = driver.find_elements(By.ID, "day-meals-checkmark")
+    assert len(day_meals_checkmark) == 0, "day_meals_checkmark should not exist under browse mode"
+    dinner_meal_section =  WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, "meal-section-dinner"))
+    )
+    dinner_meal_section.click()
+    select_elements = driver.find_elements(By.TAG_NAME, "select")
+    assert len(select_elements) == 0, "Foods should not be displayed as select and add meal select should not exist under browse mode"
+    edit_day_meals_btn.click()
     meal_form_element = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.CLASS_NAME, 'meal-form'))
     )
@@ -44,9 +57,18 @@ def test_add_meal_with_related_fields(driver):
     assert meal_type_element.find_element(By.XPATH, "./*[1]").text == '-- Select a meal type --', "The first option should be a default option"
     assert meal_type_element.find_element(By.XPATH, "./*[1]").get_attribute('value') == '', "The first option should have an empty value"
     assert meal_type_element.get_attribute('value') == '', "The select element should have an empty value by default"
+    day_meals_checkmark = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, "day-meals-checkmark"))
+    )
+    edit_day_meals_btn = driver.find_elements(By.ID, "day-meals-edit")
+    assert len(edit_day_meals_btn) == 0, "Edit day meals button should not exist under edit mode"
 
 def test_active_meal_with_related_fields(driver):
     driver.get(get_add_meal_url)
+    edit_day_meals_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, "day-meals-edit"))
+    )
+    edit_day_meals_btn.click()
     WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.ID, 'day-cell'))
     )
@@ -76,6 +98,10 @@ def test_active_meal_with_related_fields(driver):
 
 def test_add_meal_button(driver):
     driver.get(post_add_meal_url)
+    edit_day_meals_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, "day-meals-edit"))
+    )
+    edit_day_meals_btn.click()
     meal_type_list = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.ID, 'meal-type'))
     )
@@ -117,6 +143,10 @@ def test_add_meal_button(driver):
 
 def test_delete_meal_button(driver):
     driver.get(delete_add_meal_url)
+    edit_day_meals_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, "day-meals-edit"))
+    )
+    edit_day_meals_btn.click()
     meal_section_btn = WebDriverWait(driver, 10).until(
         EC.element_to_be_clickable((By.ID, "meal-section-dinner"))
     )
@@ -133,6 +163,10 @@ def test_delete_meal_button(driver):
     
 def test_add_food_section(driver):
     driver.get(post_add_meal_url)
+    edit_day_meals_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, "day-meals-edit"))
+    )
+    edit_day_meals_btn.click()
     meal_type_list = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.ID, 'meal-type'))
     )
@@ -218,6 +252,10 @@ def test_add_food_section(driver):
 
 def test_delete_food_section(driver):
     driver.get(delete_add_meal_url)
+    edit_day_meals_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, "day-meals-edit"))
+    )
+    edit_day_meals_btn.click()
     meal_section_lunch_btn = WebDriverWait(driver, 10).until(
         EC.element_to_be_clickable((By.ID, "meal-section-lunch"))
     )
@@ -241,6 +279,10 @@ def test_delete_food_section(driver):
     
 def test_update_food_to_existing_meal(driver):
     driver.get(put_add_meal_url)
+    edit_day_meals_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, "day-meals-edit"))
+    )
+    edit_day_meals_btn.click()
     meal_section_lunch_btn = WebDriverWait(driver, 10).until(
         EC.element_to_be_clickable((By.ID, "meal-section-lunch"))
     )

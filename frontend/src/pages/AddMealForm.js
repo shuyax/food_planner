@@ -6,7 +6,6 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQueryClient } from '@tanstack/react-query';
 import "./AddMealForm.css"
-import { FoodRow } from "../components/FoodRow";
 import EditMeal from "../components/EditMeal";
 import DisplayMeal from "../components/DisplayMeal";
 
@@ -14,7 +13,7 @@ function AddMealForm({ visibleBackButton = true }) {
 
     const navigate = useNavigate();
     const [editingMeal, setEditingMeal] = useState(null);
-    // const prevMealRef = useRef(true);
+    const [editMode, setEditMode] = useState(false)
     const prevMealRef = useRef(null);
     
     const [searchParams] = useSearchParams();
@@ -176,85 +175,56 @@ function AddMealForm({ visibleBackButton = true }) {
         }
     };
 
-    return (<div className="meal-form">
-        <h1 id="meal-date">{mealDate}</h1>
-        <div id="day-cell">
-            {meals.map(meal => (
-                meal.mealId === editingMeal?.mealId ? 
-                <EditMeal 
-                key={editingMeal.mealId}
-                color={MEAL_COLORS[meal.mealType]} 
-                editingMeal={editingMeal} 
-                setEditingMeal={setEditingMeal} 
-                handleMealChange={(mealFoodId, updatedFood) => handleMealChange(mealFoodId, updatedFood)} 
-                removeMeal={() => removeMeal(meal.mealId)}
-                foodData={foodData}
-                /> : <DisplayMeal 
+    return (<>
+        <div className="meal-form">
+            {!editMode && <button id={`day-meals-edit`} className="day-meals-edit-btn" title="Edit Meals" onClick={(e) => {
+                e.stopPropagation(); 
+                setEditMode(true)
+                }}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M3 17.25V21h3.75l11.06-11.06-3.75-3.75L3 17.25zM21.41 6.34a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0L15.13 4.34l3.75 3.75 2.53-2.53z"/>
+                </svg>
+            </button>}
+            <h1 id="meal-date">{mealDate}</h1>
+            {editMode ? <><div id="day-cell">
+                {meals.map(meal => (
+                    meal.mealId === editingMeal?.mealId ? 
+                    <EditMeal 
+                    key={editingMeal.mealId}
+                    color={MEAL_COLORS[meal.mealType]} 
+                    editingMeal={editingMeal} 
+                    setEditingMeal={setEditingMeal} 
+                    handleMealChange={(mealFoodId, updatedFood) => handleMealChange(mealFoodId, updatedFood)} 
+                    removeMeal={() => removeMeal(meal.mealId)}
+                    foodData={foodData}
+                    /> : <DisplayMeal 
+                    key={meal.mealId}
+                    meal={meal} 
+                    color={MEAL_COLORS[meal.mealType]} 
+                    setEditingMeal={setEditingMeal}
+                    editMode={editMode}
+                    />
+                ))}
+            </div> 
+            <MealTypeList AddMeal={(mealType) => AddMeal(mealType)} />
+            <button id="day-meals-checkmark" title="Exit Edit Mode" onClick={(e) => {
+                e.stopPropagation();
+                setEditMode(false);
+            }}>
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            </button>
+            </> : <>
+            {meals.map(meal => (<DisplayMeal 
                 key={meal.mealId}
                 meal={meal} 
                 color={MEAL_COLORS[meal.mealType]} 
                 setEditingMeal={setEditingMeal}
-                />
-            ))}
-            {/* {meals.map(meal => {
-                return(
-                <div id={`meal-section-${meal.mealType}`} 
-                    key={`meal-section-${meal.mealType}`} className="meal-section" 
-                    style={{backgroundColor: MEAL_COLORS[meal.mealType], borderColor: MEAL_COLORS[meal.mealType]}}>
-                    {meal.mealId === editingMeal?.mealId ? 
-                        <button id={`meal-delete-btn-${meal.mealType}`} className="meal-delete-btn" title="Delete Meal" onClick={(e) => {
-                            e.stopPropagation(); 
-                            removeMeal(meal.mealId)}}>
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
-                            </svg>
-                        </button> : <button onClick={() => setEditingMeal(meal)} id={`meal-edit-btn-${meal.mealType}`} className="meal-edit-btn" title="Edit Meal">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M3 17.25V21h3.75l11.06-11.06-3.75-3.75L3 17.25zM21.41 6.34a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0L15.13 4.34l3.75 3.75 2.53-2.53z"/>
-                            </svg>
-                        </button>
-                    }
-                    <strong>{meal.mealType.toUpperCase()}</strong>
-                    {meal.mealId === editingMeal?.mealId ? <>
-                    <ol className="meal-foods-edit">{editingMeal.foods.map((food, index) => {
-                        if (!(food.foodId === -1 && food.mealFoodId !== -1)) {return(<li className="meal-food-edit" id={`${editingMeal.mealType}-${food.mealFoodId}`} key={`${food.mealFoodId}`}>
-                        <span>{index+1}. </span>
-                        <FoodRow key={`${food.foodId}`} existingFoods={availableFoods} food={food} mealType={editingMeal.mealType} 
-                        updateFood={(updatedFood) => handleMealChange(food.mealFoodId, updatedFood)}  
-                        />
-                        <button id={`food-delete-btn-${editingMeal.mealType}-${food.mealFoodId}`} className="food-delete-btn" title="Delete Food From Meal" onClick={(e) => {
-                            e.stopPropagation(); 
-                            handleDeleteFood(food.mealFoodId);
-                        }}>
-                            <svg viewBox="0 0 24 24" width="16" height="16" fill="white">
-                                <path d="M6 7h12l-1 14H7L6 7zm3-3h6l1 2H8l1-2z"/>
-                            </svg>
-                        </button>
-                        </li>)}
-                        return <></>
-                    })}
-                    </ol>
-                    <button id={`food-add-btn-${meal.mealType}`} className="food-add-btn" title="Add Food" disabled={editingMeal?.foods.some(f => f.foodId === -1)} onClick={(e) => {
-                        e.stopPropagation(); 
-                        handleAddFood();
-                    }}>
-                        <svg viewBox="0 0 24 24" width="24" height="24" fill="white">
-                            <path d="M12 5v14M5 12h14" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-                        </svg>
-                    </button>
-                    </> : <ol className="meal-foods" id={`meal-foods-${meal.mealType}`}>
-                        {meal.foods.map(food => 
-                        (<li className="meal-food" id= {`${meal.mealType}-${food.foodName}`} key={`${meal.mealType}-${food.foodName}`}>
-                        <span>{food.foodName}</span>
-                        </li>))}
-                    </ol>}
-                </div>)
-            })}*/}
-        </div> 
-        
-        <MealTypeList AddMeal={(mealType) => AddMeal(mealType)} /> 
+                editMode={editMode}
+                />))}
+            </>}
+        </div>
         {visibleBackButton && <button id="food-back" onClick={() => navigate(`/`)}>Back</button>}
-      </div>);
+    </>);
 };
 
 export default AddMealForm;
