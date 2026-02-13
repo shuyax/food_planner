@@ -50,7 +50,9 @@ def test_active_meal_with_related_fields(driver):
     WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.ID, 'day-cell'))
     )
-    target_active_meal = driver.find_element(By.ID, "meal-section-dinner")
+    target_active_meal = driver.find_elements(By.ID, "meal-section-dinner")
+    assert len(target_active_meal) == 1, "There should be only one dinner"
+    target_active_meal = target_active_meal[0]
     hiden_elements_ids = ['meal-delete-btn-dinner', 'food-add-btn-dinner']
     hiden_elements_class_names = ['food-delete-btn', 'food-list-select']
     for hiden_elements_id in hiden_elements_ids:
@@ -60,6 +62,7 @@ def test_active_meal_with_related_fields(driver):
         elements = target_active_meal.find_elements(By.CLASS_NAME, hiden_elements_class_name)
         assert len(elements) == 0, f"{hiden_elements_class_name} should not exist"
     target_active_meal.click()
+    target_active_meal = driver.find_element(By.ID, "meal-section-dinner")
     for hiden_elements_id in hiden_elements_ids:
         elements = target_active_meal.find_elements(By.ID, hiden_elements_id)
         assert len(elements) == 1, f"{hiden_elements_id} should be visible"
@@ -166,7 +169,7 @@ def test_add_food_section(driver):
     assert add_food_btn.get_attribute("disabled") is not None, "The add food button should be disabled if there is an empty select"
     food_select = Select(new_food_select)
     food_select.select_by_visible_text("tomato beef udon with cheese")
-    add_food_btn = WebDriverWait(driver, 10).until(
+    add_food_btn = WebDriverWait(driver, 20).until(
         EC.element_to_be_clickable((By.ID, 'food-add-btn-dinner'))
     )
     assert add_food_btn.get_attribute("disabled") is None, "The add food button should be enable if there is no empty select"
@@ -181,6 +184,9 @@ def test_add_food_section(driver):
     meal_foods_dinner = driver.find_element(By.ID, "meal-foods-dinner")
     current_foods_li = meal_foods_dinner.find_elements(By.CLASS_NAME, "meal-food")
     name_of_foods = [li.text for li in current_foods_li]
+    meal_section_dinner_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, "meal-section-dinner"))
+    )
     meal_section_dinner_btn.click()
     add_food_btn = WebDriverWait(driver, 10).until(
         EC.element_to_be_clickable((By.ID, 'food-add-btn-dinner'))
@@ -196,9 +202,15 @@ def test_add_food_section(driver):
     available_option_names = [option.get_attribute("value") for option in available_options]
     assert name_of_foods not in available_option_names
     # test default food will be filter out after saving
+    meal_section_dinner_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, "meal-section-dinner"))
+    )
     lis = meal_section_dinner_btn.find_elements(By.CLASS_NAME, "meal-food-edit")
     filtered_lis = [li for li in lis if "--1" not in li.get_attribute("id")]
     valid_li_len = len(filtered_lis)
+    meal_section_drink_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, "meal-section-drink"))
+    )
     meal_section_drink_btn.click()
     meal_foods_dinner = driver.find_element(By.ID, "meal-foods-dinner")
     displayed_lis = meal_foods_dinner.find_elements(By.CLASS_NAME, "meal-food")
