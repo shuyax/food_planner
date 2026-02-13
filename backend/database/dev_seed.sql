@@ -76,7 +76,8 @@ VALUES
 ('snack', '2026-01-05'),
 ('dinner', '2026-01-16'),
 ('dinner', '2026-01-07'),
-('lunch', '2026-01-07')
+('lunch', '2026-01-07'),
+('breakfast', '2026-01-07')
 ;
 
 INSERT INTO meal_food (meal_id, food_id)
