@@ -29,7 +29,7 @@ export function MealTypeList( {AddMeal} ) {
     if ( mealTypesIsLoading) return <p>Meal Types Loading ...</p>;
     if ( mealTypesError) return <p>Meal Types Error: {mealTypesError.message}</p>;
 
-    return (<div className={`meal-type-list-${mealType}`}>
+    return (<div id={`meal-type-list-${mealType}`} className="meal-type-list">
         <label htmlFor={`meal-type`}>Meal Type: </label>
         <select name="meal-type" 
             id={`meal-type`}

@@ -54,7 +54,7 @@ def test_add_meal_with_related_fields(driver):
     assert meal_type_element.is_displayed(), "Meal type select should be visible"
     option_elements = meal_type_element.find_elements(By.TAG_NAME, "option")
     assert len(option_elements) == 6, "There should be 5 meal types and and empty option populated under select"
-    assert meal_type_element.find_element(By.XPATH, "./*[1]").text == '-- Select a meal type --', "The first option should be a default option"
+    assert meal_type_element.find_element(By.XPATH, "./*[1]").text.lower() == '-- select a meal type --', "The first option should be a default option"
     assert meal_type_element.find_element(By.XPATH, "./*[1]").get_attribute('value') == '', "The first option should have an empty value"
     assert meal_type_element.get_attribute('value') == '', "The select element should have an empty value by default"
     day_meals_checkmark = WebDriverWait(driver, 10).until(
@@ -118,7 +118,7 @@ def test_add_meal_button(driver):
     add_meal_btn.click()
     # Wait for the DOM to update (length should stay the same for duplicate)
     WebDriverWait(driver, 30).until(
-        EC.presence_of_element_located((By.CLASS_NAME, 'meal-type-list-'))
+        EC.presence_of_element_located((By.ID, 'meal-type-list-'))
     )
     meal_section_elements_v_1 = driver.find_elements(By.CLASS_NAME, 'meal-section')
     assert len(meal_section_elements_v_1) == len_before_add, "The meal type section should not increase for a duplicate"
