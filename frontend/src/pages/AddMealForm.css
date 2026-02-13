@@ -1,0 +1,106 @@
+#day-cell {
+    display: flex;
+    flex-direction: column;
+    padding-left: 1%;
+    padding-right: 1%;
+    padding-bottom: 1%;
+}
+.meal-section {
+    border-radius: 7px;
+    color: white; 
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0.2%;
+}
+.meal-foods{
+    list-style-position: inside;
+    padding-left: 5%;
+    padding-right: 5%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem
+}
+.meal-foods-edit {
+    padding-left: 5%;
+    padding-right: 5%;
+}
+.meal-section {
+    padding-top: 2%;
+    padding-bottom: 2%;
+}
+.meal-food {
+    border: solid white 1px;
+    padding: 8px;
+    border-radius: 6px;
+    background-color: #68686829;
+    box-shadow: 0 8px 20px rgba(127, 127, 127, 0.15);
+    text-align: left;
+    text-transform: capitalize;
+}
+.meal-food-edit {
+    border: none;
+    display: flex;                 
+    justify-content: space-between; 
+    align-items: center;
+    gap: 1%
+}
+.food-list-select {
+    -webkit-appearance: none; /* remove default arrow on Chrome/Safari */
+    -moz-appearance: none;    /* remove default arrow on Firefox */
+    appearance: none;
+    background-color: #f3f4f6;
+    color: #111827;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 6px 12px;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12'><polygon points='0,0 12,0 6,6' fill='black'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 12px;
+}
+.meal-delete-btn {
+    align-self: end;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: white;
+    transition: transform 0.15s ease, color 0.2s ease;
+}
+.meal-delete-btn:hover {
+  color: #dc2626;
+  transform: scale(1.1);
+  
+}
+.food-add-btn {
+    align-self: center;
+    background: none;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    transition: transform 0.2s ease, background 0.2s ease;
+}
+.food-add-btn:not(:disabled):hover {
+  background: #059669;
+  transform: scale(1.08);
+}
+.food-add-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.5; 
+}
+.food-delete-btn {
+  background-color: #ffffff2b;
+  border: none;
+  border-radius: 50%;
+  padding: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.food-delete-btn:hover {
+  background-color: #dc2626;
+  transform: scale(1.1);
+}
+
