@@ -13,10 +13,10 @@ get_target_date = '2026-01-16'
 delete_target_date = '2026-01-07'
 post_target_date = '2026-01-06'
 put_target_date = '2026-01-08'
-get_add_meal_url = f'{BASE_URL}/add-meal?date={get_target_date}'
-delete_add_meal_url = f'{BASE_URL}/add-meal?date={delete_target_date}'
-post_add_meal_url = f'{BASE_URL}/add-meal?date={post_target_date}'
-put_add_meal_url = f'{BASE_URL}/add-meal?date={put_target_date}'
+get_add_meal_url = f'{BASE_URL}/day-meals?date={get_target_date}'
+delete_add_meal_url = f'{BASE_URL}/day-meals?date={delete_target_date}'
+post_add_meal_url = f'{BASE_URL}/day-meals?date={post_target_date}'
+put_add_meal_url = f'{BASE_URL}/day-meals?date={put_target_date}'
 
 def test_add_meal_with_related_fields(driver):
     driver.get(get_add_meal_url)

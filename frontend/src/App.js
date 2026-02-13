@@ -1,7 +1,7 @@
 import './App.css';
 import AddFoodForm from './pages/AddFoodForm';
 import AddIngredientForm from './pages/AddIngredientForm';
-import AddMealForm from './pages/AddMealForm';
+import MealForm from './pages/MealFormPage';
 import EditFoodForm from './pages/EditFoodForm';
 import Home from './pages/Home'
 import { Routes, Route, Link } from "react-router-dom";
@@ -22,7 +22,7 @@ function App() {
         <Route path='/add-ingredient' element={<AddIngredientForm />} />
         <Route path="/add-food" element={<AddFoodForm />} />
         <Route path="/edit-food/:foodId" element={<EditFoodForm />} />
-        <Route path='/add-meal' element={<AddMealForm />} />
+        <Route path='/day-meals' element={<MealForm />} />
        </Routes>
     </div>
   );

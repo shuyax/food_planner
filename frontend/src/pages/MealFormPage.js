@@ -9,7 +9,7 @@ import "./AddMealForm.css"
 import EditMeal from "../components/EditMeal";
 import DisplayMeal from "../components/DisplayMeal";
 
-function AddMealForm({ visibleBackButton = true }) {
+function MealForm({ visibleBackButton = true }) {
 
     const navigate = useNavigate();
     const [editingMeal, setEditingMeal] = useState(null);
@@ -227,7 +227,7 @@ function AddMealForm({ visibleBackButton = true }) {
     </>);
 };
 
-export default AddMealForm;
+export default MealForm;
 
 const MEAL_COLORS = {
     breakfast: '#FACC15', // yellow
