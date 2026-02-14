@@ -1,13 +1,14 @@
 const { Pool } = require("pg");
 const path = require("path");
 const dotenv = require("dotenv");
-const envFile =
-  process.env.NODE_ENV === "test"
-    ? path.resolve(__dirname, "../.env.test")
-    : path.resolve(__dirname, "../.env.dev");
+const envMap = {
+  test: ".env.test",
+  development: ".env.dev",
+  production: ".env.prod",
+};
+const envFileName = envMap[process.env.NODE_ENV] || ".env.dev";
+const envFile = path.resolve(__dirname, `../${envFileName}`);
 dotenv.config({ path: envFile, override: true });
-
-const isTest = process.env.NODE_ENV === "test";
 
 console.log("💡 Connecting with DB config:", {
   host: process.env.DB_HOST,
@@ -27,7 +28,7 @@ const pool = new Pool({
 // Optional but VERY helpful during debugging
 pool.on("connect", () => {
   console.log(
-    `🗄️ Connected to ${isTest ? "TEST" : "DEV"} database: ${process.env.DB_NAME}`
+    `🗄️ Connected to ${process.env.NODE_ENV} database: ${process.env.DB_NAME}`
   );
 });
 

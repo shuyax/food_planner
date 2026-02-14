@@ -2,9 +2,11 @@
 const fs = require("fs");
 const path = require("path");
 const pool = require("./pool.js");
+console.log('process.env.NODE_ENV', process.env.NODE_ENV)
 
 const isTest = process.env.NODE_ENV === "test";
 const isDev = process.env.NODE_ENV === "development";
+const isProd = process.env.NODE_ENV === "production";
 
 const runSQLFile = async (filePath) => {
   const sql = fs.readFileSync(filePath, "utf8");
@@ -13,10 +15,10 @@ const runSQLFile = async (filePath) => {
 };
 
 const resetDatabase = async () => {
-  if (!isTest && !isDev) {
-    throw new Error("❌ Refusing to reset DB outside test environment");
+  if (!isTest && !isDev && !isProd) {
+    throw new Error("❌ Refusing to reset DB outside pre-defined environment");
   }
-  console.log("♻️ Resetting test database...");
+  console.log(`♻️ Resetting ${process.env.NODE_ENV} database...`);
   await pool.query(`
     DROP SCHEMA public CASCADE;
     CREATE SCHEMA public;
@@ -29,7 +31,6 @@ const resetDatabase = async () => {
     await resetDatabase();
     // run schema.sql first
     await runSQLFile(path.join(basePath, "schema.sql"));
-
     // run triggers.sql second
     await runSQLFile(path.join(basePath, "triggers.sql"));
 
@@ -39,7 +40,6 @@ const resetDatabase = async () => {
       console.log('inserting dev_seed data');
       await runSQLFile(path.join(basePath, "dev_seed.sql"));
     };
-
     console.log("Database migration completed successfully.");
     process.exit(0);
   } catch (err) {
