@@ -3,8 +3,11 @@ import axios from "axios";
 
 export async function fetchFoods() {
     const res = await axios.get(`${BASEURL}/foods`)
-    console.log(res.data)
-    return res.data
+    return res.data.map(food => ({
+      foodName: food.name,
+      foodId: food.id,
+      foodDecription: food.description
+    }))
 };
 
 export async function createFood(foodName, foodDescription) {

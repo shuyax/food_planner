@@ -63,7 +63,6 @@ def test_prev_btn(driver):
     )
     assert seven_days_ago_cell.is_displayed(), "Seven_days_ago cell should be visible"
 
-
 def test_next_btn(driver):
     driver.get(BASE_URL)
     next_btn = WebDriverWait(driver, 10).until(
@@ -76,7 +75,6 @@ def test_next_btn(driver):
         EC.presence_of_element_located((By.XPATH, f"//th[@data-date='{seven_days_later}']"))
     )
     assert seven_days_later_cell.is_displayed(), "seven_days_later cell should be visible"
-
 
 def test_month_btn(driver):
     driver.get(BASE_URL)
@@ -115,24 +113,17 @@ def test_week_btn(driver):
     td_elements = tbody_elements[0].find_elements(By.TAG_NAME, "td")
     assert len(td_elements) == 7, "There should 7 days in a week view"
 
-
-def test_add_meal_btn(driver):
+def test_navigate_to_a_day_meals(driver):
     driver.get(BASE_URL)
     today = date.today().isoformat()
-    add_meal_btn = driver.find_element(
+    navigate_btn = driver.find_element(
         By.XPATH, f"//td[contains(@class,'fc-daygrid-day') and @data-date='{today}']"
     )
-    add_meal_btn.click()
+    navigate_btn.click()
     WebDriverWait(driver, 10).until(
-        EC.url_contains("/add-meal")
+        EC.url_contains("/day-meals")
     )
-    assert "/add-meal?date=" in driver.current_url
-    new_page_date = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.CLASS_NAME, "fc-toolbar-title"))
-    )
-    formatted = date.today().strftime("%B %-d, %Y")
-    assert new_page_date.text == formatted, "The new page navigated to should be the date clicked"
-
+    assert "/day-meals?date=" in driver.current_url
 
 def test_meal_type_loaded_in_month_view(driver):
     target_date = date(2026, 1, 5)
@@ -180,7 +171,6 @@ def test_meal_type_loaded_in_month_view(driver):
         assert meal in meal_titles, f"{meal} should be present on {target_date_str}"
     # Check that each meal has a different color
     assert len(colors) == len(expected_meals), "All meal types should have different colors"    
-
 
 def test_meal_type_and_foodname_loaded_in_week_view(driver):
     target_date = date(2026, 1, 5)
