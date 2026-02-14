@@ -18,19 +18,15 @@ delete_add_meal_url = f'{BASE_URL}/day-meals?date={delete_target_date}'
 post_add_meal_url = f'{BASE_URL}/day-meals?date={post_target_date}'
 put_add_meal_url = f'{BASE_URL}/day-meals?date={put_target_date}'
 
-def test_add_meal_with_related_fields(driver):
+def test_meal_page_with_related_fields(driver):
     driver.get(get_add_meal_url)
+    day_meals_checkmark = driver.find_elements(By.ID, "day-meals-checkmark")
+    assert len(day_meals_checkmark) == 0, "day_meals_checkmark should not exist under browse mode"
+    select_elements = driver.find_elements(By.TAG_NAME, "select")
+    assert len(select_elements) == 0, "Foods should not be displayed as select and add meal select should not exist under browse mode"
     edit_day_meals_btn = WebDriverWait(driver, 10).until(
         EC.element_to_be_clickable((By.ID, "day-meals-edit"))
     )
-    day_meals_checkmark = driver.find_elements(By.ID, "day-meals-checkmark")
-    assert len(day_meals_checkmark) == 0, "day_meals_checkmark should not exist under browse mode"
-    dinner_meal_section =  WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.ID, "meal-section-dinner"))
-    )
-    dinner_meal_section.click()
-    select_elements = driver.find_elements(By.TAG_NAME, "select")
-    assert len(select_elements) == 0, "Foods should not be displayed as select and add meal select should not exist under browse mode"
     edit_day_meals_btn.click()
     meal_form_element = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.CLASS_NAME, 'meal-form'))
@@ -62,6 +58,17 @@ def test_add_meal_with_related_fields(driver):
     )
     edit_day_meals_btn = driver.find_elements(By.ID, "day-meals-edit")
     assert len(edit_day_meals_btn) == 0, "Edit day meals button should not exist under edit mode"
+
+def test_food_navigation(driver):
+    driver.get(get_add_meal_url)
+    dinner_meal_section =  WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, "meal-section-dinner"))
+    )
+    dinner_meal_section.click()
+    WebDriverWait(driver, 10).until(
+        EC.url_contains("lastpage")
+    )
+    assert f"/food/2?lastpage=day-meals?date={get_target_date}" in driver.current_url
 
 def test_active_meal_with_related_fields(driver):
     driver.get(get_add_meal_url)
