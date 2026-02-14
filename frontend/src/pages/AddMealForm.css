@@ -104,11 +104,14 @@
   transform: scale(1.1);
 }
 .day-meals-edit-btn {
-    align-self: end;
-    background: none;
+    align-self: center;
+    background: #2195f37c;
     border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
     cursor: pointer;
-    color: grey;
+    color: white;
     transition: transform 0.15s ease, color 0.2s ease
 }
 .day-meals-edit-btn:hover {
@@ -117,7 +120,7 @@
 }
 
 .meal-form {
-    border: 1px solid grey;
+    /* border: 1px solid grey; */
     display: flex;
     flex-direction: column;
     padding: 1.5%;
