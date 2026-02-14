@@ -96,7 +96,7 @@ def test_active_meal_with_related_fields(driver):
             options = elements[0].find_elements(By.TAG_NAME, "option")
             assert len(options) > 1, "There should be more than one food listed as options"
 
-def test_add_meal_button(driver):
+def test_add_meal(driver):
     driver.get(post_add_meal_url)
     edit_day_meals_btn = WebDriverWait(driver, 10).until(
         EC.element_to_be_clickable((By.ID, "day-meals-edit"))
@@ -105,17 +105,11 @@ def test_add_meal_button(driver):
     meal_type_list = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.ID, 'meal-type'))
     )
-    add_meal_btn = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.ID, 'add-meal'))
-    )
-    assert add_meal_btn.get_attribute("disabled") == 'true', "The add meal button should be disabled if the select value is empty"
     meal_section_elements = driver.find_elements(By.CLASS_NAME, 'meal-section')
     len_before_add = len(meal_section_elements)
     assert len_before_add == 1, "There should be only one meal type on the target day"
     select = Select(meal_type_list)
     select.select_by_visible_text("dinner")
-    assert add_meal_btn.get_attribute("disabled") == None, "The add meal button should be enabled if the select value is not empty"
-    add_meal_btn.click()
     # Wait for the DOM to update (length should stay the same for duplicate)
     WebDriverWait(driver, 30).until(
         EC.presence_of_element_located((By.ID, 'meal-type-list-'))
@@ -128,7 +122,6 @@ def test_add_meal_button(driver):
     )
     select = Select(meal_type_list)
     select.select_by_visible_text("breakfast")
-    add_meal_btn.click()
     # Wait until the new meal section appears (length increases)
     WebDriverWait(driver, 10).until(
         lambda d: len(
@@ -170,14 +163,10 @@ def test_add_food_section(driver):
     meal_type_list = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.ID, 'meal-type'))
     )
-    add_meal_btn = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.ID, 'add-meal'))
-    )
     meal_section_elements = driver.find_elements(By.CLASS_NAME, 'meal-section')
     len_before_add = len(meal_section_elements)
     select = Select(meal_type_list)
     select.select_by_visible_text("drink")
-    add_meal_btn.click()
     WebDriverWait(driver, 10).until(
         lambda d: len(d.find_elements(By.CLASS_NAME, "meal-section")) == len_before_add + 1
     )

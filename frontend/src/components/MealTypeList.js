@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { fetchMealTypes } from "../services/MealService";
 import { useQuery } from "@tanstack/react-query";
 
@@ -26,6 +26,11 @@ export function MealTypeList( {AddMeal} ) {
         }
     };
 
+    useEffect(() => {
+        if (!mealType) return;
+        handleAddMeal()
+    },[mealType])
+
     if ( mealTypesIsLoading) return <p>Meal Types Loading ...</p>;
     if ( mealTypesError) return <p>Meal Types Error: {mealTypesError.message}</p>;
 
@@ -41,6 +46,6 @@ export function MealTypeList( {AddMeal} ) {
                 <option key={index} value={mealType}>{mealType}</option>   
             ))}
         </select>
-        <button id="add-meal" type="button" onClick={handleAddMeal} disabled={mealType === ''}>Add Meal</button>
+        {/* <button id="add-meal" type="button" onClick={handleAddMeal} disabled={mealType === ''}>Add Meal</button> */}
     </div>)
 };
