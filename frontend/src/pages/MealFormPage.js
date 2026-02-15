@@ -5,7 +5,7 @@ import { createMeal, deleteMeal, fetchMeals, fetchRelatedFoods, updateFoodsToMea
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from '@tanstack/react-query';
-import "./AddMealForm.css"
+import "./MealForm.css"
 import EditMeal from "../components/EditMeal";
 import DisplayMeal from "../components/DisplayMeal";
 
