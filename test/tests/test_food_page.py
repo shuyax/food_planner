@@ -9,10 +9,12 @@ from datetime import date
 import time
 
 food_id = 7
-edit_food_url = f'{BASE_URL}/edit-food/{food_id}'
+navigate_from_date = "2026-02-16"
+navigate_from = f"?lastpage=day-meals?date={navigate_from_date}"
+edit_food_url = f'{BASE_URL}/food/{food_id}{navigate_from}'
 
 
-def test_edit_food_with_related_fields(driver):
+def test_food_page_with_related_fields(driver):
     driver.get(edit_food_url)
     edit_btn = WebDriverWait(driver, 10).until(
         EC.element_to_be_clickable((By.ID, 'edit-food'))
@@ -59,6 +61,17 @@ def test_edit_food_with_related_fields(driver):
         EC.element_to_be_clickable((By.ID, 'food-back'))
     )
     assert back_btn.is_displayed(), "back button should be visible"
+
+def test_back_button(driver):
+    driver.get(edit_food_url)
+    cancel_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, 'food-back'))
+    )
+    cancel_btn.click()
+    WebDriverWait(driver, 10).until(
+        lambda d: "/food" not in d.current_url
+    )
+    assert navigate_from[10:] in driver.current_url, "Back button should navigate back to the the last page"
 
 def test_remove_btn(driver):
     driver.get(edit_food_url)
@@ -135,17 +148,6 @@ def test_create_ingredient_btn(driver):
         EC.presence_of_element_located((By.ID, "ingredient-form-note"))
     )
     assert "created successfully" in submission_note.text
-
-def test_back_button(driver):
-    driver.get(edit_food_url)
-    cancel_btn = WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.ID, 'food-back'))
-    )
-    cancel_btn.click()
-    WebDriverWait(driver, 10).until(
-        lambda d: "/edit-food" not in d.current_url
-    )
-    assert driver.current_url == BASE_URL + "/", "Back button should navigate back to the home page"
 
 def test_save_btn(driver):
     driver.get(edit_food_url)

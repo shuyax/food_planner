@@ -3,9 +3,9 @@ import { MealTypeList } from "../components/MealTypeList";
 import { fetchFoods } from "../services/FoodService";
 import { createMeal, deleteMeal, fetchMeals, fetchRelatedFoods, updateFoodsToMeal } from "../services/MealService";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from '@tanstack/react-query';
-import "./AddMealForm.css"
+import "./MealForm.css"
 import EditMeal from "../components/EditMeal";
 import DisplayMeal from "../components/DisplayMeal";
 
@@ -177,14 +177,6 @@ function MealForm({ visibleBackButton = true }) {
 
     return (<>
         <div className="meal-form">
-            {/* {!editMode && <button id={`day-meals-edit`} className="day-meals-edit-btn" title="Edit Meals" onClick={(e) => {
-                e.stopPropagation(); 
-                setEditMode(true)
-                }}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M3 17.25V21h3.75l11.06-11.06-3.75-3.75L3 17.25zM21.41 6.34a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0L15.13 4.34l3.75 3.75 2.53-2.53z"/>
-                </svg>
-            </button>} */}
             <h1 id="meal-date">{mealDate}</h1>
             {editMode ? <><div id="day-cell">
                 {meals.map(meal => (
@@ -231,7 +223,9 @@ function MealForm({ visibleBackButton = true }) {
             </button>
             </>}
         </div>
-        {visibleBackButton && <button id="food-back" onClick={() => navigate(`/`)}>Back</button>}
+        {visibleBackButton && <button id="food-back" onClick={(e) => {
+            e.stopPropagation(); 
+            navigate(`/`)}}>Back</button>}
     </>);
 };
 

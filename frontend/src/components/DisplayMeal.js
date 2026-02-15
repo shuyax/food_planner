@@ -1,4 +1,6 @@
+import { useNavigate } from "react-router-dom";
 function DisplayMeal( {meal, color, setEditingMeal, editMode} ) {
+    const navigate = useNavigate();
     return(<>
     {editMode ? <div id={`meal-section-${meal.mealType}`} 
         key={`meal-section-${meal.mealType}`} className="meal-section" 
@@ -17,7 +19,9 @@ function DisplayMeal( {meal, color, setEditingMeal, editMode} ) {
         <strong>{meal.mealType.toUpperCase()}</strong>
         <ol className="meal-foods" id={`meal-foods-${meal.mealType}`}>
             {meal.foods.map(food => 
-            (<li className="meal-food" id= {`${meal.mealType}-${food.foodName}`} key={`${meal.mealType}-${food.foodName}`}>
+            (<li className="meal-food" id={`${meal.mealType}-${food.foodName}`} key={`${meal.mealType}-${food.foodName}`} onClick={(e) => {
+                e.stopPropagation(); 
+                navigate(`/food/${food.foodId}?lastpage=${`day-meals?date=${meal.mealDate.slice(0,10)}`}`)}}>
             <span>{food.foodName}</span>
             </li>))}
         </ol>
