@@ -27,7 +27,21 @@
     display: flex;
     align-items: center
 }
-.ingredient-select, .ingredient-input, .food-input {
+.ingredient-select {
+    -webkit-appearance: none; /* remove default arrow on Chrome/Safari */
+    -moz-appearance: none;    /* remove default arrow on Firefox */
+    appearance: none;
+    background-color: #f3f4f6;
+    color: #111827;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 6px 12px;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12'><polygon points='0,0 12,0 6,6' fill='black'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 12px;
+}
+.ingredient-input, .food-input {
     appearance: none;
     background-color: #f3f4f6;
     color: #111827;
