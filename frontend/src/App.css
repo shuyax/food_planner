@@ -1,38 +1,101 @@
 .App {
-  text-align: center;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    min-height: 99%;
 }
-/* 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-} */
-
-/* @media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-} */
-/* 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-} */
 
 .App-link {
-  color: #61dafb;
+    color: #61dafb;
 }
 
-/* @keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-} */
+.back-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    width: 50px;
+    height: 50px;
+    color: #6b7280;
+    display: flex;
+    align-self: center;
+    transition: background 0.2s ease, transform 0.15s ease;
+}
+.back-btn:hover {
+    color: #4b5563;
+    transform: scale(1.1);
+}
+
+.add-btn {
+    align-self: center;
+    background: #059668db;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    transition: transform 0.2s ease, background 0.2s ease;
+}
+.add-btn:hover {
+  background: #059669;
+  transform: scale(1.08);
+}
+.create-btn {
+    align-self: center;
+    background: #10b981;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    margin: 4px;
+    cursor: pointer;
+    transition: transform 0.2s ease, background 0.2s ease;
+    color: white;
+}
+.create-btn:hover {
+    background: #059669;
+  transform: scale(1.1);
+} 
+.save-btn {
+    align-self: center;
+    background: #3b82f6;
+    border: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    transition: transform 0.2s ease, background 0.2s ease;
+}
+.save-btn:hover {
+  background: #2563eb;
+  transform: scale(1.08);
+}
+.remove-btn {
+  background-color: #464646df;
+  border: none;
+  border-radius: 50%;
+  padding: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+.remove-btn:hover {
+  background-color: #dc2626;
+  transform: scale(1.1);
+}
+.edit-btn {
+    align-self: center;
+    background: #f59e0b;
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+    color: white;
+    transition: transform 0.15s ease, color 0.2s ease
+}
+.edit-btn:hover {
+  background: #d97706;
+  transform: scale(1.1);
+}

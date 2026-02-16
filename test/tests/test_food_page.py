@@ -16,9 +16,15 @@ edit_food_url = f'{BASE_URL}/food/{food_id}{navigate_from}'
 
 def test_food_page_with_related_fields(driver):
     driver.get(edit_food_url)
+    back_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, 'food-back'))
+    )
+    assert back_btn.is_displayed(), "back button should be visible"
+    assert back_btn.get_attribute("title") == "Back to Last Page", "Back Button should have a title"
     edit_btn = WebDriverWait(driver, 10).until(
         EC.element_to_be_clickable((By.ID, 'edit-food'))
     )
+    assert edit_btn.get_attribute("title") == "Edit Food", "Edit Button should have a title"
     edit_btn.click()
     food_name_input = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.ID, 'edit-food-name'))
@@ -45,22 +51,24 @@ def test_food_page_with_related_fields(driver):
         EC.element_to_be_clickable((By.ID, 'remove-btn-0'))
     )
     assert remove_btn.is_displayed(), "remove button should be visible"
+    assert remove_btn.get_attribute("title") == "Delete Ingredient From Food", "Remove Button should have a title"
     add_ingredient_btn = WebDriverWait(driver, 10).until(
         EC.element_to_be_clickable((By.ID, 'add-ingredient'))
     )
     assert add_ingredient_btn.is_displayed(), "add ingredient button should be visible"
+    assert add_ingredient_btn.get_attribute("title") == "Add Ingredient", "Add Ingredient Button should have a title"
     create_ingredient_btn = WebDriverWait(driver, 10).until(
         EC.element_to_be_clickable((By.ID, 'create-ingredient'))
     )
     assert create_ingredient_btn.is_displayed(), "create ingredient button should be visible"
+    assert create_ingredient_btn.get_attribute("title") == "Create A New Ingredient", "Create Ingredient Button should have a title"
     save_btn = WebDriverWait(driver, 10).until(
         EC.element_to_be_clickable((By.ID, 'save-food'))
     )
     assert save_btn.is_displayed(), "save button should be visible"
-    back_btn = WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.ID, 'food-back'))
-    )
-    assert back_btn.is_displayed(), "back button should be visible"
+    assert save_btn.get_attribute("title") == "Save Edit", "Save Button should have a title"
+    back_btn = driver.find_elements(By.ID," food-back")
+    assert len(back_btn) == 0, "Back button should be only visible under browse mode"
 
 def test_back_button(driver):
     driver.get(edit_food_url)
