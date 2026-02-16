@@ -1,0 +1,43 @@
+#food-form, #food-form-edit {
+    display: flex;
+    flex-direction: column;
+    padding: 1%;
+    flex: 1;
+}
+.edit-food-line{
+    display: flex;
+    flex-direction: column;
+}
+#edit-food-description-section {
+    flex:1
+}
+#edit-food-description {
+    flex:1
+}
+#ingredients-edit {
+    display: flex;
+    flex-direction: column;
+    gap: 1em
+}
+.ingredient-row {
+    display: flex;
+    align-items: center
+}
+.ingredient-quantity, .ingredient-note {
+    display: flex;
+    align-items: center
+}
+.ingredient-select, .ingredient-input, .food-input {
+    appearance: none;
+    background-color: #f3f4f6;
+    color: #111827;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 6px 12px;
+}
+#food-description {
+    text-align: left;
+    width: 100%;
+    padding-left: 3%;
+    padding-right: 3%;
+}
