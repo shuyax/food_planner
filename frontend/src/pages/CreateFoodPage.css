@@ -10,12 +10,7 @@
     padding: 1%;
     flex-grow: 1;
 }
-
-.ingredient-input {
-    flex-shrink: 1;
-    min-width: 0;
-}
-.ingredient-input, .food-input {
+.food-input {
     appearance: none;
     background-color: #f3f4f6;
     color: #111827;
@@ -25,9 +20,6 @@
     box-sizing: border-box;
     width: 95%;
 }
-.ingredient-select,
-.ingredient-input,
-textarea {
-    width: 100%;
-    box-sizing: border-box;
+#food-description-input {
+    min-height: 200px;
 }
