@@ -154,31 +154,34 @@ function AddFoodForm( {visibleBackButton = true} ) {
         open={modalOpen}
         onClose={() => setModalOpen(false)} 
     />
-    <div className="food-form">
+    <div id="food-form">
         {foodCreated ? <>
         <h2 id="food-name">{food.foodName.toUpperCase()}</h2>
         <p id="food-description">{food.foodDescription}</p>
         </> : <>
         <h1>Food</h1>
-        <label htmlFor="food-name-input">Food Name: </label>
+        <div id="food-section">
+        <label htmlFor="food-name-input"><h3>Food Name: {"    "}</h3>
         <input type="text" 
             id="food-name-input" 
+            className="food-input"
             value={food.foodName}
             onChange={(e) => handleInput(e)}
             required
-        />
-        <br />
-        <label htmlFor="food-description-input">Food Description: </label>
+        /></label>
+        <label htmlFor="food-description-input"><h3>Food Description: {"    "}</h3>
         <textarea 
             id="food-description-input"
+            className="food-input"
             name="food-description-input"
             autoCorrect="on"
             value={food.foodDescription}
             onChange={(e) => handleTextarea(e)}
-        />
-        <br />
-        <button id="food-save" onClick={handleCreateFood} disabled={food.foodName ===""}>Save</button></>}
+        /></label>
+        <button id="food-create" onClick={(e) => {e.stopPropagation();
+            handleCreateFood()}} disabled={food.foodName ===""} title="Create Food" aria-label="Create Food" className="create-btn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="12" x2="12" y2="18"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg></button>
         {errorNote !== "" && <p>{errorNote}</p>}
+        </div></>}
         {foodCreated && !ingredientsAdded && <div id="ingredients-section-edit">
             {!enableIngredient ? <button id="enable-ingredients" onClick={() => setEnableIngredient(true)}>Add Ingredients To Food</button> : <>
             <h3 id="ingredient-title">Ingredients</h3>
@@ -195,8 +198,8 @@ function AddFoodForm( {visibleBackButton = true} ) {
                 <li key={row.foodIngredientId}><strong>{row.ingredientName.toUpperCase()}: </strong>{row.quantity} {row.ingredientUnitName}{row.ingredientUnitAbbreviation !== row.ingredientUnitName && <> ({row.ingredientUnitAbbreviation})</>}; <i>{row.note !== "" && <>Note: {row.note}</>}</i></li>
             ))}
         </ol></div>}
-        <br />
-        {visibleBackButton && <button id="food-back" onClick={() => navigate(`/`)}>Back</button>}
+        {visibleBackButton && <button id="food-back" className="back-btn" title="Back to Home Page" aria-label="Back to Home Page" onClick={(e) => {e.stopPropagation();
+            navigate(`/`)}}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <circle cx="12" cy="12" r="10"></circle> <path d="M15 12H9"></path><polyline points="12 15 9 12 12 9"></polyline></svg></button>}
     </div></>)
 }
 
