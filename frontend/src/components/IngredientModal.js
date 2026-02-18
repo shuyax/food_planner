@@ -1,4 +1,4 @@
-import AddIngredientForm from "../pages/AddIngredientForm";
+import CreateIngredientPage from "../pages/CreateIngredientPage";
 import "./Modal.css"
 
 // components/MealModal.jsx
@@ -9,7 +9,7 @@ export function IngredientModal({ open, onClose }) {
     return (
         <div className="modal-backdrop" onClick={onClose}>
             <div className="modal" onClick={e => e.stopPropagation()}>
-                <AddIngredientForm visibleBackButton={false} />
+                <CreateIngredientPage visibleBackButton={false} />
             </div>
         </div>
     );
