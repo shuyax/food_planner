@@ -150,8 +150,9 @@ def test_meal_type_loaded_in_month_view(driver):
     )
     assert target_date_cell.is_displayed(), "target_date_cell should be visible"
     # Get all events under this cell
-    events = target_date_cell.find_elements(By.XPATH, "..//following-sibling::div[contains(@class,'fc-daygrid-day-events')]//a[contains(@class,'fc-event')]")
     expected_meals = ["BREAKFAST", "LUNCH", "DINNER", "SNACK", "DRINK"]
+    WebDriverWait(driver, 20).until(lambda d: len(d.find_elements(By.CSS_SELECTOR, ".fc-daygrid-day-events > *")) >= len(expected_meals))
+    events = target_date_cell.find_elements(By.XPATH, "..//following-sibling::div[contains(@class,'fc-daygrid-day-events')]//a[contains(@class,'fc-event')]")
     assert len(events) == len(expected_meals), "All expected meals should have an event"
     # Collect meal titles and colors
     meal_titles = []
