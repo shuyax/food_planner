@@ -4,10 +4,10 @@ import { fetchIngredients } from "../services/IngredientService"
 import { useQuery, useMutation  } from "@tanstack/react-query";
 import { createFood, addIngredientsToFood } from "../services/FoodService";
 import { useNavigate } from "react-router-dom";
-import "./AddFoodForm.css"
+import "./CreateFoodPage.css"
 import { IngredientModal } from "../components/IngredientModal";
 
-function AddFoodForm( {visibleBackButton = true} ) {
+function CreateFoodPage( {visibleBackButton = true} ) {
    const defaultFood = {
         foodId: -1,
         foodName: "",
@@ -204,4 +204,4 @@ function AddFoodForm( {visibleBackButton = true} ) {
 }
 
 
-export default AddFoodForm
+export default CreateFoodPage;
