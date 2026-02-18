@@ -22,13 +22,15 @@ def test_add_food_with_related_fields(driver):
     assert food_description_input.is_displayed(), "Food description input is not visible"
     assert food_description_input.get_attribute('type') == 'textarea', "Food description input type is not correct"
     save_btn = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.ID, 'food-save'))
+        EC.presence_of_element_located((By.ID, 'food-create'))
     )
-    assert save_btn.get_attribute("disabled") == "true", "Save button should be disabled when food name is empty"
-    cancel_btn = WebDriverWait(driver, 10).until(
+    assert save_btn.get_attribute("disabled") == "true", "Create button should be disabled when food name is empty"
+    assert save_btn.get_attribute("title") == "Create Food", "Create food button should have a title"
+    back_btn = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.ID, 'food-back'))
     )
-    assert cancel_btn.is_displayed(), "Cancel button should be visible"   
+    assert back_btn.is_displayed(), "Cancel button should be visible"   
+    assert back_btn.get_attribute("title") == "Back to Home Page", "Back button should have a title"
 
 
 def test_add_food_with_uppercase_name(driver):
@@ -48,9 +50,9 @@ def test_add_food_with_no_name(driver):
     )
     food_name_input.send_keys("")
     save_btn = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.ID, 'food-save'))
+        EC.presence_of_element_located((By.ID, 'food-create'))
     )
-    assert save_btn.get_attribute("disabled") == 'true', "Save button should be disabled when food name is empty"
+    assert save_btn.get_attribute("disabled") == 'true', "Create button should be disabled when food name is empty"
 
 
 def test_add_food_with_whitespace_name(driver):
@@ -60,9 +62,9 @@ def test_add_food_with_whitespace_name(driver):
     )
     food_name_input.send_keys(" ")
     save_btn = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.ID, 'food-save'))
+        EC.presence_of_element_located((By.ID, 'food-create'))
     )
-    assert save_btn.get_attribute("disabled") == 'true', "Save button should be disabled when food name is whitespace"
+    assert save_btn.get_attribute("disabled") == 'true', "Create button should be disabled when food name is whitespace"
 
 def test_add_food_description(driver):
     driver.get(add_food_url)
@@ -76,10 +78,10 @@ def test_add_food_description(driver):
 def test_add_food_save_btn(driver):
     driver.get(add_food_url)
     save_btn = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.ID, 'food-save'))
+        EC.presence_of_element_located((By.ID, 'food-create'))
     )
     assert save_btn.is_displayed(), "Save button is not visible"
-    assert save_btn.get_attribute("disabled") == 'true', "Save button should be disabled when food name is empty"
+    assert save_btn.get_attribute("disabled") == 'true', "Create button should be disabled when food name is empty"
     food_name_input = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.ID, 'food-name-input'))
     )
@@ -107,7 +109,7 @@ def test_ingredients_section(driver):
     )
     food_name_input.send_keys("cacao milk")
     save_btn = WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.ID, 'food-save'))
+        EC.element_to_be_clickable((By.ID, 'food-create'))
     )
     save_btn.click()
     enable_ingredients_btn = WebDriverWait(driver, 10).until(
@@ -218,7 +220,7 @@ def test_create_ingredient_btn(driver):
     )
     food_name_input.send_keys("strawberry yogurt")
     save_btn = WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.ID, 'food-save'))
+        EC.element_to_be_clickable((By.ID, 'food-create'))
     )
     save_btn.click()
     enable_ingredients_btn = WebDriverWait(driver, 10).until(
