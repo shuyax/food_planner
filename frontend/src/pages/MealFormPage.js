@@ -199,12 +199,8 @@ function MealForm({ visibleBackButton = true }) {
                 ))}
             </div> 
             <MealTypeList AddMeal={(mealType) => AddMeal(mealType)} />
-            <button id="day-meals-checkmark" title="Exit Edit Mode" onClick={(e) => {
-                e.stopPropagation();
-                setEditMode(false);
-            }}>
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-            </button>
+            <button id="day-meals-checkmark" title="Exit Edit Mode" className="checkmark-btn" aria-label="Exit Edit Mode" onClick={(e) => {e.stopPropagation();
+                setEditMode(false);}}><svg viewBox="0 0 24 24" width="24" height="24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg></button>
             </> : <>
             {meals.map(meal => (<DisplayMeal 
                 key={meal.mealId}
@@ -213,19 +209,12 @@ function MealForm({ visibleBackButton = true }) {
                 setEditingMeal={setEditingMeal}
                 editMode={editMode}
                 />))}
-            <button id={`day-meals-edit`} className="day-meals-edit-btn" title="Edit Meals" onClick={(e) => {
-                e.stopPropagation(); 
-                setEditMode(true)
-                }}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M3 17.25V21h3.75l11.06-11.06-3.75-3.75L3 17.25zM21.41 6.34a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0L15.13 4.34l3.75 3.75 2.53-2.53z"/>
-                </svg>
-            </button>
+            <button id={`day-meals-edit`} className="edit-btn" title="Edit Meals" aria-label="Edit Meals" onClick={(e) => {e.stopPropagation(); 
+                setEditMode(true)}}><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75l11.06-11.06-3.75-3.75L3 17.25zM21.41 6.34a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0L15.13 4.34l3.75 3.75 2.53-2.53z"/></svg></button>
             </>}
         </div>
-        {visibleBackButton && <button id="food-back" onClick={(e) => {
-            e.stopPropagation(); 
-            navigate(`/`)}}>Back</button>}
+        {visibleBackButton && !editMode && <button id="food-back" className="back-btn" title="Back to Home Page" aria-label="Back to Home Page" onClick={(e) => {e.stopPropagation(); 
+            navigate(`/`)}}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <circle cx="12" cy="12" r="10"></circle> <path d="M15 12H9"></path><polyline points="12 15 9 12 12 9"></polyline></svg></button>}
     </>);
 };
 
