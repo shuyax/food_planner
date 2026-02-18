@@ -7,10 +7,10 @@ from selenium.webdriver.support.ui import Select, WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from conftest import BASE_URL
 
-add_ingredient_url = f'{BASE_URL}/add-ingredient'
+create_ingredient_url = f'{BASE_URL}/create-ingredient'
 
-def test_add_ingredient_with_related_fields(driver):
-    driver.get(add_ingredient_url)
+def test_create_ingredient_with_related_fields(driver):
+    driver.get(create_ingredient_url)
     # Wait for the ingredient name input to appear
     ingredient_name_input = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.ID, 'ingredient-name-input'))
@@ -37,8 +37,8 @@ def test_add_ingredient_with_related_fields(driver):
     assert back_btn.is_displayed(), "Cancel button is not visible"
 
 
-def test_add_ingredient_with_uppercase_name(driver):
-    driver.get(add_ingredient_url)
+def test_create_ingredient_with_uppercase_name(driver):
+    driver.get(create_ingredient_url)
     # Wait for the ingredient name input to appear
     ingredient_name_input = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.ID, 'ingredient-name-input'))
@@ -54,8 +54,8 @@ def test_add_ingredient_with_uppercase_name(driver):
 
 
 
-def test_add_ingredient_with_no_name(driver):
-    driver.get(add_ingredient_url)
+def test_create_ingredient_with_no_name(driver):
+    driver.get(create_ingredient_url)
     # Wait for the ingredient name input to appear
     ingredient_name_input = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.ID, 'ingredient-name-input'))
@@ -76,8 +76,8 @@ def test_add_ingredient_with_no_name(driver):
     assert save_btn.get_attribute("disabled") == 'true', "Save button should be disabled when ingredient name is empty"
 
 
-def test_add_ingredient_with_whitespace_name(driver):
-    driver.get(add_ingredient_url)
+def test_create_ingredient_with_whitespace_name(driver):
+    driver.get(create_ingredient_url)
     # Wait for the ingredient name input to appear
     ingredient_name_input = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.ID, 'ingredient-name-input'))
@@ -93,8 +93,8 @@ def test_add_ingredient_with_whitespace_name(driver):
 
 
 
-def test_add_ingredient_save_btn(driver):
-    driver.get(add_ingredient_url)
+def test_create_ingredient_save_btn(driver):
+    driver.get(create_ingredient_url)
     # Wait for the ingredient name input to appear
     ingredient_name_input = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.ID, 'ingredient-name-input'))
@@ -127,8 +127,8 @@ def test_add_ingredient_save_btn(driver):
 
 
 
-def  test_add_ingredient_unit_select(driver):
-    driver.get(add_ingredient_url)
+def  test_create_ingredient_unit_select(driver):
+    driver.get(create_ingredient_url)
     # Wait for the canonical unit select to appear
     canonical_unit_select = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.ID, 'canonical-unit'))
@@ -146,12 +146,12 @@ def  test_add_ingredient_unit_select(driver):
     assert canonical_unit_select.get_attribute("value") == "piece"
 
 def test_back_button(driver):
-    driver.get(add_ingredient_url)
+    driver.get(create_ingredient_url)
     cancel_btn = WebDriverWait(driver, 10).until(
         EC.element_to_be_clickable((By.ID, 'ingredient-back'))
     )
     cancel_btn.click()
     WebDriverWait(driver, 10).until(
-        lambda d: "/add-ingredient" not in d.current_url
+        lambda d: "/create-ingredient" not in d.current_url
     )
     assert driver.current_url == BASE_URL + "/", "Back button should navigate back to the home page"
