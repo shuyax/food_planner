@@ -30,10 +30,12 @@ function IngredientRow({ ingredientIndex, row, existingIngredients, updateRow, r
         })
     };
 
-    return (<li className="ingredient-row">
-        <label htmlFor={`ingredient-${ingredientIndex}`} />
+    return (<li className="ingredient-row-li">
+        <div className="ingredient-row">
+        <label htmlFor={`ingredient-${ingredientIndex}`}>
         <select name={`ingredient-${ingredientIndex}`} 
             id={`ingredient-${ingredientIndex}`}
+            className="ingredient-select"
             value={row?.ingredientName ?? ""} 
             onChange={handleIngredientChange}
         >
@@ -41,28 +43,33 @@ function IngredientRow({ ingredientIndex, row, existingIngredients, updateRow, r
             {existingIngredients.length > 0 && existingIngredients.map(ingredient => (
                 <option key={ingredient.id} value={ingredient.name}>{ingredient.name}</option>
             ))}
-        </select>
+        </select></label>
         {row.ingredientId !== -1 && <>
-            <label htmlFor={`quantity-${ingredientIndex}`}><span>Unit Quantity: {"  "}</span>
+            <label htmlFor={`quantity-${ingredientIndex}`} className="ingredient-quantity"><span>Unit Quantity: {"  "}</span>
             <input type="number" 
+            className="ingredient-input"
             id={`quantity-${ingredientIndex}`} 
             name={`quantity-${ingredientIndex}`} 
             min="0"
             value={row.quantity}
             onChange={handleQuantityChange}/>
             <span id={`quantity-unit-${ingredientIndex}`}>{row.ingredientUnitName} {row.ingredientUnitAbbreviation !== row.ingredientUnitName && <>({row.ingredientUnitAbbreviation})</>}</span></label>
-            <label htmlFor={`ingredient-note-${ingredientIndex}`}>Note: </label>
+            <label htmlFor={`ingredient-note-${ingredientIndex}`} className="ingredient-note"><span>Note: {"  "}</span>
             <textarea 
             id={`ingredient-note-${ingredientIndex}`}
+            className="ingredient-input"
             name={`ingredient-note-${ingredientIndex}`}
             autoCorrect="on"
             value={row.note}
             onChange={(e) => handleNoteChange(e)}
-            ></textarea>
+            ></textarea></label>
             {removeRow && (
-                <button id={`remove-btn-${ingredientIndex}`} className="remove-btn" type="button" onClick={removeRow}>✕</button>
+                <button id={`remove-btn-${ingredientIndex}`} className="remove-btn" type="button" title="Delete Ingredient From Food" aria-label="Delete Ingredient From Food" onClick={(e) => {
+                    e.stopPropagation();
+                    removeRow()}}><svg viewBox="0 0 24 24" width="16" height="16" fill="white"><path d="M6 7h12l-1 14H7L6 7zm3-3h6l1 2H8l1-2z"/></svg></button>
             )}
         </>}
+        </div>
     </li>)
 }
 

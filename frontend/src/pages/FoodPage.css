@@ -1,0 +1,100 @@
+#food-form, #food-form-edit {
+    display: flex;
+    flex-direction: column;
+    padding: 1%;
+    flex-grow: 1;
+}
+.edit-food-line{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-left: 40px;
+    padding-right: 40px;
+}
+#ingredients-edit {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+    padding-right: 40px;
+}
+.ingredient-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 1%;
+}
+
+.ingredient-select,
+.ingredient-quantity,
+.ingredient-note {
+    flex: 1;
+    min-width: 0; /* prevents overflow */
+}
+.ingredient-select,
+.ingredient-input,
+textarea {
+    width: 100%;
+    box-sizing: border-box;
+}
+/* Keep button fixed size */
+.remove-btn {
+    flex: 0 0 auto;
+}
+
+/* phone display */
+@media (max-width: 768px) {
+    .ingredient-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+        border-bottom: dashed 1px lightgray;
+    }
+    .ingredient-row-li {
+        border-bottom: dashed 1px lightgray;
+    }
+    .remove-btn {
+        align-self: center;
+    }
+}
+
+.ingredient-quantity, .ingredient-note {
+    display: flex;
+    align-items: center
+}
+.ingredient-select {
+    -webkit-appearance: none; /* remove default arrow on Chrome/Safari */
+    -moz-appearance: none;    /* remove default arrow on Firefox */
+    appearance: none;
+    background-color: #f3f4f6;
+    color: #111827;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 6px 12px;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12'><polygon points='0,0 12,0 6,6' fill='black'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 12px;
+    min-width: fit-content;
+}
+.ingredient-input {
+    flex-shrink: 1;
+    min-width: 0;
+}
+.ingredient-input, .food-input {
+    appearance: none;
+    background-color: #f3f4f6;
+    color: #111827;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 6px 12px;
+    width: 95%;
+}
+#food-description {
+    text-align: left;
+    width: 100%;
+    padding-left: 3%;
+    padding-right: 3%;
+}
+#edit-food-description {
+    min-height: 200px;
+}
