@@ -36,6 +36,7 @@
     cursor: pointer;
     box-shadow: 0 8px 20px rgba(0,0,0,0.15);
     transition: transform 0.2s ease, background 0.2s ease;
+    color: white;
 }
 .add-btn:hover {
   background: #059669;
@@ -77,6 +78,8 @@
   border: none;
   border-radius: 50%;
   padding: 8px;
+  width: 40px;
+  height: 40px;
   cursor: pointer;
   transition: background 0.2s ease, transform 0.15s ease;
 }
@@ -98,4 +101,27 @@
 .edit-btn:hover {
   background: #d97706;
   transform: scale(1.1);
+}
+.btn-text {
+  display: none;
+}
+@media (max-width: 768px) {
+  .add-btn, .create-btn {
+    border-radius: 999px; 
+    width: auto;
+    height: 40px;
+    padding: 0 12px;
+    gap: 6px;
+    text-align: center;
+    flex-shrink: 0;
+    display: inline-flex; 
+    align-items: center;       
+    justify-content: center;
+  }
+
+  .btn-text {
+    display: inline;
+    white-space: nowrap;
+  }
+
 }

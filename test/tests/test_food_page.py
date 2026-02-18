@@ -66,7 +66,7 @@ def test_food_page_with_related_fields(driver):
         EC.element_to_be_clickable((By.ID, 'save-food'))
     )
     assert save_btn.is_displayed(), "save button should be visible"
-    assert save_btn.get_attribute("title") == "Save Edit", "Save Button should have a title"
+    assert save_btn.get_attribute("title") == "Save Edits", "Save Button should have a title"
     back_btn = driver.find_elements(By.ID," food-back")
     assert len(back_btn) == 0, "Back button should be only visible under browse mode"
 

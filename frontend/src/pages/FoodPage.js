@@ -161,59 +161,59 @@ function FoodPage({ visibleBackButton = true, preMode = 'browse' }) {
         onClose={() => setModalOpen(false)} 
     />
     {mode === "edit" ? <>
-    <div id="food-form-edit">
-        <label htmlFor="edit-food-name" className="edit-food-line"> 
-            <h3>Food Name: </h3>
-            <input id="edit-food-name"
-            className="food-input" 
-            name="edit-food-name" 
-            value={food.foodName} 
-            onChange={(e) => handleFoodNameChange(e)}
-            required/>
-        </label>
-        <h3 id="ingredient-title">Ingredients</h3>
-        <ol id="ingredients-edit">
-            {food.ingredients.map((row, index) => (<IngredientRow key={index} ingredientIndex={index} row={row} existingIngredients={ingredientsData} updateRow={((updatedIngredientRow) => updateIngredientRow(index, updatedIngredientRow))} removeRow={() => removeIngredientRow(index)} />))}
-        </ol>
-        <group>
-        <button id="add-ingredient" className="add-btn" type="button" title="Add Ingredient" onClick={(e) => {e.stopPropagation();
-            addIngredient()}}><svg viewBox="0 0 24 24" width="24" height="24" fill="white"><path d="M12 5v14M5 12h14" stroke="white" strokeWidth="2" strokeLinecap="round"/></svg></button>
-        <button id="create-ingredient" type="button" className="create-btn" title="Create A New Ingredient" onClick={(e) => {e.stopPropagation();
-            setModalOpen(true)}}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="12" x2="12" y2="18"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg></button>
-        </group>
-        <label htmlFor="edit-food-description" className="edit-food-line" id="edit-food-description-section"> 
-            <h3>Food Description: </h3>
-            <textarea id="edit-food-description" 
-            className="food-input"
-            name="edit-food-description" 
-            value={food.foodDescription} 
-            autoCorrect="on"
-            onChange={(e) => handleFoodDescriptionChange(e)}
-            />
-        </label>
-    </div>
-    <button className="save-btn" id="save-food" title="Save Edit" onClick={(e) => {e.stopPropagation();
-        handleSave()}}><svg viewBox="0 0 24 24" width="24" height="24" fill="none"><circle cx="12" cy="12" r="9" stroke="white" strokeWidth="2"/><path d="M8 12l3 3 5-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg></button>
+        <div id="food-form-edit">
+            <label htmlFor="edit-food-name" className="edit-food-line"> 
+                <h3>Food Name: </h3>
+                <input id="edit-food-name"
+                className="food-input" 
+                name="edit-food-name" 
+                value={food.foodName} 
+                onChange={(e) => handleFoodNameChange(e)}
+                required/>
+            </label>
+            <h3 id="ingredient-title">Ingredients</h3>
+            <ol id="ingredients-edit">
+                {food.ingredients.map((row, index) => (<IngredientRow key={index} ingredientIndex={index} row={row} existingIngredients={ingredientsData} updateRow={((updatedIngredientRow) => updateIngredientRow(index, updatedIngredientRow))} removeRow={() => removeIngredientRow(index)} />))}
+            </ol>
+            <group id="ingredient-group">
+            <button id="add-ingredient" className="add-btn" type="button" title="Add Ingredient" aria-label="Add Ingredient" onClick={(e) => {e.stopPropagation();
+                addIngredient()}}><svg viewBox="0 0 24 24" width="24" height="24" fill="white"><path d="M12 5v14M5 12h14" stroke="white" strokeWidth="2" strokeLinecap="round"/></svg><span class="btn-text">Add Ingredient</span></button>
+            <button id="create-ingredient" type="button" className="create-btn" title="Create A New Ingredient" aria-label="Create A New Ingredient" onClick={(e) => {e.stopPropagation();
+                setModalOpen(true)}}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="12" x2="12" y2="18"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg><span class="btn-text">Create New Ingredient</span></button>
+            </group>
+            <label htmlFor="edit-food-description" className="edit-food-line" id="edit-food-description-section"> 
+                <h3>Food Description: </h3>
+                <textarea id="edit-food-description" 
+                className="food-input"
+                name="edit-food-description" 
+                value={food.foodDescription} 
+                autoCorrect="on"
+                onChange={(e) => handleFoodDescriptionChange(e)}
+                />
+            </label>
+        </div>
+        <button className="save-btn" id="save-food" title="Save Edits" aria-label="Save Edits" onClick={(e) => {e.stopPropagation();
+            handleSave()}}><svg viewBox="0 0 24 24" width="24" height="24" fill="none"><circle cx="12" cy="12" r="9" stroke="white" strokeWidth="2"/><path d="M8 12l3 3 5-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg></button>
     </> : <><div id="food-form">
         <h2 id="food-name">{food.foodName.toUpperCase()}</h2>
         <h3 id="ingredient-title">Ingredients</h3>
         <ol id="ingredients-browse">
             {food.ingredients.map(row => (
-                <li key={row.foodIngredientId}><strong>{row.ingredientName.toUpperCase()}: </strong>{row.quantity} {row.ingredientUnitName}{row.ingredientUnitAbbreviation !== row.ingredientUnitName && <> ({row.ingredientUnitAbbreviation})</>}; {row.note && <i>Note: {row.note}</i>}</li>
+                <li key={row.foodIngredientId}><strong>{row.ingredientName.toUpperCase()}: </strong>{row.quantity} {row.ingredientUnitName}{row.ingredientUnitAbbreviation !== row.ingredientUnitName && <> ({row.ingredientUnitAbbreviation})</>} {row.note && <i>(Note: {row.note})</i>}</li>
             ))}
         </ol>
         <h3>Instructions</h3>
         <p id="food-description">{food.foodDescription}</p>
-        <button id="edit-food" className="edit-btn" title="Edit Food" onClick={(e) => {
+        <button id="edit-food" className="edit-btn" title="Edit Food" aria-label="Edit Food" onClick={(e) => {
             e.stopPropagation();
             handleEdit();
             }}><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75l11.06-11.06-3.75-3.75L3 17.25zM21.41 6.34a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0L15.13 4.34l3.75 3.75 2.53-2.53z"/></svg></button>
-    </div>
-    {errorNote !== "" && <p>{errorNote}</p>}
-    {visibleBackButton && <button className="back-btn" id="food-back" title="Back to Last Page" onClick={(e) => {
-        e.stopPropagation(); 
-        navigate(`/${lastPage}`)}}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <circle cx="12" cy="12" r="10"></circle> <path d="M15 12H9"></path><polyline points="12 15 9 12 12 9"></polyline></svg></button>}
-    </>}
+        </div>
+        {errorNote !== "" && <p>{errorNote}</p>}
+        {visibleBackButton && <button className="back-btn" id="food-back" title="Back to Last Page" aria-label="Back to Last Page" onClick={(e) => {
+            e.stopPropagation(); 
+            navigate(`/${lastPage}`)}}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <circle cx="12" cy="12" r="10"></circle> <path d="M15 12H9"></path><polyline points="12 15 9 12 12 9"></polyline></svg></button>}
+        </>}
     </>)
 }
 

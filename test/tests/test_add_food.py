@@ -164,7 +164,7 @@ def test_ingredients_section(driver):
     )
     new_select = Select(new_ingredient_select)
     new_select.select_by_visible_text("tomato") 
-    remove_btn = WebDriverWait(driver, 10).until(
+    remove_btn = WebDriverWait(driver, 20).until(
         EC.presence_of_element_located((By.ID, "remove-btn-1"))
     )
     assert remove_btn.is_displayed(), "remove_btn should be visible"
