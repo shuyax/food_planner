@@ -4,7 +4,7 @@ import MealForm from './pages/MealFormPage';
 import Home from './pages/Home'
 import { Routes, Route, Link } from "react-router-dom";
 import FoodPage from './pages/FoodPage';
-import CreateIngredientPage from './pages/AddIngredientForm';
+import CreateIngredientPage from './pages/CreateIngredientPage';
 
 function App() {
   return (
