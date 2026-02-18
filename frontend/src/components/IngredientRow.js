@@ -32,7 +32,7 @@ function IngredientRow({ ingredientIndex, row, existingIngredients, updateRow, r
 
     return (<li className="ingredient-row-li">
         <div className="ingredient-row">
-        <label htmlFor={`ingredient-${ingredientIndex}`} />
+        <label htmlFor={`ingredient-${ingredientIndex}`}>
         <select name={`ingredient-${ingredientIndex}`} 
             id={`ingredient-${ingredientIndex}`}
             className="ingredient-select"
@@ -43,7 +43,7 @@ function IngredientRow({ ingredientIndex, row, existingIngredients, updateRow, r
             {existingIngredients.length > 0 && existingIngredients.map(ingredient => (
                 <option key={ingredient.id} value={ingredient.name}>{ingredient.name}</option>
             ))}
-        </select>
+        </select></label>
         {row.ingredientId !== -1 && <>
             <label htmlFor={`quantity-${ingredientIndex}`} className="ingredient-quantity"><span>Unit Quantity: {"  "}</span>
             <input type="number" 
@@ -64,7 +64,7 @@ function IngredientRow({ ingredientIndex, row, existingIngredients, updateRow, r
             onChange={(e) => handleNoteChange(e)}
             ></textarea></label>
             {removeRow && (
-                <button id={`remove-btn-${ingredientIndex}`} className="remove-btn" type="button" title="Delete Ingredient From Food"onClick={(e) => {
+                <button id={`remove-btn-${ingredientIndex}`} className="remove-btn" type="button" title="Delete Ingredient From Food" aria-label="Delete Ingredient From Food" onClick={(e) => {
                     e.stopPropagation();
                     removeRow()}}><svg viewBox="0 0 24 24" width="16" height="16" fill="white"><path d="M6 7h12l-1 14H7L6 7zm3-3h6l1 2H8l1-2z"/></svg></button>
             )}

@@ -2,27 +2,61 @@
     display: flex;
     flex-direction: column;
     padding: 1%;
-    flex: 1;
+    flex-grow: 1;
 }
 .edit-food-line{
     display: flex;
     flex-direction: column;
-}
-#edit-food-description-section {
-    flex:1
-}
-#edit-food-description {
-    flex:1
+    align-items: center;
+    padding-left: 40px;
+    padding-right: 40px;
 }
 #ingredients-edit {
     display: flex;
     flex-direction: column;
-    gap: 1em
+    gap: 1em;
+    padding-right: 40px;
 }
 .ingredient-row {
     display: flex;
-    align-items: center
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 1%;
 }
+
+.ingredient-select,
+.ingredient-quantity,
+.ingredient-note {
+    flex: 1;
+    min-width: 0; /* prevents overflow */
+}
+.ingredient-select,
+.ingredient-input,
+textarea {
+    width: 100%;
+    box-sizing: border-box;
+}
+/* Keep button fixed size */
+.remove-btn {
+    flex: 0 0 auto;
+}
+
+/* phone display */
+@media (max-width: 768px) {
+    .ingredient-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+        border-bottom: dashed 1px lightgray;
+    }
+    .ingredient-row-li {
+        border-bottom: dashed 1px lightgray;
+    }
+    .remove-btn {
+        align-self: center;
+    }
+}
+
 .ingredient-quantity, .ingredient-note {
     display: flex;
     align-items: center
@@ -40,6 +74,11 @@
     background-repeat: no-repeat;
     background-position: right 12px center;
     background-size: 12px;
+    min-width: fit-content;
+}
+.ingredient-input {
+    flex-shrink: 1;
+    min-width: 0;
 }
 .ingredient-input, .food-input {
     appearance: none;
@@ -48,10 +87,14 @@
     border: 1px solid #d1d5db;
     border-radius: 6px;
     padding: 6px 12px;
+    width: 95%;
 }
 #food-description {
     text-align: left;
     width: 100%;
     padding-left: 3%;
     padding-right: 3%;
+}
+#edit-food-description {
+    min-height: 200px;
 }
