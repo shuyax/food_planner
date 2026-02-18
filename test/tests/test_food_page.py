@@ -149,7 +149,7 @@ def test_create_ingredient_btn(driver):
     ingredient_unit_select = Select(ingredient_unit)
     ingredient_unit_select.select_by_visible_text("tablespoon (tbsp)") 
     ingredient_save_btn = WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.ID, 'ingredient-save'))
+        EC.element_to_be_clickable((By.ID, 'ingredient-create'))
     )
     ingredient_save_btn.click()
     submission_note = WebDriverWait(driver, 10).until(

@@ -28,9 +28,9 @@ def test_create_ingredient_with_related_fields(driver):
         EC.presence_of_element_located((By.ID, 'canonical-unit'))
     )
     save_btn = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.ID, 'ingredient-save'))
+        EC.presence_of_element_located((By.ID, 'ingredient-create'))
     )
-    assert save_btn.is_displayed(), "Save button is not visible"
+    assert save_btn.is_displayed(), "Create button is not visible"
     back_btn = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.ID, 'ingredient-back'))
     )
@@ -71,9 +71,9 @@ def test_create_ingredient_with_no_name(driver):
     # Interact with the inputs
     ingredient_name_input.send_keys("")
     save_btn = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.ID, 'ingredient-save'))
+        EC.presence_of_element_located((By.ID, 'ingredient-create'))
     )
-    assert save_btn.get_attribute("disabled") == 'true', "Save button should be disabled when ingredient name is empty"
+    assert save_btn.get_attribute("disabled") == 'true', "Create button should be disabled when ingredient name is empty"
 
 
 def test_create_ingredient_with_whitespace_name(driver):
@@ -86,9 +86,9 @@ def test_create_ingredient_with_whitespace_name(driver):
     # Interact with the inputs
     ingredient_name_input.send_keys(" ")
     save_btn = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.ID, 'ingredient-save'))
+        EC.presence_of_element_located((By.ID, 'ingredient-create'))
     )
-    assert save_btn.get_attribute("disabled") == 'true', "Save button should be disabled when ingredient name is whitespace"
+    assert save_btn.get_attribute("disabled") == 'true', "Create button should be disabled when ingredient name is whitespace"
     
 
 
@@ -103,16 +103,16 @@ def test_create_ingredient_save_btn(driver):
     assert ingredient_name_input.is_displayed(), "Ingredient input is not visible"
 
     save_btn = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.ID, 'ingredient-save'))
+        EC.presence_of_element_located((By.ID, 'ingredient-create'))
     )
-    assert save_btn.get_attribute("disabled") == 'true', "Save button should be disabled when ingredient name is empty"
+    assert save_btn.get_attribute("disabled") == 'true', "Create button should be disabled when ingredient name is empty"
 
     # Interact with the inputs
     ingredient_name_input.send_keys("ground beef")
     ingredient_name_output = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.ID, 'ingredient-name-input'))
     )
-    assert save_btn.get_attribute("disabled") == None, "Save button should be enabled when ingredient name is not empty"
+    assert save_btn.get_attribute("disabled") == None, "Create button should be enabled when ingredient name is not empty"
     canonical_unit_select = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.ID, 'canonical-unit'))
     )
@@ -125,7 +125,20 @@ def test_create_ingredient_save_btn(driver):
     )
     assert "ground beef" in note.text
 
-
+def test_create_existing_ingredient(driver):
+    driver.get(create_ingredient_url)
+    ingredient_name_input = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, 'ingredient-name-input'))
+    )
+    ingredient_name_input.send_keys("tomato")
+    create_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, 'ingredient-create'))
+    )
+    create_btn.click()
+    note = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, 'ingredient-form-note'))
+    )
+    assert "Ingredient tomato already exists!" in note.text
 
 def  test_create_ingredient_unit_select(driver):
     driver.get(create_ingredient_url)
@@ -134,7 +147,7 @@ def  test_create_ingredient_unit_select(driver):
         EC.presence_of_element_located((By.ID, 'canonical-unit'))
     )
     assert canonical_unit_select.is_displayed(), "Canonical unit select is not visible"
-    ingredient_form_element = driver.find_elements(By.CLASS_NAME, 'ingredient-form')[0]
+    ingredient_form_element = driver.find_element(By.ID, 'ingredient-form')
     optgroup_elements = ingredient_form_element.find_elements(By.TAG_NAME, "optgroup")
     assert len(optgroup_elements) == 3, "unit type optgroup_elements are not correct"
     option_elements = ingredient_form_element.find_elements(By.TAG_NAME, "option")

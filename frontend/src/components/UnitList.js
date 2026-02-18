@@ -22,6 +22,7 @@ function UnitList({ selectedUnit, setSelectedUnit }) {
         <label htmlFor="canonical-unit"><span>Ingredient Unit: {" "}</span>
         <select name="canonical-unit" 
             id="canonical-unit" 
+            className="canonical-unit-select"
             value={selectedUnit.name} 
             onChange={(e) => handleOnChange(e)}
         >
