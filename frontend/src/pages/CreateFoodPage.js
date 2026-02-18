@@ -1,11 +1,8 @@
 import { useState } from "react";
-import IngredientRow from "../components/IngredientRow";
-import { fetchIngredients } from "../services/IngredientService"
-import { useQuery, useMutation  } from "@tanstack/react-query";
-import { createFood, addIngredientsToFood } from "../services/FoodService";
+import {  useMutation  } from "@tanstack/react-query";
+import { createFood } from "../services/FoodService";
 import { useNavigate } from "react-router-dom";
 import "./CreateFoodPage.css"
-import { IngredientModal } from "../components/IngredientModal";
 
 function CreateFoodPage( {visibleBackButton = true} ) {
    const defaultFood = {
@@ -13,43 +10,20 @@ function CreateFoodPage( {visibleBackButton = true} ) {
         foodName: "",
         foodDescription: ""
    }
-
-    const defaultIngredient = {
-        ingredientId: -1,
-        ingredientName: "",
-        ingredientUnitId: -1,
-        ingredientUnitName: "",
-        ingredientUnitAbbreviation: "",
-        foodIngredientId: -1,
-        quantity: 0,
-        note: ""
-    };
-    const [ingredients, setIngredients] = useState([defaultIngredient]);
     const [food, setFood] = useState(defaultFood);
-    const [foodCreated, setFoodCreated] = useState(false)
-    const [enableIngredient, setEnableIngredient] = useState(false)
     const [errorNote, setErrorNote] = useState("")
-    const [ingredientsAdded, setIngredientsAdded] = useState(false)
-    const [modalOpen, setModalOpen] = useState(false);
+    const [toastMessage, setToastMessage] = useState("")
     const navigate = useNavigate();
-
-    // load all existing ingredients
-    const { data, isLoading, error } = useQuery({
-        queryKey: ["ingredients"],
-        queryFn: fetchIngredients
-    });
 
     const createFoodMutation = useMutation({
         mutationFn: ({ foodName, foodDescription }) =>
             createFood(foodName, foodDescription),
         onSuccess: (data, variables) => {
             const { foodName, foodDescription } = variables;
-            setFood({
-                foodId: data,
-                foodName, 
-                foodDescription
-            });
-            setFoodCreated(true);
+            setToastMessage(`${foodName.toUpperCase()} was created successfully. You can attach ingredients to the food now.`)
+            setTimeout(() => {
+                navigate(`/food/${data}`)
+            }, 2000);
         },
         onError: (error) => {
             console.error("Failed to create food:", error);
@@ -60,38 +34,6 @@ function CreateFoodPage( {visibleBackButton = true} ) {
             }
         }
     });
-
-    const addIngredientsToFoodMutation = useMutation({
-        mutationFn: ({ foodId, ingredients}) =>
-            addIngredientsToFood( foodId, ingredients),
-        onSuccess: (data) => {
-            console.log("Ingredients added to a food" , data);
-            setIngredients(data.ingredients)
-            setIngredientsAdded(true)
-            setEnableIngredient(false);
-        },
-        onError: (error) => {
-            console.error("Failed to add ingredients to a food:", error);
-            alert("Failed to add ingredients to a food.");
-        }
-    })
-
-
-    if (isLoading) return <p>Loading ingredients...</p>;
-    if (error) return <p>Error loading ingredients: {error.message}</p>;
-
-
-    function addIngredient() {
-        setIngredients(prev => [...prev, { ...defaultIngredient}]);
-    };
-
-    function updateIngredientRow(index, updatedIngredientRow) {
-        setIngredients(prev => prev.map((row, i) => i === index ? updatedIngredientRow : row))
-    };
-    
-    function removeIngredientRow(index) {
-        setIngredients(prev => prev.filter((_, i) => i !== index));
-    };
 
     function handleInput(e) {
         setFood({
@@ -107,9 +49,7 @@ function CreateFoodPage( {visibleBackButton = true} ) {
         })
     }
 
-    function filterOutEmptyIngredients(ingredients) {
-        return ingredients.filter(ingredient => ingredient.ingredientId !== -1)
-    }
+
 
     async function handleCreateFood() {
         if (!food.foodName) {
@@ -129,36 +69,8 @@ function CreateFoodPage( {visibleBackButton = true} ) {
     }
 
 
-    async function handleAddIngredientsToFood() {
-        const filtedIngredients = filterOutEmptyIngredients(ingredients)
-        if (filtedIngredients.length === 0) {
-            setErrorNote('Must select a valid ingredient');
-            return;
-        }
-        setErrorNote("")
-        try {
-            await addIngredientsToFoodMutation.mutateAsync({
-                foodId: food.foodId, 
-                ingredients: filtedIngredients
-            });
-            console.log("Ingredients attachment triggered!");
-        } catch (err) {
-            console.error("Failed to attach ingredients to a food:", err);
-        }
-        
-        
-    }
-
     return(<>
-    <IngredientModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)} 
-    />
     <div id="food-form">
-        {foodCreated ? <>
-        <h2 id="food-name">{food.foodName.toUpperCase()}</h2>
-        <p id="food-description">{food.foodDescription}</p>
-        </> : <>
         <h1>Food</h1>
         <div id="food-section">
         <label htmlFor="food-name-input"><h3>Food Name: {"    "}</h3>
@@ -181,23 +93,8 @@ function CreateFoodPage( {visibleBackButton = true} ) {
         <button id="food-create" onClick={(e) => {e.stopPropagation();
             handleCreateFood()}} disabled={food.foodName ===""} title="Create Food" aria-label="Create Food" className="create-btn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="12" x2="12" y2="18"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg></button>
         {errorNote !== "" && <p>{errorNote}</p>}
-        </div></>}
-        {foodCreated && !ingredientsAdded && <div id="ingredients-section-edit">
-            {!enableIngredient ? <button id="enable-ingredients" onClick={() => setEnableIngredient(true)}>Add Ingredients To Food</button> : <>
-            <h3 id="ingredient-title">Ingredients</h3>
-            <button id="add-ingredient" type="button" onClick={addIngredient}>Add An Ingredient</button>
-            <button id="create-ingredient" type="button" onClick={() => setModalOpen(true)}>Create An Ingredient</button>
-            <ol id="ingredients-edit">
-                {ingredients.map((row, index) => (<IngredientRow key={index} ingredientIndex={index} row={row} existingIngredients={data} updateRow={((updatedIngredientRow) => updateIngredientRow(index, updatedIngredientRow))} removeRow={() => removeIngredientRow(index)} />))}
-            </ol>
-            <button id="ingredients-save" onClick={handleAddIngredientsToFood} disabled={ingredients.length === 0}>Save</button>
-            </>}
-        </div>}
-        {foodCreated && ingredientsAdded && <div id="ingredients-section-browse"><h3 id="ingredient-title">Ingredients</h3><ol id="ingredients-browse">
-            {ingredients.map(row => (
-                <li key={row.foodIngredientId}><strong>{row.ingredientName.toUpperCase()}: </strong>{row.quantity} {row.ingredientUnitName}{row.ingredientUnitAbbreviation !== row.ingredientUnitName && <> ({row.ingredientUnitAbbreviation})</>}; <i>{row.note !== "" && <>Note: {row.note}</>}</i></li>
-            ))}
-        </ol></div>}
+        {toastMessage !== "" && <p className="toast-message">{toastMessage}</p>}
+        </div>
         {visibleBackButton && <button id="food-back" className="back-btn" title="Back to Home Page" aria-label="Back to Home Page" onClick={(e) => {e.stopPropagation();
             navigate(`/`)}}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <circle cx="12" cy="12" r="10"></circle> <path d="M15 12H9"></path><polyline points="12 15 9 12 12 9"></polyline></svg></button>}
     </div></>)
