@@ -13,7 +13,7 @@ function App() {
       </header>
       <nav>
         <Link to="/">HOME</Link> |{" "}
-        <Link to="/create-ingredient">Add New Ingredient</Link> |{" "}
+        <Link to="/create-ingredient">Create New Ingredient</Link> |{" "}
         <Link to="/create-food">Create New Food</Link> 
       </nav>
       <Routes>

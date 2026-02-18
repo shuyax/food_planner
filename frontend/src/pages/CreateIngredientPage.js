@@ -5,7 +5,7 @@ import { useMutation } from "@tanstack/react-query";
 import { createIngredient } from "../services/IngredientService";
 import { useQueryClient } from "@tanstack/react-query";
 
-function AddIngredientForm( {visibleBackButton = true} ) {
+function CreateIngredientPage( {visibleBackButton = true} ) {
     // Back button only visible when not open as a modal
     const [ingredientName, setIngredientName] = useState("");
     const [selectedUnit, setSelectedUnit] = useState({id: -1, 
@@ -64,4 +64,4 @@ function AddIngredientForm( {visibleBackButton = true} ) {
 }
 
 
-export default AddIngredientForm
+export default CreateIngredientPage;
