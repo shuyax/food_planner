@@ -22,6 +22,7 @@
     align-items: center;
     flex-wrap: wrap;
     padding: 1%;
+    gap: 1rem
 }
 
 .ingredient-select,
@@ -91,10 +92,12 @@ textarea {
 }
 #food-description {
     text-align: left;
-    width: 100%;
     padding-left: 3%;
     padding-right: 3%;
 }
 #edit-food-description {
     min-height: 200px;
+}
+#ingredients-browse {
+    text-align: left;
 }
