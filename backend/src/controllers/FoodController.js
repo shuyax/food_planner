@@ -158,6 +158,30 @@ async function updateFoodIngredients(req, res, next) {
     }
 };
 
+async function deleteFoodIngredients(req, res, next) {
+    try {
+        const { foodIngredientIds } = req.body;
+        if (!Array.isArray(foodIngredientIds) || foodIngredientIds.length === 0) {
+            return res.status(400).json({ error: "foodIngredientIds are required" });
+        }
+        const deleted = [];
+        const failed = [];
+        await Promise.all(
+            foodIngredientIds.map(async foodIngredientId => {
+                const result = await FoodService.deleteIngredientFromFood(foodIngredientId)
+                if (result === foodIngredientId) {
+                    deleted.push(foodIngredientId)
+                } else {
+                    failed.push(foodIngredientId)
+                }
+            })
+        )
+        res.status(200).json({ deleted, failed })
+    } catch (err) {
+        next(err);
+    }
+}
+
 module.exports = {
     getFoods,
     getFood,
@@ -166,5 +190,6 @@ module.exports = {
     addImageToFood,
     addIngredientsToFood,
     getRelatedIngredients,
-    updateFoodIngredients
+    updateFoodIngredients,
+    deleteFoodIngredients
 };

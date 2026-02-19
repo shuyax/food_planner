@@ -557,3 +557,73 @@ describe("FoodController.updateFoodIngredients", () => {
     expect(res.status).not.toHaveBeenCalled();
   });
 });
+
+describe("FoodController.deleteFoodIngredients", () => {
+  let req, res, next;
+
+  beforeEach(() => {
+    res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    };
+    next = jest.fn();
+    jest.clearAllMocks();
+  });
+  it("delete food ingredients and return 200 and delete status", async () => {
+    mockfoodIngredientIds = [10]
+    req = { body: {foodIngredientIds: mockfoodIngredientIds} }
+    jest.spyOn(FoodService, "deleteIngredientFromFood").mockResolvedValue(mockfoodIngredientIds[0])
+    await FoodController.deleteFoodIngredients(req, res, next);
+    expect(FoodService.deleteIngredientFromFood).toHaveBeenCalledWith(mockfoodIngredientIds[0])
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({ deleted: [mockfoodIngredientIds[0]], failed: [] });
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it("delete food not eixsting ingredient and return 200 and delete status as failed", async () => {
+    mockfoodIngredientIds = [10]
+    req = { body: {foodIngredientIds: mockfoodIngredientIds} }
+    jest.spyOn(FoodService, "deleteIngredientFromFood").mockResolvedValue(false)
+    await FoodController.deleteFoodIngredients(req, res, next);
+    expect(FoodService.deleteIngredientFromFood).toHaveBeenCalledWith(mockfoodIngredientIds[0])
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({ deleted: [], failed: [mockfoodIngredientIds[0]] });
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it("delete food ingredients and return 200 and delete status", async () => {
+    mockfoodIngredientIds = [10, 11]
+    req = { body: {foodIngredientIds: mockfoodIngredientIds} }
+    jest.spyOn(FoodService, "deleteIngredientFromFood")
+      .mockResolvedValueOnce(mockfoodIngredientIds[0])
+      .mockResolvedValueOnce(false);
+    await FoodController.deleteFoodIngredients(req, res, next);
+    // Service calls
+    expect(FoodService.deleteIngredientFromFood).toHaveBeenCalledTimes(2);
+    expect(FoodService.deleteIngredientFromFood).toHaveBeenCalledWith(mockfoodIngredientIds[0]);
+    expect(FoodService.deleteIngredientFromFood).toHaveBeenCalledWith(mockfoodIngredientIds[1]);
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({ deleted: [mockfoodIngredientIds[0]], failed: [mockfoodIngredientIds[1]] });
+    expect(next).not.toHaveBeenCalled();
+  });
+  it("returns 400 if ingredients array is missing", async () => {
+    req = {
+      body: {}
+    };
+    await FoodController.deleteFoodIngredients(req, res, next);
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      error: "foodIngredientIds are required"
+    });
+    expect(next).not.toHaveBeenCalled();
+  });
+  it("calls next if FoodService throws an error", async () => {
+    mockfoodIngredientIds = [10, 11]
+    req = { body: {foodIngredientIds: mockfoodIngredientIds} }
+    const mockError = new Error("DB failure");
+    jest.spyOn(FoodService, "deleteIngredientFromFood").mockRejectedValue(mockError);
+    await FoodController.deleteFoodIngredients(req, res, next);
+    expect(next).toHaveBeenCalledWith(mockError);
+    expect(res.status).not.toHaveBeenCalled();
+  });
+})

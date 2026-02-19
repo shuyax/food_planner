@@ -9,6 +9,7 @@ router.post("/", FoodController.createFood);
 router.put('/add-image', FoodController.addImageToFood)
 router.put('/update-food', FoodController.updateFood)
 router.put('/update-ingredients', FoodController.updateFoodIngredients)
+router.delete('/delete-ingredients', FoodController.deleteFoodIngredients)
 router.post("/add-ingredients", FoodController.addIngredientsToFood);
 
 module.exports = router;
