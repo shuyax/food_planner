@@ -47,6 +47,18 @@ async function updateFood(updatedFood) {
     return rows[0].id;
 };
 
+//delete service
+async function deleteIngredientFromFood(foodIngredientId) {
+    const { rows } = await pool.query(
+        `DELETE FROM food_ingredient
+        WHERE id = $1
+        RETURNING id`,
+        [foodIngredientId]
+    );
+    if (rows.length === 0) return false
+    return rows[0].id
+}
+
 async function updateFoodIngredient(ingredient) {
     const { rows } = await pool.query(
         `UPDATE food_ingredient 
@@ -157,5 +169,6 @@ module.exports = {
     addImageToFood,
     getAllFoods,
     getAllImagesByFoodId,
-    updateFoodIngredient
+    updateFoodIngredient,
+    deleteIngredientFromFood
 }
