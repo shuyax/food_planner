@@ -1,6 +1,6 @@
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { fetchFood, fetchRelatedIngredients, updateFood, updateFoodIngredients } from "../services/FoodService";
+import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
+import { deleteFoodIngredients, fetchFood, fetchRelatedIngredients, updateFood, updateFoodIngredients } from "../services/FoodService";
 import { fetchIngredients } from "../services/IngredientService"
 import { useEffect, useState } from "react";
 import IngredientRow from "../components/IngredientRow";
@@ -10,6 +10,8 @@ import "./FoodPage.css"
 function FoodPage({ visibleBackButton = true, preMode = 'browse' }) {
     const [searchParams] = useSearchParams();
     const lastPage = searchParams.get("lastpage")
+    const queryClient = useQueryClient();
+
 
     const defaultIngredient = {
         ingredientId: -1,
@@ -26,6 +28,7 @@ function FoodPage({ visibleBackButton = true, preMode = 'browse' }) {
     const navigate = useNavigate();
     const [mode, setMode] = useState(preMode) // edit mode or browse mode
     const [errorNote, setErrorNote] = useState("")
+    const [ingredientsDeleted, setIngredientsDeleted] = useState([])
 
     const { data: foodData, isLoading: isFoodDataLoading, error: FoodDataError } = useQuery({
         queryKey: ["food", foodId], // unique key per foodId
@@ -67,11 +70,25 @@ function FoodPage({ visibleBackButton = true, preMode = 'browse' }) {
             updateFoodIngredients(updatedFood.foodId, updatedFood.ingredients),
         onSuccess: (data) => {
             console.log(data)
+            queryClient.invalidateQueries(["food-ingredients"]);
         },
         onError: (error) => {
             console.error("Failed to update foodIngredients:", error);
             setErrorNote(error)
             alert("Failed to save food.");
+        }
+    });
+
+    const deleteFoodIngredientsMutation = useMutation({
+        mutationFn: (foodIngredientIds) =>
+            deleteFoodIngredients(foodIngredientIds),
+
+        onSuccess: () => {
+            queryClient.invalidateQueries(["food-ingredients"]);
+        },
+        onError: (error) => {
+            console.error("Delete failed:", error);
+            alert("Failed to delete ingredients");
         }
     });
 
@@ -116,22 +133,23 @@ function FoodPage({ visibleBackButton = true, preMode = 'browse' }) {
         }));
     };
 
-    function updateIngredientRow(index, updatedIngredientRow) {
+    function updateIngredientRow(foodIngredientId, updatedIngredientRow) {
         setFood(prev => ({
             ...prev,
-            ingredients: prev.ingredients.map((row, i) =>
-                i === index ? updatedIngredientRow : row
+            ingredients: prev.ingredients.map(row =>
+                row.foodIngredientId === foodIngredientId ? updatedIngredientRow : row
             )
         }));
     };
     
-    function removeIngredientRow(index) {
+    function removeIngredientRow(foodIngredientId) {
         setFood(prev => ({
             ...prev,
-            ingredients: prev.ingredients.filter((_, i) =>
-                i !== index
+            ingredients: prev.ingredients.filter(row =>
+                row.foodIngredientId !== foodIngredientId
             )
         }));
+        setIngredientsDeleted(prevItems => [...prevItems, foodIngredientId]);
     };
 
     async function handleSave() {
@@ -142,9 +160,9 @@ function FoodPage({ visibleBackButton = true, preMode = 'browse' }) {
         }
         setErrorNote("")
         try {
-            console.log(food)
             await updateFoodMutation.mutateAsync(food);
             await updateFoodIngredientsMutation.mutateAsync(food);
+            if (ingredientsDeleted.length !== 0) await deleteFoodIngredientsMutation.mutateAsync(ingredientsDeleted);
             setMode("browse")
             console.log("Food update triggered!");
         } catch (err) {
@@ -174,7 +192,7 @@ function FoodPage({ visibleBackButton = true, preMode = 'browse' }) {
             </label>
             <h3 id="ingredient-title">Ingredients</h3>
             <ol id="ingredients-edit">
-                {food.ingredients.map((row, index) => (<IngredientRow key={index} ingredientIndex={index} row={row} existingIngredients={ingredientsData} updateRow={((updatedIngredientRow) => updateIngredientRow(index, updatedIngredientRow))} removeRow={() => removeIngredientRow(index)} />))}
+                {food.ingredients.map((row, index) => (<IngredientRow key={index} ingredientIndex={index} row={row} existingIngredients={ingredientsData} updateRow={((updatedIngredientRow) => updateIngredientRow(row.foodIngredientId, updatedIngredientRow))} removeRow={() => removeIngredientRow(row.foodIngredientId)} />))}
             </ol>
             <div id="ingredient-group">
             <button id="add-ingredient" className="add-btn" type="button" title="Add Ingredient" aria-label="Add Ingredient" onClick={(e) => {e.stopPropagation();
