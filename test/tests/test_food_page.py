@@ -81,83 +81,7 @@ def test_back_button(driver):
     )
     assert navigate_from[10:] in driver.current_url, "Back button should navigate back to the the last page"
 
-def test_remove_btn(driver):
-    driver.get(edit_food_url)
-    edit_btn = WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.ID, 'edit-food'))
-    )
-    edit_btn.click()
-    WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.CLASS_NAME, "ingredient-row"))
-    )
-    ingredient_rows = driver.find_elements(By.CLASS_NAME, "ingredient-row")
-    row_len_before = len(ingredient_rows)
-    remove_btn = WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.ID, 'remove-btn-0'))
-    )
-    remove_btn.click()
-    time.sleep(5)
-    ingredient_rows = driver.find_elements(By.CLASS_NAME, "ingredient-row")
-    row_len_after = len(ingredient_rows)
-    assert row_len_after == row_len_before - 1, "The number of ingredient rows should be decreased by one"
-
-def test_add_ingredient_btn(driver):
-    driver.get(edit_food_url)
-    edit_btn = WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.ID, 'edit-food'))
-    )
-    edit_btn.click()
-    WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.CLASS_NAME, "ingredient-row"))
-    )
-    ingredient_rows = driver.find_elements(By.CLASS_NAME, "ingredient-row")
-    row_len_before = len(ingredient_rows)
-    add_ingredient_btn = WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.ID, 'add-ingredient'))
-    )
-    add_ingredient_btn.click()
-    time.sleep(5)
-    ingredient_rows = driver.find_elements(By.CLASS_NAME, "ingredient-row")
-    row_len_after = len(ingredient_rows)
-    assert row_len_after == row_len_before + 1, "The number of ingredient rows should be increased by one"
-
-def test_create_ingredient_btn(driver):
-    driver.get(edit_food_url)
-    edit_btn = WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.ID, 'edit-food'))
-    )
-    edit_btn.click()
-    create_ingredient_btn = WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.ID, 'create-ingredient'))
-    )
-    create_ingredient_btn.click()
-    modal_backdrop = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.CLASS_NAME, "modal-backdrop"))
-    ) 
-    assert modal_backdrop.is_displayed(), "modal_backdrop should be visible"
-    modal = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.CLASS_NAME, "modal"))
-    ) 
-    assert modal.is_displayed(), "modal should be visible"
-    ingredient_name = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.ID, "ingredient-name-input"))
-    ) 
-    ingredient_name.send_keys("garlic")
-    ingredient_unit = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.ID, "canonical-unit"))
-    ) 
-    ingredient_unit_select = Select(ingredient_unit)
-    ingredient_unit_select.select_by_visible_text("tablespoon (tbsp)") 
-    ingredient_save_btn = WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.ID, 'ingredient-create'))
-    )
-    ingredient_save_btn.click()
-    submission_note = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.ID, "ingredient-form-note"))
-    )
-    assert "created successfully" in submission_note.text
-
-def test_save_btn(driver):
+def test_update_food_with_save_btn(driver):
     driver.get(edit_food_url)
     edit_btn = WebDriverWait(driver, 10).until(
         EC.element_to_be_clickable((By.ID, 'edit-food'))
@@ -226,3 +150,135 @@ def test_save_btn(driver):
         EC.presence_of_element_located((By.ID, 'edit-food'))
     )
     edit_btn.is_displayed(), "Edit button should be visible"
+
+def test_remove_btn(driver):
+    driver.get(edit_food_url)
+    edit_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, 'edit-food'))
+    )
+    edit_btn.click()
+    WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.CLASS_NAME, "ingredient-row"))
+    )
+    ingredient_rows = driver.find_elements(By.CLASS_NAME, "ingredient-row")
+    row_len_before = len(ingredient_rows)
+    ingredient_0_element = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, "ingredient-0"))
+    )
+    ingredient_0 = ingredient_0_element.get_attribute("value")
+    assert ingredient_0 != '', "The ingredient to be deleted should not be empty"
+    remove_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, 'remove-btn-0'))
+    )
+    remove_btn.click()
+    time.sleep(5)
+    ingredient_rows = driver.find_elements(By.CLASS_NAME, "ingredient-row")
+    row_len_after = len(ingredient_rows)
+    assert row_len_after == row_len_before - 1, "The number of ingredient rows should be decreased by one"
+    save_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, 'save-food'))
+    )
+    save_btn.click()
+    all_ingredients = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, "ingredients-browse"))
+    )
+    assert ingredient_0 not in all_ingredients.text.lower(), "The ingredient deleted should not be visible any more" 
+    ingredients_browse_children = all_ingredients.find_elements(By.TAG_NAME, "li")
+    assert len(ingredients_browse_children) == row_len_after, "The number of ingredients under browse mode should match the number of ingredients under edit mode"
+    driver.get(edit_food_url)
+    all_ingredients = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, "ingredients-browse"))
+    )
+    assert ingredient_0 not in all_ingredients.text.lower(), "The ingredient deleted should not be visible any more after refreshing the page" 
+    ingredients_browse_children = all_ingredients.find_elements(By.TAG_NAME, "li")
+    assert len(ingredients_browse_children) == row_len_after, "The number of ingredients under browse mode should match the number of ingredients under edit mode after refreshing the page"
+
+
+
+def test_add_ingredient_btn(driver):
+    driver.get(edit_food_url)
+    edit_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, 'edit-food'))
+    )
+    edit_btn.click()
+    WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.CLASS_NAME, "ingredient-row"))
+    )
+    ingredient_rows = driver.find_elements(By.CLASS_NAME, "ingredient-row")
+    row_len_before = len(ingredient_rows)
+    add_ingredient_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, 'add-ingredient'))
+    )
+    add_ingredient_btn.click()
+    time.sleep(5)
+    ingredient_rows = driver.find_elements(By.CLASS_NAME, "ingredient-row")
+    row_len_after = len(ingredient_rows)
+    assert row_len_after == row_len_before + 1, "The number of ingredient rows should be increased by one"
+    new_ingredient_id = f"ingredient-{row_len_after - 1}"
+    new_ingredient = driver.find_element(By.ID, new_ingredient_id)
+    select = Select(new_ingredient)
+    select.select_by_visible_text("yogurt")
+    quantity_input = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, f'quantity-{row_len_after - 1}'))
+    )
+    quantity_input.send_keys(2)
+    note = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, f'ingredient-note-{row_len_after - 1}'))
+    )
+    note.send_keys('test')
+    save_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, 'save-food'))
+    )
+    save_btn.click()
+    WebDriverWait(driver, 20).until(lambda d: len(d.find_elements(By.CSS_SELECTOR, "#ingredients-browse > *")) > 0)
+    all_ingredients = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, "ingredients-browse"))
+    )
+    assert "yogurt" in all_ingredients.text.lower() and "2" in all_ingredients.text.lower() and "test" in all_ingredients.text.lower(), "The ingredient added should be visible" 
+    ingredients_browse_children = all_ingredients.find_elements(By.TAG_NAME, "li")
+    assert len(ingredients_browse_children) == row_len_after, "The number of ingredients under browse mode should match the number of ingredients under edit mode"
+    driver.get(edit_food_url)
+    WebDriverWait(driver, 20).until(lambda d: len(d.find_elements(By.CSS_SELECTOR, "#ingredients-browse > *")) > 0)
+    all_ingredients = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, "ingredients-browse"))
+    )
+    assert "yogurt" in all_ingredients.text.lower() and "2" in all_ingredients.text.lower() and "test" in all_ingredients.text.lower(), "The ingredient added should be visible after refreshing the page" 
+    ingredients_browse_children = all_ingredients.find_elements(By.TAG_NAME, "li")
+    assert len(ingredients_browse_children) == row_len_after, "The number of ingredients under browse mode should match the number of ingredients under edit mode after refreshing the page"
+
+def test_create_ingredient_btn(driver):
+    driver.get(edit_food_url)
+    edit_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, 'edit-food'))
+    )
+    edit_btn.click()
+    create_ingredient_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, 'create-ingredient'))
+    )
+    create_ingredient_btn.click()
+    modal_backdrop = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.CLASS_NAME, "modal-backdrop"))
+    ) 
+    assert modal_backdrop.is_displayed(), "modal_backdrop should be visible"
+    modal = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.CLASS_NAME, "modal"))
+    ) 
+    assert modal.is_displayed(), "modal should be visible"
+    ingredient_name = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, "ingredient-name-input"))
+    ) 
+    ingredient_name.send_keys("garlic")
+    ingredient_unit = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, "canonical-unit"))
+    ) 
+    ingredient_unit_select = Select(ingredient_unit)
+    ingredient_unit_select.select_by_visible_text("tablespoon (tbsp)") 
+    ingredient_save_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, 'ingredient-create'))
+    )
+    ingredient_save_btn.click()
+    submission_note = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, "ingredient-form-note"))
+    )
+    assert "created successfully" in submission_note.text
+

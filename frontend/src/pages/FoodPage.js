@@ -1,6 +1,6 @@
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { fetchFood, fetchRelatedIngredients, updateFood, updateFoodIngredients } from "../services/FoodService";
+import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
+import { deleteFoodIngredients, fetchFood, fetchRelatedIngredients, updateFood, updateFoodIngredients } from "../services/FoodService";
 import { fetchIngredients } from "../services/IngredientService"
 import { useEffect, useState } from "react";
 import IngredientRow from "../components/IngredientRow";
@@ -10,6 +10,8 @@ import "./FoodPage.css"
 function FoodPage({ visibleBackButton = true, preMode = 'browse' }) {
     const [searchParams] = useSearchParams();
     const lastPage = searchParams.get("lastpage")
+    const queryClient = useQueryClient();
+
 
     const defaultIngredient = {
         ingredientId: -1,
@@ -26,6 +28,7 @@ function FoodPage({ visibleBackButton = true, preMode = 'browse' }) {
     const navigate = useNavigate();
     const [mode, setMode] = useState(preMode) // edit mode or browse mode
     const [errorNote, setErrorNote] = useState("")
+    const [ingredientsDeleted, setIngredientsDeleted] = useState([])
 
     const { data: foodData, isLoading: isFoodDataLoading, error: FoodDataError } = useQuery({
         queryKey: ["food", foodId], // unique key per foodId
@@ -64,14 +67,28 @@ function FoodPage({ visibleBackButton = true, preMode = 'browse' }) {
 
     const updateFoodIngredientsMutation = useMutation({
         mutationFn: (updatedFood) =>
-            updateFoodIngredients(updatedFood.ingredients),
+            updateFoodIngredients(updatedFood.foodId, updatedFood.ingredients),
         onSuccess: (data) => {
             console.log(data)
+            queryClient.invalidateQueries(["food-ingredients"]);
         },
         onError: (error) => {
             console.error("Failed to update foodIngredients:", error);
             setErrorNote(error)
             alert("Failed to save food.");
+        }
+    });
+
+    const deleteFoodIngredientsMutation = useMutation({
+        mutationFn: (foodIngredientIds) =>
+            deleteFoodIngredients(foodIngredientIds),
+
+        onSuccess: () => {
+            queryClient.invalidateQueries(["food-ingredients"]);
+        },
+        onError: (error) => {
+            console.error("Delete failed:", error);
+            alert("Failed to delete ingredients");
         }
     });
 
@@ -116,22 +133,23 @@ function FoodPage({ visibleBackButton = true, preMode = 'browse' }) {
         }));
     };
 
-    function updateIngredientRow(index, updatedIngredientRow) {
+    function updateIngredientRow(foodIngredientId, updatedIngredientRow) {
         setFood(prev => ({
             ...prev,
-            ingredients: prev.ingredients.map((row, i) =>
-                i === index ? updatedIngredientRow : row
+            ingredients: prev.ingredients.map(row =>
+                row.foodIngredientId === foodIngredientId ? updatedIngredientRow : row
             )
         }));
     };
     
-    function removeIngredientRow(index) {
+    function removeIngredientRow(foodIngredientId) {
         setFood(prev => ({
             ...prev,
-            ingredients: prev.ingredients.filter((_, i) =>
-                i !== index
+            ingredients: prev.ingredients.filter(row =>
+                row.foodIngredientId !== foodIngredientId
             )
         }));
+        setIngredientsDeleted(prevItems => [...prevItems, foodIngredientId]);
     };
 
     async function handleSave() {
@@ -144,6 +162,7 @@ function FoodPage({ visibleBackButton = true, preMode = 'browse' }) {
         try {
             await updateFoodMutation.mutateAsync(food);
             await updateFoodIngredientsMutation.mutateAsync(food);
+            if (ingredientsDeleted.length !== 0) await deleteFoodIngredientsMutation.mutateAsync(ingredientsDeleted);
             setMode("browse")
             console.log("Food update triggered!");
         } catch (err) {
@@ -173,14 +192,14 @@ function FoodPage({ visibleBackButton = true, preMode = 'browse' }) {
             </label>
             <h3 id="ingredient-title">Ingredients</h3>
             <ol id="ingredients-edit">
-                {food.ingredients.map((row, index) => (<IngredientRow key={index} ingredientIndex={index} row={row} existingIngredients={ingredientsData} updateRow={((updatedIngredientRow) => updateIngredientRow(index, updatedIngredientRow))} removeRow={() => removeIngredientRow(index)} />))}
+                {food.ingredients.map((row, index) => (<IngredientRow key={index} ingredientIndex={index} row={row} existingIngredients={ingredientsData} updateRow={((updatedIngredientRow) => updateIngredientRow(row.foodIngredientId, updatedIngredientRow))} removeRow={() => removeIngredientRow(row.foodIngredientId)} />))}
             </ol>
-            <group id="ingredient-group">
+            <div id="ingredient-group">
             <button id="add-ingredient" className="add-btn" type="button" title="Add Ingredient" aria-label="Add Ingredient" onClick={(e) => {e.stopPropagation();
-                addIngredient()}}><svg viewBox="0 0 24 24" width="24" height="24" fill="white"><path d="M12 5v14M5 12h14" stroke="white" strokeWidth="2" strokeLinecap="round"/></svg><span class="btn-text">Add Ingredient</span></button>
+                addIngredient()}}><svg viewBox="0 0 24 24" width="24" height="24" fill="white"><path d="M12 5v14M5 12h14" stroke="white" strokeWidth="2" strokeLinecap="round"/></svg><span className="btn-text">Add Ingredient</span></button>
             <button id="create-ingredient" type="button" className="create-btn" title="Create A New Ingredient" aria-label="Create A New Ingredient" onClick={(e) => {e.stopPropagation();
-                setModalOpen(true)}}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="12" x2="12" y2="18"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg><span class="btn-text">Create New Ingredient</span></button>
-            </group>
+                setModalOpen(true)}}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="12" x2="12" y2="18"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg><span className="btn-text">Create New Ingredient</span></button>
+            </div>
             <label htmlFor="edit-food-description" className="edit-food-line" id="edit-food-description-section"> 
                 <h3>Food Description: </h3>
                 <textarea id="edit-food-description" 
@@ -212,7 +231,7 @@ function FoodPage({ visibleBackButton = true, preMode = 'browse' }) {
         {errorNote !== "" && <p>{errorNote}</p>}
         {visibleBackButton && <button className="back-btn" id="food-back" title="Back to Last Page" aria-label="Back to Last Page" onClick={(e) => {
             e.stopPropagation(); 
-            navigate(`/${lastPage}`)}}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <circle cx="12" cy="12" r="10"></circle> <path d="M15 12H9"></path><polyline points="12 15 9 12 12 9"></polyline></svg></button>}
+            navigate(`/${lastPage}`)}}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"> <circle cx="12" cy="12" r="10"></circle> <path d="M15 12H9"></path><polyline points="12 15 9 12 12 9"></polyline></svg></button>}
         </>}
     </>)
 }

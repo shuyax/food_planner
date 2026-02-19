@@ -10,7 +10,8 @@ const {
     getAllFoods,
     getAllImagesByFoodId,
     updateFood,
-    updateFoodIngredient
+    updateFoodIngredient,
+    deleteIngredientFromFood
 } = require('../../src/services/FoodService');
 
 describe('food post service', () => {
@@ -357,6 +358,37 @@ describe('food get service', () => {
 });
 
 
+describe('food delete service', () => {
+    let foodId;
+    const foodName = 'test beef cheese udon';
+    let foodIngredientId;  
+    beforeEach(async () => {
+        foodId = await createFood(foodName);
+        const testIngredient = 'test-egg';
+        const canonicalUnitId = 6;
+        const { rows } = await pool.query(
+            `INSERT INTO ingredients(name, canonical_unit_id)
+            VALUES ($1, $2)
+            RETURNING id`,
+            [testIngredient, canonicalUnitId]
+        );
+        const ingredientId = rows[0].id;
+        const quantity = 4;
+        foodIngredientId = await addIngredientToFood(foodId, ingredientId, quantity, canonicalUnitId);
+    });
+    afterEach(async () => {
+        await pool.query(`DELETE FROM foods`);
+        await pool.query(`DELETE FROM ingredients`);
+    });
+    test('deleteIngredientFromFood delete a row from food_ingredient table based on foodIngredientId', async () => {
+        const foodIngredientIdDeleted = await deleteIngredientFromFood(foodIngredientId)
+        expect(foodIngredientIdDeleted).toBe(foodIngredientId);
+    });
+    test('deleteIngredientFromFood with not existing foodIngredientId', async () => {
+        const foodIngredientIdDeleted = await deleteIngredientFromFood(2000)
+        expect(foodIngredientIdDeleted).toBe(false);
+    });
+})
 
 afterAll(async () => {
   await pool.end();
