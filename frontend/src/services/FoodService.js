@@ -80,10 +80,18 @@ export async function updateFood(updatedFood) {
   return res.data
 }
 
-export async function updateFoodIngredients(updatedIngredients) {
-  console.log(updatedIngredients)
+export async function updateFoodIngredients(foodId, updatedIngredients) {
+  console.log(foodId, updatedIngredients)
   const res = await axios.put(`${BASEURL}/foods/update-ingredients`, {
+    foodId: foodId,
     ingredients: updatedIngredients
+  })
+  return res.data
+}
+export async function deleteFoodIngredients(foodIngredientIds) {
+  console.log(foodIngredientIds)
+  const res = await axios.delete(`${BASEURL}/foods/delete-ingredients`, {
+    data: { foodIngredientIds }
   })
   return res.data
 }
