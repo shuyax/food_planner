@@ -129,13 +129,28 @@ async function updateFood(req, res, next) {
 
 async function updateFoodIngredients(req, res, next) {
     try {
-        const { ingredients } = req.body;
-        if (!Array.isArray(ingredients) || ingredients.length === 0) {
-            return res.status(400).json({ error: "Ingredients are required" });
+        const { foodId, ingredients } = req.body;
+        if (!foodId || !Array.isArray(ingredients) || ingredients.length === 0) {
+            return res.status(400).json({ error: "FoodId and Ingredients are required" });
         }
         const results = await Promise.all(
             ingredients.map(async ingredient => {
-                return await FoodService.updateFoodIngredient(ingredient);
+                if (ingredient.foodIngredientId !== -1) {
+                    await FoodService.updateFoodIngredient(ingredient);
+                    return ingredient
+                } else {
+                    let note = null;
+                    if (ingredient.note !== '') {
+                        note = ingredient.note
+                    }
+                    const foodIngredientId = await FoodService.addIngredientToFood(foodId, ingredient.ingredientId, ingredient.quantity, ingredient.ingredientUnitId, note)
+                    const newIngredient = {
+                        ...ingredient,
+                        foodIngredientId: foodIngredientId
+                    }
+                    return newIngredient
+                }
+                
             }))
         res.status(200).json(results);
     } catch (err) {
