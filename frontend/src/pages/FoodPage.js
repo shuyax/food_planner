@@ -82,9 +82,9 @@ function FoodPage({ visibleBackButton = true, preMode = 'browse' }) {
     const deleteFoodIngredientsMutation = useMutation({
         mutationFn: (foodIngredientIds) =>
             deleteFoodIngredients(foodIngredientIds),
-
         onSuccess: () => {
             queryClient.invalidateQueries(["food-ingredients"]);
+            setIngredientsDeleted([])
         },
         onError: (error) => {
             console.error("Delete failed:", error);
@@ -221,7 +221,7 @@ function FoodPage({ visibleBackButton = true, preMode = 'browse' }) {
                 <li key={row.foodIngredientId}><strong>{row.ingredientName.toUpperCase()}: </strong>{row.quantity} {row.ingredientUnitName}{row.ingredientUnitAbbreviation !== row.ingredientUnitName && <> ({row.ingredientUnitAbbreviation})</>} {row.note && <i>(Note: {row.note})</i>}</li>
             ))}
         </ol>
-        <h3>Instructions</h3>
+        <h3 id="instruction-title">Instructions</h3>
         <p id="food-description">{food.foodDescription}</p>
         <button id="edit-food" className="edit-btn" title="Edit Food" aria-label="Edit Food" onClick={(e) => {
             e.stopPropagation();
