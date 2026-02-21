@@ -505,3 +505,54 @@ describe("MealController.deleteMealFood", () => {
     expect(res.status).not.toHaveBeenCalled();
   });
 })
+
+describe("MealController.updateFoodInMeal", () => {
+  let req, res, next;
+
+  beforeEach(() => {
+    res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    };
+    next = jest.fn();
+    jest.clearAllMocks();
+  });
+    it("update an existing food meal_food in table", async () => {
+        req = {
+            body: {
+                mealFoodId: 3,
+                updatedFoodId: 6
+            }
+        };
+        // Mock MealService methods
+        jest.spyOn(MealService, "updateFoodToMeal").mockResolvedValue(3)
+        await MealController.updateFoodInMeal(req, res, next);
+        // Verify createMeal called
+        expect(MealService.updateFoodToMeal).toHaveBeenCalledWith(3, 6);
+        expect(res.status).toHaveBeenCalledWith(200);
+        // next should not be called
+        expect(next).not.toHaveBeenCalled();
+    });
+    it("returns 400 if mealFoodId or foodId is missing", async () => {
+        const req = { body: { mealFoodId: 3 } }; // foods missing
+        await MealController.updateFoodInMeal(req, res, next);
+        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.json).toHaveBeenCalledWith({ error: "mealFoodId and foodId are required" });
+        expect(next).not.toHaveBeenCalled();
+    });
+
+    it("calls next if there is an error", async () => {
+        req = {
+            body: {
+                mealFoodId: 3,
+                updatedFoodId: 6
+            }
+        };
+        // Force the service to throw an error
+        const mockError = new Error("DB error");
+        jest.spyOn(MealService, "updateFoodToMeal").mockRejectedValue(mockError);
+        await MealController.updateFoodInMeal(req, res, next);
+        expect(next).toHaveBeenCalledWith(mockError);
+        expect(res.json).not.toHaveBeenCalled();
+    });
+})
