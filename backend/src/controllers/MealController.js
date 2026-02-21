@@ -123,6 +123,19 @@ async function updateFoodInMeal(req, res, next) {
   }
 }
 
+async function createFoodInMeal(req, res, next) {
+  try {
+    const { mealId, foodId } = req.body;
+    if (!mealId || !foodId) {
+      return res.status(400).json({ error: "mealId and foodId are required" });
+    }
+    const mealFoodId = await MealService.addFoodToMeal(mealId, foodId);
+    res.status(201).json(mealFoodId);
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
     getMeals,
     createMeal,
@@ -131,5 +144,6 @@ module.exports = {
     updateFoodsToMeal,
     deleteMeal,
     deleteMealFood,
-    updateFoodInMeal
+    updateFoodInMeal,
+    createFoodInMeal
 };
