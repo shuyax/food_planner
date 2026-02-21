@@ -7,7 +7,7 @@ router.get("/meal-types", MealController.getMealTypes);
 router.post("/", MealController.createMeal)
 router.get("/:mealId/foods", MealController.getRelatedFoods);
 router.post("/update-foods", MealController.updateFoodsToMeal)
-router.post("/create-food", MealController.updateFoodsToMeal)
+router.post("/create-food", MealController.createFoodInMeal)
 router.put("/update-food", MealController.updateFoodInMeal)
 router.delete("/delete/:mealId", MealController.deleteMeal)
 router.delete("/delete-food/:mealFoodId", MealController.deleteMealFood)
