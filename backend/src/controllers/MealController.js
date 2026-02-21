@@ -97,11 +97,25 @@ async function deleteMeal(req, res, next) {
   }
 }
 
+async function deleteMealFood(req, res, next) {
+  try {
+    const { mealFoodId } = req.params;
+    if (!mealFoodId) {
+      return res.status(400).json({ error: "mealFoodId param is required" });
+    }
+    await MealService.deleteFoodFromMeal(mealFoodId)
+    res.status(200)
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
     getMeals,
     createMeal,
     getMealTypes,
     getRelatedFoods,
     updateFoodsToMeal,
-    deleteMeal
+    deleteMeal,
+    deleteMealFood
 };

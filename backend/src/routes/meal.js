@@ -8,5 +8,6 @@ router.post("/", MealController.createMeal)
 router.get("/:mealId/foods", MealController.getRelatedFoods);
 router.post("/update-foods", MealController.updateFoodsToMeal)
 router.delete("/delete/:mealId", MealController.deleteMeal)
+router.delete("/delete-food/:mealFoodId", MealController.deleteMealFood)
 
 module.exports = router;
