@@ -112,11 +112,11 @@ async function deleteMealFood(req, res, next) {
 
 async function updateFoodInMeal(req, res, next) {
   try {
-    const {mealFoodId, updatedFoodId} = req.body;
-    if (!mealFoodId || !updatedFoodId) {
+    const {mealFoodId, foodId} = req.body;
+    if (!mealFoodId || !foodId) {
       return res.status(400).json({ error: "mealFoodId and foodId are required" });
     }
-    await MealService.updateFoodToMeal(mealFoodId, updatedFoodId)
+    await MealService.updateFoodToMeal(mealFoodId, foodId)
     res.status(200).json({ message: "Meal food updated" });
   } catch (err) {
     next(err);

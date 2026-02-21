@@ -521,7 +521,7 @@ describe("MealController.updateFoodInMeal", () => {
         req = {
             body: {
                 mealFoodId: 3,
-                updatedFoodId: 6
+                foodId: 6
             }
         };
         // Mock MealService methods
@@ -545,7 +545,7 @@ describe("MealController.updateFoodInMeal", () => {
         req = {
             body: {
                 mealFoodId: 3,
-                updatedFoodId: 6
+                foodId: 6
             }
         };
         // Force the service to throw an error
