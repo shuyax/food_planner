@@ -59,3 +59,8 @@ export async function deleteMeal(mealId) {
   // console.log(res.data)
   return res.data; 
 }
+
+export async function deleteFoodFromMeal(mealFoodId) {
+  const res = await axios.delete(`${BASEURL}/meals/delete-food/${mealFoodId}`)
+  return res.data
+}
