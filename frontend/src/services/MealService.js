@@ -64,3 +64,21 @@ export async function deleteFoodFromMeal(mealFoodId) {
   const res = await axios.delete(`${BASEURL}/meals/delete-food/${mealFoodId}`)
   return res.data
 }
+
+export async function updateFoodInMeal(mealFoodId, updatedFoodId) {
+  const res = await axios.put(`${BASEURL}/meals/update-food`, {
+    mealFoodId,
+    foodId: updatedFoodId
+  });
+  // console.log(res.data)
+  return res.data
+}
+
+export async function createFoodInMeal(mealId,foodId) {
+  const res = await axios.post(`${BASEURL}/meals/create-food`, {
+    mealId,
+    foodId
+  });
+  // console.log(res.data)
+  return res.data
+}
