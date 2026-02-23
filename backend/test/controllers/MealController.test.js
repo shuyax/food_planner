@@ -114,7 +114,8 @@ describe("MealController.createMeal", () => {
 describe("MealController.getMealTypes", () => {
     it("returns all meal types supported", async () => {
         const req = {};
-        const res = {json: jest.fn()};
+        const res = {status: jest.fn().mockReturnThis(),
+            json: jest.fn()};
         const next = jest.fn();
         const mockMealTypes =  [ 'breakfast', 'lunch', 'dinner', 'snack', 'drink' ];
         MealService.getMealTypes.mockResolvedValue(mockMealTypes);
@@ -124,7 +125,7 @@ describe("MealController.getMealTypes", () => {
     });
     it("calls next if there is an error", async () => {
         const req = {};
-        const res = {
+        const res = {status: jest.fn().mockReturnThis(),
             json: jest.fn()
         };
         const next = jest.fn();
