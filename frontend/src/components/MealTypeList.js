@@ -46,6 +46,5 @@ export function MealTypeList( {AddMeal} ) {
                 <option key={index} value={mealType}>{mealType}</option>   
             ))}
         </select>
-        {/* <button id="add-meal" type="button" onClick={handleAddMeal} disabled={mealType === ''}>Add Meal</button> */}
     </div>)
 };
