@@ -91,7 +91,9 @@ def test_active_meal_with_related_fields(driver):
         elements = target_active_meal.find_elements(By.CLASS_NAME, hiden_elements_class_name)
         assert len(elements) == 0, f"{hiden_elements_class_name} should not exist"
     target_active_meal.click()
-    target_active_meal = driver.find_element(By.ID, "meal-section-dinner")
+    target_active_meal = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, "meal-section-dinner"))
+    )
     for hiden_elements_id in hiden_elements_ids:
         elements = target_active_meal.find_elements(By.ID, hiden_elements_id)
         assert len(elements) == 1, f"{hiden_elements_id} should be visible"
@@ -196,13 +198,21 @@ def test_add_food_section(driver):
         EC.presence_of_element_located((By.ID, 'dinner-'))
     )
     assert new_food_select.get_attribute("value") == "", "The value of new select should be empty"
-    assert add_food_btn.get_attribute("disabled") is not None, "The add food button should be disabled if there is an empty select"
+    add_food_btn = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, 'food-add-btn-dinner'))
+    )
+    assert add_food_btn.get_attribute("disabled")== "true", "The add food button should be disabled if there is an empty select"
     food_select = Select(new_food_select)
     food_select.select_by_visible_text("tomato beef udon with cheese")
-    add_food_btn = WebDriverWait(driver, 20).until(
-        EC.element_to_be_clickable((By.ID, 'food-add-btn-dinner'))
+    add_food_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, "food-add-btn-dinner"))
     )
     assert add_food_btn.get_attribute("disabled") is None, "The add food button should be enable if there is no empty select"
+    add_food_btn.click()
+    new_food_select = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, 'dinner-'))
+    )
+    assert "tomato beef udon with cheese" not in new_food_select.text.lower(), "The new added food should not be an option under the same meal"
     meal_section_drink_btn.click()
     new_added_food = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.ID, 'dinner-tomato beef udon with cheese'))
@@ -260,10 +270,24 @@ def test_delete_food_section(driver):
         EC.presence_of_element_located((By.ID, 'lunch-8'))
     )
     assert food.is_displayed(), "The food to be deleted should exist"
+    food_name = food.find_element(By.TAG_NAME,"select").get_attribute("value").lower()
     food_delete_btn = WebDriverWait(driver, 10).until(
         EC.element_to_be_clickable((By.ID, "food-delete-btn-lunch-8"))
     )
+    food_number = len(driver.find_elements(By.XPATH, "//div[@id='meal-section-lunch']//ol[contains(@class,'meal-foods-edit')]/li"))
     food_delete_btn.click()
+    time.sleep(5)
+    food_number_after_delete = len(driver.find_elements(By.XPATH, "//div[@id='meal-section-lunch']//ol[contains(@class,'meal-foods-edit')]/li"))
+    assert food_number_after_delete == food_number- 1, "The number of food row should decreased by one"
+    add_food_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, 'food-add-btn-lunch'))
+    )
+    add_food_btn.click()
+    new_food_select = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, 'lunch-'))
+    )
+    assert food_name in new_food_select.text.lower(), "The new deleted food should be an option under the same meal"
+
     # refresh the page
     driver.get(delete_add_meal_url)
     meal_section_lunch_btn = WebDriverWait(driver, 10).until(
@@ -283,7 +307,9 @@ def test_update_food_to_existing_meal(driver):
         EC.element_to_be_clickable((By.ID, "meal-section-lunch"))
     )
     meal_section_lunch_btn.click()
-    current_food_select = driver.find_element(By.ID, "lunch-stir fry bok choy")
+    current_food_select = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, "lunch-stir fry bok choy"))
+    )
     select = Select(current_food_select)
     select.select_by_visible_text("spicy sour noodle")
     WebDriverWait(driver, 10).until(

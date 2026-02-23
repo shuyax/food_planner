@@ -114,7 +114,8 @@ describe("MealController.createMeal", () => {
 describe("MealController.getMealTypes", () => {
     it("returns all meal types supported", async () => {
         const req = {};
-        const res = {json: jest.fn()};
+        const res = {status: jest.fn().mockReturnThis(),
+            json: jest.fn()};
         const next = jest.fn();
         const mockMealTypes =  [ 'breakfast', 'lunch', 'dinner', 'snack', 'drink' ];
         MealService.getMealTypes.mockResolvedValue(mockMealTypes);
@@ -124,7 +125,7 @@ describe("MealController.getMealTypes", () => {
     });
     it("calls next if there is an error", async () => {
         const req = {};
-        const res = {
+        const res = {status: jest.fn().mockReturnThis(),
             json: jest.fn()
         };
         const next = jest.fn();
@@ -464,3 +465,148 @@ describe("MealController.deleteMeal", () => {
         expect(res.json).not.toHaveBeenCalled();
     });
 });
+
+describe("MealController.deleteMealFood", () => {
+  let req, res, next;
+
+  beforeEach(() => {
+    res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    };
+    next = jest.fn();
+    jest.clearAllMocks();
+  });
+  it("delete meal food and return 200 and delete status", async () => {
+    mockMealFoodId = 10
+    req = { params: { mealFoodId: mockMealFoodId } }
+    jest.spyOn(MealService, "deleteFoodFromMeal").mockResolvedValue(mockMealFoodId)
+    await MealController.deleteMealFood(req, res, next);
+    expect(MealService.deleteFoodFromMeal).toHaveBeenCalledWith(mockMealFoodId)
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it("returns 400 if ingredients array is missing", async () => {
+    req = req = { params: {} }
+    await MealController.deleteMealFood(req, res, next);
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      error: "mealFoodId param is required"
+    });
+    expect(next).not.toHaveBeenCalled();
+  });
+  it("calls next if MealService throws an error", async () => {
+    mockMealFoodIds = 10
+    req = { params: { mealFoodId: mockMealFoodId } }
+    const mockError = new Error("DB failure");
+    jest.spyOn(MealService, "deleteFoodFromMeal").mockRejectedValue(mockError);
+    await MealController.deleteMealFood(req, res, next);
+    expect(next).toHaveBeenCalledWith(mockError);
+    expect(res.status).not.toHaveBeenCalled();
+  });
+})
+
+describe("MealController.updateFoodInMeal", () => {
+  let req, res, next;
+
+  beforeEach(() => {
+    res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    };
+    next = jest.fn();
+    jest.clearAllMocks();
+  });
+    it("update an existing food meal_food in table", async () => {
+        req = {
+            body: {
+                mealFoodId: 3,
+                foodId: 6
+            }
+        };
+        // Mock MealService methods
+        jest.spyOn(MealService, "updateFoodToMeal").mockResolvedValue(3)
+        await MealController.updateFoodInMeal(req, res, next);
+        // Verify createMeal called
+        expect(MealService.updateFoodToMeal).toHaveBeenCalledWith(3, 6);
+        expect(res.status).toHaveBeenCalledWith(200);
+        // next should not be called
+        expect(next).not.toHaveBeenCalled();
+    });
+    it("returns 400 if mealFoodId or foodId is missing", async () => {
+        const req = { body: { mealFoodId: 3 } }; // foods missing
+        await MealController.updateFoodInMeal(req, res, next);
+        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.json).toHaveBeenCalledWith({ error: "mealFoodId and foodId are required" });
+        expect(next).not.toHaveBeenCalled();
+    });
+
+    it("calls next if there is an error", async () => {
+        req = {
+            body: {
+                mealFoodId: 3,
+                foodId: 6
+            }
+        };
+        // Force the service to throw an error
+        const mockError = new Error("DB error");
+        jest.spyOn(MealService, "updateFoodToMeal").mockRejectedValue(mockError);
+        await MealController.updateFoodInMeal(req, res, next);
+        expect(next).toHaveBeenCalledWith(mockError);
+        expect(res.json).not.toHaveBeenCalled();
+    });
+})
+
+describe("MealController.createFoodInMeal", () => {
+  let req, res, next;
+
+  beforeEach(() => {
+    res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    };
+    next = jest.fn();
+    jest.clearAllMocks();
+  });
+  it("add new food meal_food table and returns a mealFoodId", async () => {
+        const req = {
+            body: {
+                mealId: 3,
+                foodId: 5
+            }
+        };
+        // Mock MealService methods
+        jest.spyOn(MealService, "addFoodToMeal").mockResolvedValue(11)
+        await MealController.createFoodInMeal(req, res, next);
+        // Verify createMeal called
+        expect(MealService.addFoodToMeal).toHaveBeenCalledWith(3, 5);
+        // Verify response
+        expect(res.status).toHaveBeenCalledWith(201);
+        expect(res.json).toHaveBeenCalledWith(11);
+        // next should not be called
+        expect(next).not.toHaveBeenCalled();
+    });
+    it("returns 400 if mealId or foodId is missing", async () => {
+        const req = { body: { foodId: 5 } }; // foods missing
+        await MealController.createFoodInMeal(req, res, next);
+        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.json).toHaveBeenCalledWith({ error: "mealId and foodId are required" });
+        expect(next).not.toHaveBeenCalled();
+    });
+
+    it("calls next if there is an error", async () => {
+        const req = {
+            body: {
+                mealId: 3,
+                foodId: 5
+            }
+        };
+        // Force the service to throw an error
+        const mockError = new Error("DB error");
+        jest.spyOn(MealService, "addFoodToMeal").mockRejectedValue(mockError);
+        await MealController.createFoodInMeal(req, res, next);
+        expect(next).toHaveBeenCalledWith(mockError);
+        expect(res.json).not.toHaveBeenCalled();
+    });
+})

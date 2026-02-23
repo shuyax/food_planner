@@ -10,7 +10,7 @@ async function getMeals(req, res, next) {
       return res.status(400).json({ error: "startDate and endDate headers are required" });
     }
     const meals = await MealService.getMeals(startDate, endDate);
-    res.json(meals);
+    res.status(200).json(meals);
   } catch (err) {
     next(err);
   }
@@ -23,7 +23,7 @@ async function createMeal(req, res, next) {
       return res.status(400).json({ error: "meal type and meal date are required"})
     }
     const mealId = await MealService.createMeal(type, date)
-    res.json(mealId)
+    res.status(201).json(mealId)
   } catch (err) {
     next(err);
   }
@@ -32,7 +32,7 @@ async function createMeal(req, res, next) {
 async function getMealTypes(req, res, next) {
   try {
     const mealTypes = await MealService.getMealTypes()
-    res.json(mealTypes)
+    res.status(200).json(mealTypes)
   } catch (err) {
     next(err);
   }
@@ -45,7 +45,7 @@ async function getRelatedFoods(req, res, next) {
       return res.status(400).json({ error: "mealId param is required" });
     }
     const relatedFoods = await MealService.getRelatedFoods(mealId)
-    res.json(relatedFoods)
+    res.status(200).json(relatedFoods)
   } catch (err) {
     next(err);
   }
@@ -97,11 +97,53 @@ async function deleteMeal(req, res, next) {
   }
 }
 
+async function deleteMealFood(req, res, next) {
+  try {
+    const { mealFoodId } = req.params;
+    if (!mealFoodId) {
+      return res.status(400).json({ error: "mealFoodId param is required" });
+    }
+    await MealService.deleteFoodFromMeal(mealFoodId)
+    res.status(200).json({ success: true, mealFoodId });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function updateFoodInMeal(req, res, next) {
+  try {
+    const {mealFoodId, foodId} = req.body;
+    if (!mealFoodId || !foodId) {
+      return res.status(400).json({ error: "mealFoodId and foodId are required" });
+    }
+    await MealService.updateFoodToMeal(mealFoodId, foodId)
+    res.status(200).json({ message: "Meal food updated" });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function createFoodInMeal(req, res, next) {
+  try {
+    const { mealId, foodId } = req.body;
+    if (!mealId || !foodId) {
+      return res.status(400).json({ error: "mealId and foodId are required" });
+    }
+    const mealFoodId = await MealService.addFoodToMeal(mealId, foodId);
+    res.status(201).json(mealFoodId);
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
     getMeals,
     createMeal,
     getMealTypes,
     getRelatedFoods,
     updateFoodsToMeal,
-    deleteMeal
+    deleteMeal,
+    deleteMealFood,
+    updateFoodInMeal,
+    createFoodInMeal
 };

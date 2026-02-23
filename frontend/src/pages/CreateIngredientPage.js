@@ -21,7 +21,7 @@ function CreateIngredientPage( {visibleBackButton = true} ) {
             mutationFn: ({ ingredientName, canonicalUnitId }) =>
                 createIngredient(ingredientName, canonicalUnitId),
             onSuccess: (data, variables) => {
-                const { ingredientName, canonicalUnitId } = variables;
+                const { ingredientName } = variables;
                 setIngredientName("")
                 setSelectedUnit({
                     id: -1, 
