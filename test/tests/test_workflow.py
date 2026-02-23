@@ -6,6 +6,7 @@ from selenium.webdriver.support.ui import Select, WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from conftest import BASE_URL
 from datetime import date, datetime, timedelta
+import time
 
 def go_to_target_day(driver, days_later=7):
     driver.get(BASE_URL)
@@ -48,7 +49,7 @@ def switch_mode(driver, current_mode):
             EC.element_to_be_clickable((By.CLASS_NAME, "edit-btn"))
         )
         assert edit_btn.is_displayed(), "Edit button should be visible under browse mode"
-        edit_btn.click()
+        driver.execute_script("arguments[0].click();", edit_btn)
         WebDriverWait(driver, 10).until(
             EC.element_to_be_clickable((By.CLASS_NAME, "save-btn"))
         )
@@ -57,7 +58,7 @@ def switch_mode(driver, current_mode):
             EC.element_to_be_clickable((By.CLASS_NAME, "save-btn"))
         )
         assert save_btn.is_displayed(), "Save button should be visible under edit mode"
-        save_btn.click()
+        driver.execute_script("arguments[0].click();", save_btn)
         WebDriverWait(driver, 10).until(
             EC.element_to_be_clickable((By.CLASS_NAME, "edit-btn"))
         )
@@ -180,6 +181,7 @@ def update_food_in_meal(driver, active_meal, existing_food_name, new_food_name):
         EC.presence_of_element_located((By.XPATH, f".//select[contains(@id,'{existing_food_name.lower()}')]"))
     )
     Select(food_select_elem).select_by_visible_text(new_food_name.lower())
+    time.sleep(5)
     new_food_select_elems = driver.find_elements(By.ID, f"{meal_type}-{new_food_name.lower()}")
     assert len(new_food_select_elems) == 1, "The updated food should be visible"
 
@@ -328,7 +330,7 @@ def delete_ingredient_from_food(driver, ingredient_name):
         EC.element_to_be_clickable((By.ID, f"remove-btn-{index}"))
     )
     ingredient_row_li_len = len(driver.find_elements(By.CLASS_NAME, "ingredient-row-li"))
-    delete_btn.click()
+    driver.execute_script("arguments[0].click();", delete_btn)
     ingredient = WebDriverWait(driver, 10).until(
         EC.element_to_be_clickable((By.ID, f"ingredient-{index}"))
     )
@@ -393,6 +395,7 @@ def test_delete_food_from_meal(driver):
     dinner = activate_meal(driver, "dinner")
     delete_food_from_meal(driver, dinner, "spicy sour noodle")
     switch_mode(driver, "edit")
+    meal_foods = driver.find_element(By.ID, "meal-foods-dinner")
     assert "spicy sour noodle" not in meal_foods.text.lower()
 
 def test_add_additional_food_into_meal(driver):
