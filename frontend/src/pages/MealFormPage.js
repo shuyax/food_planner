@@ -1,9 +1,9 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { MealTypeList } from "../components/MealTypeList";
 import { fetchFoods } from "../services/FoodService";
-import { createMeal, deleteMeal, fetchMeals, fetchRelatedFoods, updateFoodsToMeal } from "../services/MealService";
+import { createMeal, deleteMeal, fetchMeals, fetchRelatedFoods } from "../services/MealService";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useQueryClient } from '@tanstack/react-query';
 import "./MealForm.css"
 import EditMeal from "../components/EditMeal";
@@ -14,7 +14,6 @@ function MealForm({ visibleBackButton = true }) {
     const navigate = useNavigate();
     const [editingMeal, setEditingMeal] = useState(null);
     const [editMode, setEditMode] = useState(false)
-    const prevMealRef = useRef(null);
     
     const [searchParams] = useSearchParams();
     const mealDate = searchParams.get("date");
@@ -29,7 +28,7 @@ function MealForm({ visibleBackButton = true }) {
 
     // fetch a single day meals
     const { data: meals = [] } = useQuery({
-        queryKey: ['meals', mealDate],
+        queryKey: ['meals-foods', mealDate],
         queryFn: async () => {
           const baseMeals = await fetchMeals(mealDate, mealDate);
           return Promise.all(
@@ -50,9 +49,7 @@ function MealForm({ visibleBackButton = true }) {
         onSuccess: (data, variables) => {
             const { mealType, mealDate } = variables;
             console.log("Meal created:" , data, "for", mealType, "on", mealDate);
-            queryClient.invalidateQueries({
-                queryKey: ['meals'],
-            });
+            queryClient.invalidateQueries(['meals-foods', mealDate]);
         },
         onError: (error) => {
             console.error("Failed to create meal:", error);
@@ -60,65 +57,17 @@ function MealForm({ visibleBackButton = true }) {
         }
     });
 
-    const updateFoodsToMealMutation = useMutation({
-        mutationFn: ({ mealId, foods}) =>
-            updateFoodsToMeal(mealId, foods),
-        onSuccess: (data) => {
-            console.log("Foods updated to a meal" , data);
-            queryClient.invalidateQueries({ queryKey: ['meals'] });
-            // only update foods with new mealFoodIds if the editing meal doesn't change
-            if (editingMeal.mealId === data.mealId) {
-                setEditingMeal(prevMeal => ({
-                ...prevMeal,
-                foods: data.foods
-                }));
-            }
-        },
-        onError: (error) => {
-            console.error("Failed to update foods to a meal:", error);
-            alert("Failed to update foods to a meal.");
-        }
-    })
-
     const deleteMealMutation = useMutation({
         mutationFn: (mealId) => deleteMeal(mealId), // your backend API call
         onSuccess: (_, mealId) => {
             console.log("Meal deleted:", mealId);
-            queryClient.invalidateQueries({ queryKey: ['meals'] });
+            queryClient.invalidateQueries(['meals-foods', mealDate]);
         },
         onError: (err) => {
             console.error("Failed to delete meal:", err);
             alert("Failed to delete meal.");
         }
     });
-    
-    useEffect(() => {
-        if (!editingMeal) return;
-        const filteredMeal = {
-            ...editingMeal,
-            foods: editingMeal.foods.filter(food => !(food.foodId === -1 && food.mealFoodId === -1))
-        };
-        const prevMeal = prevMealRef.current;
-        // FIRST TIME: just store and exit
-        if (!prevMeal) {
-            prevMealRef.current = filteredMeal;
-            return;
-        }
-        // 🟢 CASE 1: User switched meals
-        if (prevMeal.mealId !== filteredMeal.mealId) {
-            // Save previous meal before switching
-            updateMeal(prevMeal.mealId, prevMeal);
-            // Store new one
-            prevMealRef.current = filteredMeal;
-            return;
-        }
-        // 🟢 CASE 2: Same meal, content changed
-        if (JSON.stringify(prevMeal) !== JSON.stringify(filteredMeal)) {
-            prevMealRef.current = filteredMeal;
-            updateMeal(filteredMeal.mealId, filteredMeal);
-        }
-        // eslint-disable-next-line
-    }, [editingMeal]);
 
     if (!mealDate) return <p>WARNING: You cannot add a meal without a date.</p>;
 
@@ -141,30 +90,6 @@ function MealForm({ visibleBackButton = true }) {
         }
     }
 
-
-    async function updateMeal(mealId, updatedMeal) {
-        if (!mealId || updatedMeal.foods.length === 0) return;
-        try {
-            await updateFoodsToMealMutation.mutateAsync({
-                mealId: mealId,
-                foods: updatedMeal.foods,
-            });
-            console.log("Meal-food update triggered!");
-        } catch (err) {
-            console.error("Failed to update foods to a meal:", err);
-        }
-    };
-
-    function handleMealChange(mealFoodId, updatedFood) {
-        setEditingMeal(prevMeal => ({
-            ...prevMeal,
-            foods: prevMeal.foods.map(f =>
-                f.mealFoodId === mealFoodId ? updatedFood : f
-            )
-        }));
-    };
-
-
     async function removeMeal(mealId) {
         try {
             // Wait for backend to delete the meal first
@@ -182,12 +107,11 @@ function MealForm({ visibleBackButton = true }) {
                 {meals.map(meal => (
                     meal.mealId === editingMeal?.mealId ? 
                     <EditMeal 
-                    key={editingMeal.mealId}
+                    key={`${editingMeal.mealId}-${editingMeal.foods}`}
                     color={MEAL_COLORS[meal.mealType]} 
-                    editingMeal={editingMeal} 
-                    setEditingMeal={setEditingMeal} 
-                    handleMealChange={(mealFoodId, updatedFood) => handleMealChange(mealFoodId, updatedFood)} 
+                    mealId={meal.mealId}
                     removeMeal={() => removeMeal(meal.mealId)}
+                    mealType={meal.mealType}
                     foodData={foodData}
                     /> : <DisplayMeal 
                     key={meal.mealId}
