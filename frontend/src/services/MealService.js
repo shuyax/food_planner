@@ -13,6 +13,7 @@ export async function fetchMeals(startDate, endDate) {
     mealType: meal.meal_type,
     mealDate: meal.meal_date
   }))
+  // console.log(result)
   return result
 };
 
@@ -40,7 +41,7 @@ export async function fetchRelatedFoods(mealId) {
     foodDescription: food.description,
     foodCost: food.cost
   }))
-  console.log(result)
+  // console.log(result)
   return result
 }
 
