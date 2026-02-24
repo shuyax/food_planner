@@ -1,0 +1,4 @@
+/database/pgadmin-env
+/database/pgadmin-debug.log
+/food_planner_api_testing
+/stop_docker_db.sh
