@@ -25,14 +25,21 @@ services:
       retries: 5
 
   frontend:
-    build: ./frontend
+    build: 
+      context: ./frontend
+      target: ${BUILD_TARGET} 
     ports:
-      - "80:80"
+      - "${FRONTEND_PORT}:${FRONTEND_PORT}"
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - FRONTEND_PORT=${FRONTEND_PORT}  # 3000 for dev, 80 for prod
     depends_on:
       backend:
         condition: service_healthy
+    volumes:
+      - ./frontend:/app
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost/ || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:${FRONTEND_PORT}/ || exit 1"]
       interval: 5s
       retries: 5
       timeout: 5s
@@ -46,7 +53,7 @@ services:
       frontend:
         condition: service_healthy
     environment:
-      - BASE_URL=http://frontend:80
+      - BASE_URL=http://frontend:${FRONTEND_PORT}
     volumes:
       - ./test:/tests
       - ./selenium_logs:/logs
@@ -73,3 +80,4 @@ volumes:
   postgres_development_data:
   postgres_test_data:
   postgres_production_data:
+  selenium_logs:
