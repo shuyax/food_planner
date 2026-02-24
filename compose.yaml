@@ -1,0 +1,75 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      target: ${BUILD_TARGET}
+    ports:
+      - "4000:4000"
+    environment:
+      - PORT=4000
+      - NODE_ENV=${NODE_ENV}
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app 
+      - /app/node_modules
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:4000/ || exit 1"]
+      interval: 5s
+      retries: 5
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost/ || exit 1"]
+      interval: 5s
+      retries: 5
+      timeout: 5s
+
+  selenium_test:
+    build:
+      context: ./test
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
+    environment:
+      - BASE_URL=http://frontend:80
+    volumes:
+      - ./test:/tests
+      - ./selenium_logs:/logs
+    command: ["sh", "-c", "pytest -s tests > /logs/selenium_test.log 2>&1"]
+
+  postgres:
+    image: postgres:16
+    container_name: foodplanner-${NODE_ENV}-db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - postgres_${NODE_ENV}_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_development_data:
+  postgres_test_data:
+  postgres_production_data:
