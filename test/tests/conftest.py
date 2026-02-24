@@ -5,14 +5,9 @@ from selenium.webdriver.chrome.options import Options
 import subprocess
 import os
 from pathlib import Path
-# from selenium.webdriver.support.ui import WebDriverWait
-# from selenium.webdriver.support import expected_conditions as EC
-# from selenium.webdriver.support.ui import Select
-# from selenium.webdriver.common.by import By
 
-# from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+BASE_URL = os.environ.get("BASE_URL", "http://localhost:80")
 
-BASE_URL = "http://localhost:3000"
 
 @pytest.fixture
 def driver():
@@ -28,19 +23,19 @@ def driver():
     yield driver
     driver.quit()
 
-@pytest.fixture(scope="session", autouse=True)
-def reset_test_db():
-    # Only runs once per pytest session
-    print("♻️ Resetting test DB via Node migration script...")
-    env = os.environ.copy()
-    env["NODE_ENV"] = "development"
-    current = Path(__file__).resolve()
-    project_root = next(p for p in current.parents if (p / "backend").exists())
-    migrate_script = project_root / "backend" / "database" / "migrate.js"
-    result = subprocess.run(["node", str(migrate_script)], check=True, env=env, capture_output=True)
-    print("STDOUT:", result.stdout)
-    print("STDERR:", result.stderr)
-    if result.returncode != 0:
-        raise RuntimeError("❌ DB migration failed")
-    yield
-    print("✅ Test session finished")
+# @pytest.fixture(scope="session", autouse=True)
+# def reset_test_db():
+#     # Only runs once per pytest session
+#     print("♻️ Resetting test DB via Node migration script...")
+#     env = os.environ.copy()
+#     env["NODE_ENV"] = "development"
+#     current = Path(__file__).resolve()
+#     project_root = next(p for p in current.parents if (p / "backend").exists())
+#     migrate_script = project_root / "backend" / "database" / "migrate.js"
+#     result = subprocess.run(["node", str(migrate_script)], check=True, env=env, capture_output=True)
+#     print("STDOUT:", result.stdout)
+#     print("STDERR:", result.stderr)
+#     if result.returncode != 0:
+#         raise RuntimeError("❌ DB migration failed")
+#     yield
+#     print("✅ Test session finished")

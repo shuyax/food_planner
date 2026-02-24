@@ -2,3 +2,4 @@
 .venv
 __pycache__
 test_log
+food_planner/selenium_logs/

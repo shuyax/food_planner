@@ -1,4 +1,5 @@
 #!/bin/bash
-docker stop foodplanner-dev-db foodplanner-test-db
-docker rm foodplanner-dev-db foodplanner-test-db
-echo "✅ Databases stopped and removed."
+environment=$1 # dev, test, prod
+docker stop foodplanner-$environment-db
+docker rm foodplanner-$environment-db
+echo "✅ Databases $environment stopped and removed."
