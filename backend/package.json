@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "node ./database/migrate.js && jest --runInBand"
+    "dev": "node ./database/migrate.js && nodemon src/server.js",
+    "test": "node ./database/migrate.js && jest --runInBand",
+    "start": "node src/server.js"
   },
   "keywords": [],
   "author": "",
