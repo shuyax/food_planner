@@ -60,5 +60,20 @@ app.use((err, req, res, next) => {
     });
 });
 
+if (process.env.NODE_ENV === "development") {
+  app.post("/test/reset-db", async (req, res) => {
+    console.log("⚡ Received request to reset dev DB from selenium");
+    try {
+      const { runMigrations } = require("./database/migrate");
+      await runMigrations();
+      console.log("✅ Dev DB reset complete");
+      res.json({ status: "ok" });
+    } catch (err) {
+      console.error("❌ Failed to reset DB:", err);
+      res.status(500).json({ error: err.message });
+    }
+  });
+}
+
 
 module.exports = app;
