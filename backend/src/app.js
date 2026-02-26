@@ -1,7 +1,7 @@
 // Import dependencies
 const express = require("express");
 const cors = require("cors");
-require("dotenv").config(); // Load variables from .env into process.env right away.
+// require("dotenv").config(); // Load variables from .env into process.env right away.
 
 // Create the Express application instance
 const app = express();
@@ -11,8 +11,27 @@ const app = express();
 app.use(cors())
 // 2. JSON parsing
 app.use(express.json())
+app.use((req, res, next) => {
+  console.log("---- Incoming Request ----");
+  console.log("Method:", req.method);
+  console.log("URL:", req.originalUrl);
+  console.log("Headers:", req.headers);
+  console.log("Body:", req.body);
+  console.log("--------------------------");
+  const originalSend = res.send.bind(res);
+  res.send = (body) => {
+    console.log("---- Outgoing Response ----");
+    console.log("Status:", res.statusCode);
+    console.log("Headers:", res.getHeaders());
+    console.log("Body:", body); // This is the actual response data
+    console.log("---------------------------");
+    return originalSend(body); // send the response as usual
+  };
+
+  next();
+});
 // 3. static file serving
-app.use("/uploads", express.static(process.env.UPLOAD_DIR || "uploads"));
+app.use("/api/uploads", express.static(process.env.UPLOAD_DIR || "uploads"));
 
 
 app.get("/", (req, res) => {
@@ -20,19 +39,19 @@ app.get("/", (req, res) => {
 })
 
 const foodRoutes = require("./routes/food");
-app.use("/foods", foodRoutes);
+app.use("/api/foods", foodRoutes);
 
 const uploadRoutes = require("./routes/upload");
-app.use("/upload", uploadRoutes);
+app.use("/api/upload", uploadRoutes);
 
 const unitRoutes = require("./routes/unit");
-app.use("/units", unitRoutes);
+app.use("/api/units", unitRoutes);
 
 const ingredientRoutes = require("./routes/ingredient");
-app.use("/ingredients", ingredientRoutes);
+app.use("/api/ingredients", ingredientRoutes);
 
 const mealRoutes = require("./routes/meal");
-app.use("/meals", mealRoutes);
+app.use("/api/meals", mealRoutes);
 
 app.use((err, req, res, next) => {
     console.error("🔥 ERROR STACK:", err.stack);
