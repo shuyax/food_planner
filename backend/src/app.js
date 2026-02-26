@@ -1,7 +1,9 @@
 // Import dependencies
 const express = require("express");
 const cors = require("cors");
-// require("dotenv").config(); // Load variables from .env into process.env right away.
+const fs = require('fs');
+const path = require('path');
+const logFile = path.join(__dirname, 'requests.log');
 
 // Create the Express application instance
 const app = express();
@@ -12,22 +14,26 @@ app.use(cors())
 // 2. JSON parsing
 app.use(express.json())
 app.use((req, res, next) => {
-  console.log("---- Incoming Request ----");
-  console.log("Method:", req.method);
-  console.log("URL:", req.originalUrl);
-  console.log("Headers:", req.headers);
-  console.log("Body:", req.body);
-  console.log("--------------------------");
+  const start = Date.now();
+  // Capture the original res.send
   const originalSend = res.send.bind(res);
   res.send = (body) => {
-    console.log("---- Outgoing Response ----");
-    console.log("Status:", res.statusCode);
-    console.log("Headers:", res.getHeaders());
-    console.log("Body:", body); // This is the actual response data
-    console.log("---------------------------");
-    return originalSend(body); // send the response as usual
+    const duration = Date.now() - start;
+    const logEntry = {
+      timestamp: new Date().toISOString(),
+      method: req.method,
+      url: req.originalUrl,
+      headers: req.headers,
+      body: req.body,
+      status: res.statusCode,
+      responseHeaders: res.getHeaders(),
+      responseBody: body,
+      durationMs: duration,
+    };
+    // Append log entry as a JSON string
+    fs.appendFileSync(logFile, JSON.stringify(logEntry, null, 2) + ',\n');
+    return originalSend(body);
   };
-
   next();
 });
 // 3. static file serving
