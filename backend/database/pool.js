@@ -26,6 +26,10 @@ class LoggingPool extends Pool {
       throw err; // rethrow so caller knows
     }
   }
+   // Create a temporary pool for migrations / resets
+  static temp(config) {
+    return new LoggingPool(config);
+  }
 }
 
 let pool;
@@ -46,29 +50,6 @@ function getPool() {
   }
   return pool;
 }
-async function resetPool() {
-  if (pool) {
-    await pool.end();
-  }
-  pool = createPool();
-}
 
-module.exports = { getPool, resetPool };
+module.exports = { getPool, LoggingPool };
 
-
-
-
-
-
-// pool.on("connect", () => {
-//   console.log(
-//     `🗄️ Connected to ${process.env.NODE_ENV} database: ${process.env.DB_NAME}`
-//   );
-// });
-
-// pool.on("error", (err) => {
-//   console.error("Unexpected PG pool error", err);
-//   process.exit(1);
-// });
-
-// module.exports = pool;

@@ -1,7 +1,7 @@
 // database/migrate.js
 const fs = require("fs");
 const path = require("path");
-const { getPool, resetPool } = require("./pool.js");
+const { getPool, LoggingPool } = require("./pool.js");
 console.log('process.env.NODE_ENV', process.env.NODE_ENV)
 
 const isTest = process.env.NODE_ENV === "test";
@@ -17,13 +17,18 @@ const runSQLFile = async (pool, filePath) => {
 const resetDatabase = async () => {
   if (isTest || isDev) {
     console.log(`♻️ Resetting ${process.env.NODE_ENV} database...`);
-    await resetPool(); // close all active connections
-    const pool = getPool(); // create fresh connection
-    await pool.query(`
+    const tempPool = LoggingPool.temp({
+      user: process.env.DB_USER,
+      host: process.env.DB_HOST,
+      database: process.env.DB_NAME,
+      password: process.env.DB_PASSWORD,
+      port: process.env.DB_PORT,
+    });
+    await tempPool.query(`
       DROP SCHEMA public CASCADE;
       CREATE SCHEMA public;
     `);
-    return pool;
+    return tempPool; // return temp pool for migrations
   } else if (isProd) {
     console.log("✅ Production environment: skipping database reset");
     return getPool();
@@ -45,6 +50,7 @@ const prodMigrationNeeded = async (pool) => {
 };
 
 const runMigrations = async () => {
+    console.log(`♻️ Running migrations for ${process.env.NODE_ENV}...`);
     let pool = getPool();
     let shouldRunMigrations = true;
     if (isProd) {
