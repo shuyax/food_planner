@@ -46,8 +46,7 @@ const prodMigrationNeeded = async () => {
   return tables.rowCount === 0; // migrate if no tables exist
 };
 
-(async () => {
-  try {
+const runMigrations = async () => {
     if (isProd) {
       const shouldMigrate = await prodMigrationNeeded();
       if (!shouldMigrate) {
@@ -69,36 +68,20 @@ const prodMigrationNeeded = async () => {
         await runSQLFile(path.join(basePath, "dev_seed.sql"));
       }
     }
-
     console.log("Database migration completed successfully.");
-    process.exit(0);
-  } catch (err) {
-    console.error("Migration error:", err);
-    process.exit(1);
-  }
-})();
+};
 
+module.exports = { runMigrations };
 
+if (require.main === module) {
+  (async () => {
+    try {
+      await runMigrations();
+      process.exit(0);
+    } catch (err) {
+      console.error("Migration error:", err);
+      process.exit(1);
+    }
+  })();
+}
 
-// (async () => {
-//   try {
-//     const basePath = path.resolve(__dirname);
-//     await resetDatabase();
-//     // run schema.sql first
-//     await runSQLFile(path.join(basePath, "schema.sql"));
-//     // run triggers.sql second
-//     await runSQLFile(path.join(basePath, "triggers.sql"));
-
-//     // run seed.sql third populate the pre-set table
-//     await runSQLFile(path.join(basePath, "seed.sql"));
-//     if (isDev) {
-//       console.log('inserting dev_seed data');
-//       await runSQLFile(path.join(basePath, "dev_seed.sql"));
-//     };
-//     console.log("Database migration completed successfully.");
-//     process.exit(0);
-//   } catch (err) {
-//     console.error("Migration error:", err);
-//     process.exit(1);
-//   }
-// })();
