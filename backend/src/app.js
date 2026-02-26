@@ -70,7 +70,7 @@ if (process.env.NODE_ENV === "development") {
   app.post("/test/reset-db", async (req, res) => {
     console.log("⚡ Received request to reset dev DB from selenium");
     try {
-      const { runMigrations } = require("./database/migrate");
+      const { runMigrations } = require("../database/migrate");
       await runMigrations();
       console.log("✅ Dev DB reset complete");
       res.json({ status: "ok" });
