@@ -1,6 +1,6 @@
 // table: units
-
-const pool = require('../../database/pool');
+const { getPool } = require('../../database/pool');
+const pool = getPool();
 
 async function getAllUnits() {
     const { rows: unitRows } = await pool.query(

@@ -1,5 +1,6 @@
 // table: meals, meal_food
-const pool = require('../../database/pool');
+const { getPool } = require('../../database/pool');
+const pool = getPool();
 const { getFoodCurrentCostById } = require('./AnalyticsService')
 
 // post service

@@ -1,4 +1,5 @@
-const pool = require('../../database/pool');
+const { getPool } = require('../../database/pool');
+const pool = getPool();
 const { createIngredient, 
     getIngredientIdByName, 
     getIngredientById, 

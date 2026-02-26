@@ -1,6 +1,6 @@
 // table: foods, food_images, food_ingredient 
-
-const pool = require('../../database/pool');
+const { getPool } = require('../../database/pool');
+const pool = getPool();
 const { getIngredientById } = require('./IngredientService');
 
 // post service
