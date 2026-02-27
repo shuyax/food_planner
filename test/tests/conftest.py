@@ -5,16 +5,17 @@ from selenium.webdriver.chrome.options import Options
 import subprocess
 import os
 from pathlib import Path
+from urllib.parse import urlparse
 
 BASE_URL = os.environ.get("BASE_URL", "http://localhost:80")
-
+print('BASE_URL in selenium: ', BASE_URL)
 
 @pytest.fixture
 def driver():
     options = Options()
     options.binary_location = "/usr/bin/chromium"
     options.add_argument("--remote-debugging-port=9222")  # Required for pychrome
-    options.add_argument("--headless")  # Uncomment to run headlessly
+    options.add_argument("--headless=new")  # Uncomment to run headlessly
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.set_capability('goog:loggingPrefs', {'browser': 'ALL'})
@@ -39,3 +40,10 @@ def driver():
 #         raise RuntimeError("❌ DB migration failed")
 #     yield
 #     print("✅ Test session finished")
+
+def normalize(url):
+    parsed = urlparse(url)
+    # Omit default ports
+    port = "" if parsed.port in (80, None) else f":{parsed.port}"
+    path = parsed.path if parsed.path.endswith("/") else parsed.path + "/"
+    return f"{parsed.scheme}://{parsed.hostname}{port}{path}"
