@@ -194,6 +194,13 @@ def test_remove_btn(driver):
     ingredients_browse_children = all_ingredients.find_elements(By.TAG_NAME, "li")
     assert len(ingredients_browse_children) == row_len_after, "The number of ingredients under browse mode should match the number of ingredients under edit mode after refreshing the page"
 
+def test_add_ingredients_to_food(driver):
+    driver.get(edit_food_url)
+    edit_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, 'edit-food'))
+    )
+    edit_btn.click()
+
 
 
 def test_add_ingredient_btn(driver):
@@ -206,6 +213,11 @@ def test_add_ingredient_btn(driver):
         EC.presence_of_element_located((By.CLASS_NAME, "ingredient-row"))
     )
     ingredient_rows = driver.find_elements(By.CLASS_NAME, "ingredient-row")
+    existing_ingredients = []
+    for r in ingredient_rows:
+        selects = r.find_elements(By.TAG_NAME, "select")
+        assert len(selects) == 1, "There should be only one select per ingredient row"
+        existing_ingredients.append(selects[0].get_attribute("value"))
     row_len_before = len(ingredient_rows)
     add_ingredient_btn = WebDriverWait(driver, 10).until(
         EC.element_to_be_clickable((By.ID, 'add-ingredient'))
@@ -238,6 +250,8 @@ def test_add_ingredient_btn(driver):
     assert "yogurt" in all_ingredients.text.lower() and "2" in all_ingredients.text.lower() and "test" in all_ingredients.text.lower(), "The ingredient added should be visible" 
     ingredients_browse_children = all_ingredients.find_elements(By.TAG_NAME, "li")
     assert len(ingredients_browse_children) == row_len_after, "The number of ingredients under browse mode should match the number of ingredients under edit mode"
+    for ingredient in existing_ingredients:
+        assert ingredient.lower() in all_ingredients.text.lower()
     driver.get(edit_food_url)
     WebDriverWait(driver, 20).until(lambda d: len(d.find_elements(By.CSS_SELECTOR, "#ingredients-browse > *")) > 0)
     all_ingredients = WebDriverWait(driver, 10).until(
