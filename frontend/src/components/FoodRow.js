@@ -100,6 +100,7 @@ export function FoodRow( { existingFoods, mealFoodId, food, mealType, mealId, se
     return (<>
         <label htmlFor={`${mealType}-${foodRow.foodName}`}></label>
         <select name={`${mealType}-${foodRow.foodName}`} 
+            data-new-row={foodRow.foodName === "" ? "true" : undefined}
             className="food-list-select"
             id={`${mealType}-${foodRow.foodName}`} 
             value={foodRow.foodName} 

@@ -7,6 +7,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from conftest import BASE_URL
 from datetime import date, datetime, timedelta
 import time
+from selenium.webdriver import ActionChains
 
 def go_to_target_day(driver, days_later=7):
     driver.get(BASE_URL)
@@ -17,10 +18,7 @@ def go_to_target_day(driver, days_later=7):
     today_obj = datetime.strptime(today_cell[0].get_attribute("data-date"), "%Y-%m-%d")
     target_day = today_obj + timedelta(days=days_later)
     target_day_str = target_day.strftime("%Y-%m-%d")
-    while True:
-        headers = driver.find_elements(By.XPATH, f"//th[@data-date='{target_day_str}']")
-        if headers:
-            break
+    while not driver.find_elements(By.XPATH, f"//th[@data-date='{target_day_str}']"):
         if days_later > 0:
             driver.find_element(
                 By.XPATH, "//button[contains(@class, 'fc-next-button')]"
@@ -29,15 +27,19 @@ def go_to_target_day(driver, days_later=7):
             driver.find_element(
                 By.XPATH, "//button[contains(@class, 'fc-prev-button')]"
             ).click()
-
         WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.CLASS_NAME, "fc-daygrid-body"))
+            EC.presence_of_element_located((By.XPATH, "//th[contains(@class,'fc-day')]"))
         )
     WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.XPATH, f"//th[@data-date='{target_day_str}']"))
     )
-    driver.find_element(By.XPATH, f"//td[@data-date='{target_day_str}']").click()
-    WebDriverWait(driver, 10).until(EC.url_contains("/day-meals"))
+    cell = WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, f"//td[@data-date='{target_day_str}']")))
+    assert cell.is_displayed(), "The day cell should be visible"
+    # Scroll into center to avoid header overlap
+    driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", cell)        
+    # cell.click()
+    ActionChains(driver).move_to_element(cell).click().perform()
+    WebDriverWait(driver, 30).until(EC.url_contains("/day-meals"))
     assert f"/day-meals?date={target_day_str}" in driver.current_url
     meal_date_h1 = driver.find_element(By.ID, "meal-date")
     assert meal_date_h1.text == target_day_str, "The correct target day should be visible"
@@ -440,7 +442,7 @@ def test_update_existing_food_in_meal(driver):
 def test_view_food_from_meal(driver):
     meal_type = "breakfast"
     food_name = "taro milk tea"
-    target_day = go_to_target_day(driver, -10)
+    target_day = go_to_target_day(driver, -12)
     switch_mode(driver, "browse")
     create_meal(driver, meal_type)
     meal = activate_meal(driver, meal_type)

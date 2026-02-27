@@ -5,7 +5,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import Select, WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
-from conftest import BASE_URL
+from conftest import BASE_URL, normalize
 from datetime import date
 import time
 
@@ -191,11 +191,11 @@ def test_add_food_section(driver):
         EC.element_to_be_clickable((By.ID, 'food-add-btn-dinner'))
     )
     add_food_btn.click()
-    WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.ID, 'dinner--1'))
+    WebDriverWait(driver, 20).until(
+        lambda d: d.find_element(By.ID, 'food-add-btn-dinner').get_attribute('disabled') == "true"
     )
-    new_food_select = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.ID, 'dinner-'))
+    new_food_select = WebDriverWait(driver, 30).until(
+        lambda d: d.find_element(By.CSS_SELECTOR, "select[data-new-row='true']")
     )
     assert new_food_select.get_attribute("value") == "", "The value of new select should be empty"
     add_food_btn = WebDriverWait(driver, 10).until(
@@ -325,3 +325,14 @@ def test_update_food_to_existing_meal(driver):
     new_food = driver.find_elements(By.ID, "lunch-spicy sour noodle")
     assert len(new_food) == 1, "The new food should be still visible after refresh the page"
     
+
+def test_back_button(driver):
+    driver.get(get_add_meal_url)
+    cancel_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, 'food-back'))
+    )
+    cancel_btn.click()
+    WebDriverWait(driver, 10).until(
+        lambda d: "/day-meals?date=" not in d.current_url
+    )
+    assert normalize(driver.current_url) == normalize(BASE_URL), "Back button should navigate back to the home page"

@@ -5,7 +5,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import Select, WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from conftest import BASE_URL
+from conftest import BASE_URL, normalize
 
 create_ingredient_url = f'{BASE_URL}/create-ingredient'
 
@@ -167,4 +167,4 @@ def test_back_button(driver):
     WebDriverWait(driver, 10).until(
         lambda d: "/create-ingredient" not in d.current_url
     )
-    assert driver.current_url == BASE_URL + "/", "Back button should navigate back to the home page"
+    assert normalize(driver.current_url) == normalize(BASE_URL), "Back button should navigate back to the home page"

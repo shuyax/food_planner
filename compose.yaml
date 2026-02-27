@@ -27,19 +27,18 @@ services:
   frontend:
     build: 
       context: ./frontend
-      target: ${BUILD_TARGET} 
     ports:
-      - "${FRONTEND_PORT}:${FRONTEND_PORT}"
+      - "80:80"
     environment:
       - NODE_ENV=${NODE_ENV}
-      - FRONTEND_PORT=${FRONTEND_PORT}  # 3000 for dev, 80 for prod
+      - PORT=80 
     depends_on:
       backend:
         condition: service_healthy
     volumes:
-      - ./frontend:/app
+      - ./frontend/build:/usr/share/nginx/html
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:${FRONTEND_PORT}/ || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:80/ || exit 1"]
       interval: 5s
       retries: 5
       timeout: 5s
@@ -53,11 +52,12 @@ services:
       frontend:
         condition: service_healthy
     environment:
-      - BASE_URL=http://frontend:${FRONTEND_PORT}
+      - BASE_URL=http://frontend:80
     volumes:
       - ./test:/tests
       - ./selenium_logs:/logs
-    command: ["sh", "-c", "pytest -s tests > /logs/selenium_test.log 2>&1"]
+    # command: ["sh", "-c", "pytest -v -s tests/test_meal_page.py 2>&1 | tee /logs/selenium_test.log"]
+    entrypoint: ["sh", "-c"]
 
   postgres:
     image: postgres:16

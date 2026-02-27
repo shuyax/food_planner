@@ -76,10 +76,11 @@ def test_back_button(driver):
         EC.element_to_be_clickable((By.ID, 'food-back'))
     )
     cancel_btn.click()
+    url = driver.current_url
     WebDriverWait(driver, 10).until(
-        lambda d: "/food" not in d.current_url
+        lambda d: "?lastpage=day-meals?date=" not in d.current_url
     )
-    assert navigate_from[10:] in driver.current_url, "Back button should navigate back to the the last page"
+    assert edit_food_url.replace(f"{BASE_URL}/food/{food_id}?lastpage=","") in driver.current_url, "Back button should navigate back to the previous day meals page"
 
 def test_update_food_with_save_btn(driver):
     driver.get(edit_food_url)
