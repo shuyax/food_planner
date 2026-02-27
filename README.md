@@ -1,4 +1,9 @@
 # food_planner
+install docker, docker-compose
+sudo systemctl start docker
+sudo systemctl enable docker
+sudo systemctl status docker 
+sudo usermod -aG docker $USER ---Optional: Allow your user to run Docker without sudo; Need to log out and log back in 
 
 ## How to connect to test/dev/prod database
 psql -U username -d database_name -h localhost -p env_port

@@ -20,4 +20,4 @@ COPY package*.json ./
 RUN npm install --omit=dev
 COPY . .
 EXPOSE 4000
-CMD ["node", "src/server.js"]
+CMD ["sh", "-c", "node database/migrate.js && node src/server.js"]
