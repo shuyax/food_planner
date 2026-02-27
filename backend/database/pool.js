@@ -1,40 +1,55 @@
 const { Pool } = require("pg");
-// const path = require("path");
-// const dotenv = require("dotenv");
-// const envMap = {
-//   test: ".env.test",
-//   development: ".env.dev",
-//   production: ".env.prod",
-// };
-// const envFileName = envMap[process.env.NODE_ENV] || ".env.dev";
-// const envFile = path.resolve(__dirname, `../${envFileName}`);
-// dotenv.config({ path: envFile, override: true });
 
-// console.log("💡 Connecting with DB config:", {
-//   host: process.env.DB_HOST,
-//   port: process.env.DB_PORT,
-//   database: process.env.DB_NAME,
-//   user: process.env.DB_USER,
-// });
+class LoggingPool extends Pool {
+  constructor(config) {
+    super(config);
 
-const pool = new Pool({
+    // Log when a connection is established
+    this.on('connect', () => {
+      console.log(
+        `🗄️ Connected to ${process.env.NODE_ENV} database: ${process.env.DB_NAME}`
+      );
+    });
+
+    // Log any errors
+    this.on('error', (err) => {
+      console.error('❌ Unexpected PG pool error:', err);
+    });
+  }
+
+  // You can also override query to log query errors
+  async query(text, params) {
+    try {
+      return await super.query(text, params);
+    } catch (err) {
+      console.error('❌ Query error:', err, 'SQL:', text, 'Params:', params);
+      throw err; // rethrow so caller knows
+    }
+  }
+   // Create a temporary pool for migrations / resets
+  static temp(config) {
+    return new LoggingPool(config);
+  }
+}
+
+let pool;
+function createPool() {
+  pool = new LoggingPool({
   user: process.env.DB_USER,
   host: process.env.DB_HOST,
   database: process.env.DB_NAME,
   password: process.env.DB_PASSWORD,
   port: process.env.DB_PORT,
 });
+  return pool;
+}
 
+function getPool() {
+  if (!pool) {
+    pool = createPool();
+  }
+  return pool;
+}
 
-pool.on("connect", () => {
-  console.log(
-    `🗄️ Connected to ${process.env.NODE_ENV} database: ${process.env.DB_NAME}`
-  );
-});
+module.exports = { getPool, LoggingPool };
 
-pool.on("error", (err) => {
-  console.error("Unexpected PG pool error", err);
-  process.exit(1);
-});
-
-module.exports = pool;

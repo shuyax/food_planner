@@ -33,14 +33,21 @@ function EditMeal( {color, mealId, removeMeal, mealType, foodData}) {
     if ( error) return <p>Foods Error: {error.message}</p>;
     
     function handleAddFood() {
+        const generateUUID = () => {
+            if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+                return crypto.randomUUID();
+            }
+            return Math.random().toString(36).substring(2) + Date.now().toString(36);
+        };
         const defaultFood = {
-            tempId: crypto.randomUUID(),
+            tempId: generateUUID(),
             foodId: -1,
             foodName: "",
             foodDescription: "",
             mealFoodId: -1,
             foodCost: null
         };
+        console.log(defaultFood)
         setFoodsToBeCreated(prev => [...prev, defaultFood]);
     }
 

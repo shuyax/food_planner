@@ -1,4 +1,3 @@
-const express = require("express");
 const multer = require("multer");
 const path = require("path")
 const fs = require("fs");
@@ -17,7 +16,6 @@ const storage = multer.diskStorage({
         // Save with original name + timestamp + extension
         const ext = path.extname(file.originalname);
         const name = path.basename(file.originalname, ext);
-
         cb(null, `${name}-${Date.now()}${ext}`)
     }
 });

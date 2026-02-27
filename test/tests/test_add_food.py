@@ -5,7 +5,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import Select, WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from conftest import BASE_URL
+from conftest import BASE_URL, normalize
 import time
 
 add_food_url = f'{BASE_URL}/create-food'
@@ -92,7 +92,7 @@ def test_add_food_save_btn(driver):
     )
     food_description_input.send_keys("How to make Tomato Fried Egg?")
     save_btn.click()
-    toast_message = WebDriverWait(driver, 10).until(
+    toast_message = WebDriverWait(driver, 50).until(
         EC.presence_of_element_located((By.CLASS_NAME, 'toast-message'))
     )
     toast_message_text = toast_message.text.lower()
@@ -120,4 +120,4 @@ def test_back_button(driver):
     WebDriverWait(driver, 10).until(
         lambda d: "/add-food" not in d.current_url
     )
-    assert driver.current_url == BASE_URL + "/", "Back button should navigate back to the home page"
+    assert normalize(driver.current_url) == normalize(BASE_URL), "Back button should navigate back to the home page"

@@ -25,10 +25,6 @@ const MEAL_ORDER = {
 
 function Calendar() {
   const navigate = useNavigate();
-  function toLocalDate(dateStr) {
-    const [year, month, day] = dateStr.split('-').map(Number);
-    return new Date(year, month - 1, day); // month is 0-based
-  }
   /* ------------------------------
      Visible date range (source of truth)
   ------------------------------ */
@@ -62,7 +58,6 @@ function Calendar() {
     enabled: Boolean(range.start && range.end),
     staleTime: 1000 * 60 * 5,
   });
-  console.log(meals)
   /* ------------------------------
      Map meals → FullCalendar events
   ------------------------------ */
@@ -70,7 +65,7 @@ function Calendar() {
     return meals.map((meal) => ({
       id: `${meal.mealDate}-${meal.mealType}`,
       title: meal.mealType.toUpperCase(),
-      start: toLocalDate(meal.mealDate),
+      start: meal.mealDate,
       allDay: true,
       backgroundColor: MEAL_COLORS[meal.mealType] ?? '#94A3B8',
       borderColor: MEAL_COLORS[meal.mealType] ?? '#94A3B8',

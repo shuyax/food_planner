@@ -1,6 +1,6 @@
 // table: ingredients, ingredient_price_history, location
-
-const pool = require('../../database/pool');
+const { getPool } = require('../../database/pool');
+const pool = getPool();
 const { convertCanonicalUnitToBaseUnit } = require('../services/UnitService')
 
 // post service

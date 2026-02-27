@@ -1,8 +1,8 @@
-const pool = require('../../database/pool');
 const { getRelatedIngredientsByFoodId } = require('./FoodService');
 const { getRelatedFoods } = require('./MealService')
 const { getIngredientById } = require('./IngredientService')
-
+const { getPool } = require('../../database/pool');
+const pool = getPool();
 
 
 async function getIngredientsSummary(startDate, endDate) {

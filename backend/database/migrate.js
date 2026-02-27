@@ -1,14 +1,14 @@
 // database/migrate.js
 const fs = require("fs");
 const path = require("path");
-const pool = require("./pool.js");
+const { getPool, LoggingPool } = require("./pool.js");
 console.log('process.env.NODE_ENV', process.env.NODE_ENV)
 
 const isTest = process.env.NODE_ENV === "test";
 const isDev = process.env.NODE_ENV === "development";
 const isProd = process.env.NODE_ENV === "production";
 
-const runSQLFile = async (filePath) => {
+const runSQLFile = async (pool, filePath) => {
   const sql = fs.readFileSync(filePath, "utf8");
   await pool.query(sql);
   console.log(`Executed ${path.basename(filePath)}`);
@@ -17,26 +17,29 @@ const runSQLFile = async (filePath) => {
 const resetDatabase = async () => {
   if (isTest || isDev) {
     console.log(`♻️ Resetting ${process.env.NODE_ENV} database...`);
-    await pool.query(`
+    const tempPool = LoggingPool.temp({
+      user: process.env.DB_USER,
+      host: process.env.DB_HOST,
+      database: process.env.DB_NAME,
+      password: process.env.DB_PASSWORD,
+      port: process.env.DB_PORT,
+    });
+    await tempPool.query(`
       DROP SCHEMA public CASCADE;
       CREATE SCHEMA public;
     `);
+    return tempPool; // return temp pool for migrations
   } else if (isProd) {
     console.log("✅ Production environment: skipping database reset");
+    return getPool();
   } else {
     throw new Error("❌ Refusing to reset DB outside pre-defined environment");
   }
 };
 
 // Check if schema exists in production
-const prodMigrationNeeded = async () => {
+const prodMigrationNeeded = async (pool) => {
   if (!isProd) return true; // always run resetDatabase for dev/test
-
-  const result = await pool.query(`
-    SELECT schema_name 
-    FROM information_schema.schemata 
-    WHERE schema_name='public';
-  `);
   // If public schema exists and has tables, skip reset
   const tables = await pool.query(`
     SELECT table_name 
@@ -46,59 +49,52 @@ const prodMigrationNeeded = async () => {
   return tables.rowCount === 0; // migrate if no tables exist
 };
 
-(async () => {
-  try {
+const runMigrations = async () => {
+    console.log(`♻️ Running migrations for ${process.env.NODE_ENV}...`);
+    let pool = getPool();
+    let shouldRunMigrations = true;
     if (isProd) {
-      const shouldMigrate = await prodMigrationNeeded();
-      if (!shouldMigrate) {
+      const prodCheck = await prodMigrationNeeded(pool);
+      if (!prodCheck) {
         console.log("Production database already exists. Skipping schema reset.");
+        shouldRunMigrations = false;
       } else {
         console.log("Production database is empty. Running migrations...");
       }
     }
-    await resetDatabase(); // will skip for prod if DB already exists
+    // Reset DB for dev/test
+    if (isDev || isTest) {
+      pool = await resetDatabase(); // get fresh pool
+    }
     // Run migrations only if dev/test OR prod needs migration
-    const shouldRunMigrations = isDev || isTest || (isProd && (await prodMigrationNeeded()));
-    if (shouldRunMigrations) {
+    if (shouldRunMigrations || isDev || isTest) {
       const basePath = path.resolve(__dirname);
-      await runSQLFile(path.join(basePath, "schema.sql"));
-      await runSQLFile(path.join(basePath, "triggers.sql"));
-      await runSQLFile(path.join(basePath, "seed.sql"));
+      await runSQLFile(pool, path.join(basePath, "schema.sql"));
+      await runSQLFile(pool, path.join(basePath, "triggers.sql"));
+      await runSQLFile(pool, path.join(basePath, "seed.sql"));
       if (isDev) {
         console.log('Inserting dev_seed data...');
-        await runSQLFile(path.join(basePath, "dev_seed.sql"));
+        await runSQLFile(pool, path.join(basePath, "dev_seed.sql"));
       }
     }
-
     console.log("Database migration completed successfully.");
-    process.exit(0);
-  } catch (err) {
-    console.error("Migration error:", err);
-    process.exit(1);
-  }
-})();
+};
 
+module.exports = { runMigrations };
 
+if (require.main === module) {
+  (async () => {
+    try {
+      await runMigrations();
+      // cleanly close all connections before exiting
+      await getPool().end();
+      process.exit(0);
+    } catch (err) {
+      console.error("Migration error:", err);
+      // also try closing pool in case of error
+      try { await getPool().end(); } catch (_) {}
+      process.exit(1);
+    }
+  })();
+}
 
-// (async () => {
-//   try {
-//     const basePath = path.resolve(__dirname);
-//     await resetDatabase();
-//     // run schema.sql first
-//     await runSQLFile(path.join(basePath, "schema.sql"));
-//     // run triggers.sql second
-//     await runSQLFile(path.join(basePath, "triggers.sql"));
-
-//     // run seed.sql third populate the pre-set table
-//     await runSQLFile(path.join(basePath, "seed.sql"));
-//     if (isDev) {
-//       console.log('inserting dev_seed data');
-//       await runSQLFile(path.join(basePath, "dev_seed.sql"));
-//     };
-//     console.log("Database migration completed successfully.");
-//     process.exit(0);
-//   } catch (err) {
-//     console.error("Migration error:", err);
-//     process.exit(1);
-//   }
-// })();

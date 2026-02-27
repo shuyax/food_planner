@@ -1,5 +1,6 @@
 
-const pool = require('../../database/pool');
+const { getPool } = require('../../database/pool');
+const pool = getPool();
 const { getIngredientsSummary, 
     getIngredientAverageCostPerBaseUnitById, 
     getIngredientLatestCostPerBaseUnitById, 
