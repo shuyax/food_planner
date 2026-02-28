@@ -47,7 +47,6 @@ function EditMeal( {color, mealId, removeMeal, mealType, foodData}) {
             mealFoodId: -1,
             foodCost: null
         };
-        console.log(defaultFood)
         setFoodsToBeCreated(prev => [...prev, defaultFood]);
     }
 
