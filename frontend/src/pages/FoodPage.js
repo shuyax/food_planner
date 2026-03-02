@@ -2,7 +2,7 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
 import { addFoodIngredients, deleteFoodIngredients, fetchFood, fetchRelatedIngredients, updateFood, updateFoodIngredients } from "../services/FoodService";
 import { fetchIngredients } from "../services/IngredientService"
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import IngredientRow from "../components/IngredientRow";
 import { IngredientModal } from "../components/IngredientModal";
 import "./FoodPage.css"
@@ -41,6 +41,44 @@ function FoodPage({ visibleBackButton = true, preMode = 'browse' }) {
         queryKey: ["ingredients"],
         queryFn: fetchIngredients
     });
+    const availableIngredients = useMemo(() => {
+        if (!ingredientsData) return [];
+
+        const existingIngredientIds = new Set(
+            (foodIngredients || [])
+                .filter(i => i.ingredientId !== -1) // ignore placeholders
+                .map(i => i.ingredientId)
+        );
+        const addedIds = new Set(
+            ingredientsAdded
+                .filter(i => i.ingredientId !== -1)
+                .map(i => i.ingredientId)
+        );
+        const deletedIds = new Set(
+            ingredientsDeleted
+                .filter(i => i.ingredientId !== -1)
+                .map(i => i.ingredientId)
+        );
+        const availableIngredients = ingredientsData.filter(i => {
+            const id = i.id;
+            // If deleted → explicitly available
+            if (deletedIds.has(id)) return true;
+            // If in food or newly added → not available
+            if (existingIngredientIds.has(id)) return false;
+            if (addedIds.has(id)) return false;
+            return true;
+        });
+        return availableIngredients.map(ingredient => ({
+            ingredientId: ingredient.id,
+            ingredientName: ingredient.name,
+            ingredientUnitId: ingredient.canonical_unit_id,
+            ingredientUnitName: ingredient.canonical_unit,
+            ingredientUnitAbbreviation: ingredient.canonical_unit_abbreviation,
+            note: ingredient.note || "",
+            quantity: ingredient.quantity || 0
+        }))
+    }, [ingredientsData, foodIngredients, ingredientsAdded, ingredientsDeleted]);
+    console.log(availableIngredients)
 
     const updateFoodMutation = useMutation({
         mutationFn: (updatedFood) =>
@@ -198,7 +236,6 @@ function FoodPage({ visibleBackButton = true, preMode = 'browse' }) {
             if (ingredientsDeleted.length !== 0) await deleteFoodIngredientsMutation.mutateAsync(ingredientsDeleted);
             const filteredIngredientsAdded = ingredientsAdded.filter(i => i.ingredientName !== "")
             if (filteredIngredientsAdded.length !== 0) await AddFoodIngredientsMutation.mutateAsync(filteredIngredientsAdded)
-            console.log(food.foodId, foodIngredients)
             if (foodIngredients.length !== 0) await updateFoodIngredientsMutation.mutateAsync({foodId: food.foodId, updatedFoodIngredients: foodIngredients});
             setMode("browse")
             console.log("Food update triggered!");
@@ -230,8 +267,8 @@ function FoodPage({ visibleBackButton = true, preMode = 'browse' }) {
             </label>
             <h3 id="ingredient-title">Ingredients</h3>
             <ol id="ingredients-edit">
-                {foodIngredients.map(row => (<IngredientRow key={`${row.foodIngredientId}-${row.ingredientId}`} row={row} existingIngredients={ingredientsData} updateRow={((updatedIngredientRow) => updateIngredientRow(row.foodIngredientId, updatedIngredientRow))} removeRow={() => removeIngredientRow(row.foodIngredientId, row.tempId)} />))}
-                {ingredientsAdded.map(row => (<IngredientRow key={row.tempId} row={row} existingIngredients={ingredientsData} updateRow={((updatedIngredientRow) => updateIngredientRow(row.foodIngredientId, updatedIngredientRow))} removeRow={() => removeIngredientRow(row.foodIngredientId, row.tempId)} />))}
+                {foodIngredients.map(row => (<IngredientRow key={`${row.foodIngredientId}-${row.ingredientId}`} row={row} existingIngredients={availableIngredients} updateRow={((updatedIngredientRow) => updateIngredientRow(row.foodIngredientId, updatedIngredientRow))} removeRow={() => removeIngredientRow(row.foodIngredientId, row.tempId)} />))}
+                {ingredientsAdded.map(row => (<IngredientRow key={row.tempId} row={row} existingIngredients={availableIngredients} updateRow={((updatedIngredientRow) => updateIngredientRow(row.foodIngredientId, updatedIngredientRow))} removeRow={() => removeIngredientRow(row.foodIngredientId, row.tempId)} />))}
             </ol>
             <div id="ingredient-group">
             <button id="add-ingredient" className="add-btn" type="button" title="Add Ingredient" aria-label="Add Ingredient" onClick={(e) => {e.stopPropagation();
