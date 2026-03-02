@@ -326,21 +326,51 @@ def update_ingredient_in_food(driver, existing_ingredient_name, updated_ingredie
 
 def delete_ingredient_from_food(driver, ingredient_name):
     ingredient_select = [select for select in driver.find_elements(By.TAG_NAME, "select") if select.get_attribute("value").lower() == ingredient_name.lower()]
-    assert len(ingredient_select) == 1, "There should be only select found"    
-    index = ingredient_select[0].get_attribute("id").replace("ingredient-","")
+    assert len(ingredient_select) == 1, "There should be only one select found"    
+    index = ingredient_select[0].get_attribute("id").replace("ingredient-","")   
     delete_btn = WebDriverWait(driver, 10).until(
         EC.element_to_be_clickable((By.ID, f"remove-btn-{index}"))
     )
+    assert delete_btn.is_displayed(), "Delete button should be visible"
     ingredient_row_li_len = len(driver.find_elements(By.CLASS_NAME, "ingredient-row-li"))
     driver.execute_script("arguments[0].click();", delete_btn)
-    ingredient = WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.ID, f"ingredient-{index}"))
-    )
     ingredient_row_li_len_new = len(driver.find_elements(By.CLASS_NAME, "ingredient-row-li"))
     assert ingredient_row_li_len_new == ingredient_row_li_len - 1, "The ingredient row should be decreased by one"
-    assert ingredient.get_attribute("value") != ingredient_name.lower(), "The ingredient with same index should be updated"
+    ingredient_select = [select for select in driver.find_elements(By.TAG_NAME, "select") if select.get_attribute("value").lower() == ingredient_name.lower()]
+    assert len(ingredient_select) == 0, "There should be no select found"    
 
-
+def create_food(driver, food_name, description):
+    driver.get(f"{BASE_URL}/create-food")
+    food_name_input = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, "food-name-input"))
+    )
+    assert food_name_input.get_attribute("value") == "", "Food name should be empty by default"
+    description_input = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, "food-description-input"))
+    )
+    assert description_input.text == "", "Food description should be empty by default"
+    food_name_input.send_keys(food_name)
+    food_name_input = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, "food-name-input"))
+    )
+    assert food_name_input.get_attribute("value") == food_name.lower(), "Food name should be updated"
+    description_input.send_keys(description)
+    description_input = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, "food-description-input"))
+    )
+    assert description_input.text == description, "Food description should be updated"
+    create_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, "food-create"))
+    )
+    create_btn.click()
+    toast_message = WebDriverWait(driver, 20).until(
+        EC.presence_of_element_located((By.CLASS_NAME, "toast-message"))
+    )
+    assert "was created successfully." in toast_message.text.lower()
+    WebDriverWait(driver, 10).until(
+        lambda d: "/create-food" not in d.current_url
+    )
+    return driver.current_url
 
 
 
@@ -500,5 +530,23 @@ Serve: Pour over ice. '''
     switch_mode(driver, "edit")
     assert ingredient_deleted_name not in driver.find_element(By.ID, "ingredients-browse").text.lower()
 
-
+def test_create_food_and_add_ingredients_to_food(driver):
+    food_name = "curry beef"
+    description = "how to cook japanese curry beef"
+    ingredient_1_name = "beef"
+    quantity_1 = 2
+    ingredient_1_note = "beef chunck or ground beef"
+    ingredient_2_name = "egg"
+    quantity_2 = 1
+    ingredient_2_note = "blended egg"
+    create_food(driver, food_name, description)
+    switch_mode(driver, "browse")
+    add_ingredient_to_food(driver, ingredient_1_name, quantity_1, ingredient_1_note)
+    ingredient_select = [select for select in driver.find_elements(By.TAG_NAME, "select") if select.get_attribute("value").lower() == ingredient_1_name.lower()] 
+    assert len(ingredient_select) == 1, "The value should be updated"
+    add_ingredient_to_food(driver, ingredient_2_name, quantity_2, ingredient_2_note)
+    ingredient_1_select = [select for select in driver.find_elements(By.TAG_NAME, "select") if select.get_attribute("value").lower() == ingredient_1_name.lower()]
+    assert len(ingredient_1_select) == 1, "Previous ingredient should not change"
+    ingredient_2_select = [select for select in driver.find_elements(By.TAG_NAME, "select") if select.get_attribute("value").lower() == ingredient_2_name.lower()]
+    assert len(ingredient_2_select) == 1, "New ingredient should be updated"
 

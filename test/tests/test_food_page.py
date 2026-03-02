@@ -38,17 +38,17 @@ def test_food_page_with_related_fields(driver):
     assert "Heat a pan or wok on medium-high" in food_description_input.text, "Food description should be loaded"
     ingredient_rows = driver.find_elements(By.CLASS_NAME, "ingredient-row")
     assert len(ingredient_rows) == 3, "Three ingredients should be loaded"
-    ingredient_row_1 = ingredient_rows[0]
-    select_1 = ingredient_row_1.find_element(By.ID, 'ingredient-0')
-    assert select_1.get_attribute("value") == 'egg', "The ingredient name should be loaded correctly"
-    input_1 = ingredient_row_1.find_element(By.ID, 'quantity-0')
+    ingredient_select = [select for select in driver.find_elements(By.TAG_NAME, "select") if select.get_attribute("value").lower() == 'egg'] 
+    assert len(ingredient_select) == 1, "The ingredient name should be loaded correctly"
+    index = ingredient_select[0].get_attribute("id").replace("ingredient-","")
+    input_1 = driver.find_element(By.ID, f'quantity-{index}')
     assert input_1.get_attribute("value") == "2", "The ingredient quantity should be loaded correctly"
-    quantity_unit_1 = ingredient_row_1.find_element(By.ID, 'quantity-unit-0')
+    quantity_unit_1 = driver.find_element(By.ID, f'quantity-unit-{index}')
     assert quantity_unit_1.text == 'pcs', "The ingredient quantity unit should be loaded correctly"
-    note_1 = ingredient_row_1.find_element(By.ID, 'ingredient-note-0')
+    note_1 = driver.find_element(By.ID, f'ingredient-note-{index}')
     assert note_1.text == "beaten eggs", "The ingredient note should be loaded correctly"
     remove_btn = WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.ID, 'remove-btn-0'))
+        EC.element_to_be_clickable((By.ID, f'remove-btn-{index}'))
     )
     assert remove_btn.is_displayed(), "remove button should be visible"
     assert remove_btn.get_attribute("title") == "Delete Ingredient From Food", "Remove Button should have a title"
@@ -100,9 +100,11 @@ def test_update_food_with_save_btn(driver):
     )
     food_description_before = food_description_input.text
     food_description_input.send_keys("%")
+    first_select = driver.find_elements(By.TAG_NAME, "select")[0]
+    index = first_select.get_attribute("id").replace("ingredient-","")
     # update ingredient 
     ingredient_select = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.ID, 'ingredient-0'))
+        EC.presence_of_element_located((By.ID, f'ingredient-{index}'))
     )
     initial_select_value = ingredient_select.get_attribute("value")
     assert initial_select_value != "yuanxian big glass noodle", "initial ingredient and updated ingredient should not be same"
@@ -110,14 +112,14 @@ def test_update_food_with_save_btn(driver):
     select.select_by_visible_text("yuanxian big glass noodle")
     # update ingredient quantity
     quantity_input = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.ID, 'quantity-0'))
+        EC.presence_of_element_located((By.ID, f'quantity-{index}'))
     )
     initial_quantity = quantity_input.get_attribute("value")
     assert initial_quantity != "3", "initial quantity and updated quantity should not be same"
     quantity_input.send_keys(3)
     # update ingredient note
     note = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.ID, 'ingredient-note-0'))
+        EC.presence_of_element_located((By.ID, f'ingredient-note-{index}'))
     )
     initial_note = note.text
     assert "#" not in initial_note, "The new string added to note should not have already existed"
@@ -163,19 +165,20 @@ def test_remove_btn(driver):
     )
     ingredient_rows = driver.find_elements(By.CLASS_NAME, "ingredient-row")
     row_len_before = len(ingredient_rows)
-    ingredient_0_element = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.ID, "ingredient-0"))
-    )
-    ingredient_0 = ingredient_0_element.get_attribute("value")
-    assert ingredient_0 != '', "The ingredient to be deleted should not be empty"
+    first_select = driver.find_elements(By.TAG_NAME, "select")[0]
+    index = first_select.get_attribute("id").replace("ingredient-","")
+    ingredient_name = first_select.get_attribute("value").lower()
+    assert ingredient_name != '', "The ingredient to be deleted should not be empty"
     remove_btn = WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.ID, 'remove-btn-0'))
+        EC.element_to_be_clickable((By.ID, f'remove-btn-{index}'))
     )
     remove_btn.click()
     time.sleep(5)
     ingredient_rows = driver.find_elements(By.CLASS_NAME, "ingredient-row")
     row_len_after = len(ingredient_rows)
     assert row_len_after == row_len_before - 1, "The number of ingredient rows should be decreased by one"
+    ingredient_select = [select for select in driver.find_elements(By.TAG_NAME, "select") if select.get_attribute("value").lower() == ingredient_name] 
+    assert len(ingredient_select) == 0, "The ingredient deleted should not exist"
     save_btn = WebDriverWait(driver, 10).until(
         EC.element_to_be_clickable((By.ID, 'save-food'))
     )
@@ -183,16 +186,23 @@ def test_remove_btn(driver):
     all_ingredients = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.ID, "ingredients-browse"))
     )
-    assert ingredient_0 not in all_ingredients.text.lower(), "The ingredient deleted should not be visible any more" 
+    assert ingredient_name not in all_ingredients.text.lower(), "The ingredient deleted should not be visible any more" 
     ingredients_browse_children = all_ingredients.find_elements(By.TAG_NAME, "li")
     assert len(ingredients_browse_children) == row_len_after, "The number of ingredients under browse mode should match the number of ingredients under edit mode"
     driver.get(edit_food_url)
     all_ingredients = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.ID, "ingredients-browse"))
     )
-    assert ingredient_0 not in all_ingredients.text.lower(), "The ingredient deleted should not be visible any more after refreshing the page" 
+    assert ingredient_name not in all_ingredients.text.lower(), "The ingredient deleted should not be visible any more after refreshing the page" 
     ingredients_browse_children = all_ingredients.find_elements(By.TAG_NAME, "li")
     assert len(ingredients_browse_children) == row_len_after, "The number of ingredients under browse mode should match the number of ingredients under edit mode after refreshing the page"
+
+def test_add_ingredients_to_food(driver):
+    driver.get(edit_food_url)
+    edit_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, 'edit-food'))
+    )
+    edit_btn.click()
 
 
 
@@ -206,6 +216,11 @@ def test_add_ingredient_btn(driver):
         EC.presence_of_element_located((By.CLASS_NAME, "ingredient-row"))
     )
     ingredient_rows = driver.find_elements(By.CLASS_NAME, "ingredient-row")
+    existing_ingredients = []
+    for r in ingredient_rows:
+        selects = r.find_elements(By.TAG_NAME, "select")
+        assert len(selects) == 1, "There should be only one select per ingredient row"
+        existing_ingredients.append(selects[0].get_attribute("value"))
     row_len_before = len(ingredient_rows)
     add_ingredient_btn = WebDriverWait(driver, 10).until(
         EC.element_to_be_clickable((By.ID, 'add-ingredient'))
@@ -215,16 +230,17 @@ def test_add_ingredient_btn(driver):
     ingredient_rows = driver.find_elements(By.CLASS_NAME, "ingredient-row")
     row_len_after = len(ingredient_rows)
     assert row_len_after == row_len_before + 1, "The number of ingredient rows should be increased by one"
-    new_ingredient_id = f"ingredient-{row_len_after - 1}"
-    new_ingredient = driver.find_element(By.ID, new_ingredient_id)
+    new_ingredient = driver.find_elements(By.TAG_NAME, "select")[-1]
+    new_ingredient_id = new_ingredient.get_attribute("id").replace("ingredient-", "")
+    new_ingredient = driver.find_element(By.ID, f"ingredient-{new_ingredient_id}")
     select = Select(new_ingredient)
     select.select_by_visible_text("yogurt")
     quantity_input = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.ID, f'quantity-{row_len_after - 1}'))
+        EC.presence_of_element_located((By.ID, f'quantity-{new_ingredient_id}'))
     )
     quantity_input.send_keys(2)
     note = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.ID, f'ingredient-note-{row_len_after - 1}'))
+        EC.presence_of_element_located((By.ID, f'ingredient-note-{new_ingredient_id}'))
     )
     note.send_keys('test')
     save_btn = WebDriverWait(driver, 10).until(
@@ -238,6 +254,8 @@ def test_add_ingredient_btn(driver):
     assert "yogurt" in all_ingredients.text.lower() and "2" in all_ingredients.text.lower() and "test" in all_ingredients.text.lower(), "The ingredient added should be visible" 
     ingredients_browse_children = all_ingredients.find_elements(By.TAG_NAME, "li")
     assert len(ingredients_browse_children) == row_len_after, "The number of ingredients under browse mode should match the number of ingredients under edit mode"
+    for ingredient in existing_ingredients:
+        assert ingredient.lower() in all_ingredients.text.lower()
     driver.get(edit_food_url)
     WebDriverWait(driver, 20).until(lambda d: len(d.find_elements(By.CSS_SELECTOR, "#ingredients-browse > *")) > 0)
     all_ingredients = WebDriverWait(driver, 10).until(
