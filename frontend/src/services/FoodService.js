@@ -19,7 +19,7 @@ export async function createFood(foodName, foodDescription) {
   return res.data
 };
 
-export async function addIngredientsToFood(foodId, ingredients) {
+export async function addFoodIngredients(foodId, ingredients) {
     const res = await axios.post(`${BASEURL}/foods/add-ingredients`, {
         foodId: foodId,
         ingredients: ingredients
