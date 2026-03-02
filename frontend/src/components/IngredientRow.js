@@ -1,29 +1,45 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 function IngredientRow({ row, existingIngredients, updateRow, removeRow }) {
 
     const [ingredient, setIngredient] = useState(row)
+    console.log(existingIngredients)
+    console.log(ingredient)
+    const options = useMemo(() => {
+        if (!existingIngredients) return [];
+        if (!ingredient) return existingIngredients;
+        let combined = existingIngredients;
+        if (ingredient && ingredient.ingredientId !== -1) {
+            combined = [...existingIngredients, ingredient];
+        }
+        // Deduplicate by foodId
+        const uniqueMap = new Map(
+            combined.map(ingredient => [ingredient.ingredientId, ingredient])
+        );
+        return Array.from(uniqueMap.values());
+    }, [existingIngredients, ingredient]);
+
     const handleIngredientChange = (e) => {
         const ingredient = existingIngredients.find(
-            i => i.name === e.target.value
+            i => i.ingredientName === e.target.value
         );
         setIngredient({
             ...row,
-            ingredientId: ingredient.id,
-            ingredientName: ingredient.name,
-            ingredientUnitId: ingredient.canonical_unit_id,
-            ingredientUnitName: ingredient.canonical_unit,
-            ingredientUnitAbbreviation: ingredient.canonical_unit_abbreviation,
+            ingredientId: ingredient.ingredientId,
+            ingredientName: ingredient.ingredientName,
+            ingredientUnitId: ingredient.ingredientUnitId,
+            ingredientUnitName: ingredient.ingredientUnitName,
+            ingredientUnitAbbreviation: ingredient.ingredientUnitAbbreviation,
             note: ingredient.note || "",
             quantity: ingredient.quantity || 0
         })
         updateRow ({
             ...row,
-            ingredientId: ingredient.id,
-            ingredientName: ingredient.name,
-            ingredientUnitId: ingredient.canonical_unit_id,
-            ingredientUnitName: ingredient.canonical_unit,
-            ingredientUnitAbbreviation: ingredient.canonical_unit_abbreviation,
+            ingredientId: ingredient.ingredientId,
+            ingredientName: ingredient.ingredientName,
+            ingredientUnitId: ingredient.ingredientUnitId,
+            ingredientUnitName: ingredient.ingredientUnitName,
+            ingredientUnitAbbreviation: ingredient.ingredientUnitAbbreviation,
             note: ingredient.note || "",
             quantity: ingredient.quantity || 0
         });
@@ -52,7 +68,7 @@ function IngredientRow({ row, existingIngredients, updateRow, removeRow }) {
     };
 
     return (
-    <li className="ingredient-row-li">
+    <li className="ingredient-row-li" data-new-row={ingredient.ingredientName === "" ? "true" : undefined}>
         <div className="ingredient-row">
         <label htmlFor={`ingredient-${ingredient.tempId ? ingredient.tempId :ingredient.foodIngredientId}`}>
         <select name={`ingredient-${ingredient.tempId ? ingredient.tempId :ingredient.foodIngredientId}`} 
@@ -62,8 +78,8 @@ function IngredientRow({ row, existingIngredients, updateRow, removeRow }) {
             onChange={handleIngredientChange}
         >
             <option value="">-- Select an ingredient --</option>
-            {existingIngredients.length > 0 && existingIngredients.map(ingredient => (
-                <option key={ingredient.id} value={ingredient.name}>{ingredient.name}</option>
+            {options.length > 0 && options.map(ingredient => (
+                <option key={ingredient.ingredientId} value={ingredient.ingredientName}>{ingredient.ingredientName}</option>
             ))}
         </select></label>
         {/* {!ingredient.tempId && <> */}
