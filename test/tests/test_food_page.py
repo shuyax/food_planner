@@ -197,13 +197,110 @@ def test_remove_btn(driver):
     ingredients_browse_children = all_ingredients.find_elements(By.TAG_NAME, "li")
     assert len(ingredients_browse_children) == row_len_after, "The number of ingredients under browse mode should match the number of ingredients under edit mode after refreshing the page"
 
-def test_add_ingredients_to_food(driver):
+def test_add_available_ingredients_to_food(driver):
     driver.get(edit_food_url)
     edit_btn = WebDriverWait(driver, 10).until(
         EC.element_to_be_clickable((By.ID, 'edit-food'))
     )
     edit_btn.click()
+    existing_ingredients_select = driver.find_elements(By.CLASS_NAME, "ingredient-select")
+    assert len(existing_ingredients_select) > 0, "There should be ingredients in food"
+    existing_ingredients = []
+    for select in existing_ingredients_select:
+        existing_ingredient = select.get_attribute("value").lower()
+        assert existing_ingredient != "", "The existing ingredient should not be empty"
+        existing_ingredients.append(existing_ingredient)
+    add_ingredient_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, 'add-ingredient'))
+    )
+    add_ingredient_btn.click()
+    new_ingredient_row = WebDriverWait(driver, 30).until(
+        lambda d: d.find_element(By.CSS_SELECTOR, "li[data-new-row='true']")
+    )
+    assert new_ingredient_row.is_displayed(), "The new ingredient row should be visible"
+    option_elements = new_ingredient_row.find_elements(By.TAG_NAME, "option")
+    options = [option.get_attribute("value") for option in option_elements]
+    for ingredient in existing_ingredients:
+        assert ingredient not in options, f"{ingredient} should not exist in available options"
 
+def test_remove_unsaved_ingredient_from_food_make_ingredient_available_option(driver):
+    driver.get(edit_food_url)
+    edit_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, 'edit-food'))
+    )
+    edit_btn.click()
+    add_ingredient_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, 'add-ingredient'))
+    )
+    add_ingredient_btn.click()
+    new_ingredient_row = WebDriverWait(driver, 30).until(
+        lambda d: d.find_element(By.CSS_SELECTOR, "li[data-new-row='true']")
+    )
+    new_ingredient_select = new_ingredient_row.find_elements(By.TAG_NAME,"select")[0]
+    delete_btn = WebDriverWait(new_ingredient_row, 10).until(
+        EC.element_to_be_clickable((By.CLASS_NAME,"remove-btn"))
+    )
+    Select(new_ingredient_select).select_by_visible_text("oats")
+    add_ingredient_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, 'add-ingredient'))
+    )
+    add_ingredient_btn.click()
+    option_elements = WebDriverWait(driver, 30).until(
+        lambda d: d.find_element(By.CSS_SELECTOR, "li[data-new-row='true']")
+    ).find_elements(By.TAG_NAME,"select")
+    options = [option.get_attribute("value") for option in option_elements]
+    assert "oats" not in options, "The ingredient added but unsaved should not be an option"
+    delete_btn.click()
+    option_elements = WebDriverWait(driver, 30).until(
+        lambda d: d.find_element(By.CSS_SELECTOR, "li[data-new-row='true']")
+    ).find_elements(By.TAG_NAME,"select")[0].find_elements(By.TAG_NAME, "option")
+    options = [option.get_attribute("value") for option in option_elements]
+    assert "oats" in options, "The ingredient added and then deleted but unsaved should be an option again" 
+
+def test_remove_saved_ingredient_from_food_make_ingredient_available_option(driver):
+    driver.get(edit_food_url)
+    edit_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, 'edit-food'))
+    )
+    edit_btn.click()
+    add_ingredient_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, 'add-ingredient'))
+    )
+    add_ingredient_btn.click()
+    new_ingredient_row = WebDriverWait(driver, 30).until(
+        lambda d: d.find_element(By.CSS_SELECTOR, "li[data-new-row='true']")
+    )
+    new_ingredient_select = new_ingredient_row.find_elements(By.TAG_NAME,"select")[0]
+    Select(new_ingredient_select).select_by_visible_text("oats")
+    save_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID,"save-food"))
+    )
+    save_btn.click()
+    edit_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, 'edit-food'))
+    )
+    assert "oats" in driver.find_element(By.ID, "ingredients-browse").text.lower()
+    edit_btn.click()
+    add_ingredient_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, 'add-ingredient'))
+    )
+    add_ingredient_btn.click()
+    option_elements = WebDriverWait(driver, 30).until(
+        lambda d: d.find_element(By.CSS_SELECTOR, "li[data-new-row='true']")
+    ).find_elements(By.TAG_NAME,"select")
+    options = [option.get_attribute("value") for option in option_elements]
+    assert "oats" not in options, "The ingredient added but unsaved should not be an option"
+    ingredient_select = [select for select in driver.find_elements(By.TAG_NAME, "select") if select.get_attribute("value").lower() == "oats"][0]
+    ingredient_id = ingredient_select.get_attribute("id").replace("ingredient-","")
+    delete_btn = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID,f"remove-btn-{ingredient_id}"))
+    )
+    delete_btn.click()
+    option_elements = WebDriverWait(driver, 30).until(
+        lambda d: d.find_element(By.CSS_SELECTOR, "li[data-new-row='true']")
+    ).find_elements(By.TAG_NAME,"select")[0].find_elements(By.TAG_NAME, "option")
+    options = [option.get_attribute("value") for option in option_elements]
+    assert "oats" in options, "The ingredient added and then deleted but unsaved should be an option again" 
 
 
 def test_add_ingredient_btn(driver):
