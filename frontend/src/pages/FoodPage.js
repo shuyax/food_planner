@@ -154,7 +154,6 @@ function FoodPage({ visibleBackButton = true, preMode = 'browse' }) {
     };
 
     function updateIngredientRow(foodIngredientId, updatedIngredientRow) {
-        console.log(updatedIngredientRow.tempId)
         // update existing food ingredient with foodIngredientId
         if (!updatedIngredientRow.tempId) {
             setFoodIngredients(prev =>
@@ -200,7 +199,7 @@ function FoodPage({ visibleBackButton = true, preMode = 'browse' }) {
             const filteredIngredientsAdded = ingredientsAdded.filter(i => i.ingredientName !== "")
             if (filteredIngredientsAdded.length !== 0) await AddFoodIngredientsMutation.mutateAsync(filteredIngredientsAdded)
             console.log(food.foodId, foodIngredients)
-            await updateFoodIngredientsMutation.mutateAsync({foodId: food.foodId, updatedFoodIngredients: foodIngredients});
+            if (foodIngredients.length !== 0) await updateFoodIngredientsMutation.mutateAsync({foodId: food.foodId, updatedFoodIngredients: foodIngredients});
             setMode("browse")
             console.log("Food update triggered!");
         } catch (err) {
